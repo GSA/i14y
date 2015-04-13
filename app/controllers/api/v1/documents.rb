@@ -25,30 +25,39 @@ module API
         desc "Create a document"
         params do
           requires :document_id,
+                   allow_blank: false,
                    type: String,
                    desc: "User-assigned document ID"
           requires :title,
                    type: String,
+                   allow_blank: false,
                    desc: "Document title"
           requires :path,
                    type: String,
+                   allow_blank: false,
+                   regexp: %r(^https?:\/\/[^\s\/$.?#].[^\s]*$),
                    desc: "Document link URL"
           requires :created,
                    type: DateTime,
+                   allow_blank: false,
                    desc: "When document was initially created",
                    documentation: { example: '2013-02-27T10:00:00Z' }
           optional :description,
                    type: String,
+                   allow_blank: false,
                    desc: "Document description"
           optional :content,
                    type: String,
+                   allow_blank: false,
                    desc: "Document content/body"
           optional :changed,
                    type: DateTime,
+                   allow_blank: false,
                    desc: "When document was modified",
                    documentation: { example: '2013-02-27T10:00:01Z' }
           optional :promote,
                    type: Boolean,
+                   allow_blank: false,
                    desc: "Whether to promote the document in the relevance ranking"
           at_least_one_of :content, :description
         end
