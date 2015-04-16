@@ -59,6 +59,13 @@ module API
                    type: Boolean,
                    allow_blank: false,
                    desc: "Whether to promote the document in the relevance ranking"
+          optional :language,
+                   type: Symbol,
+                   values: SUPPORTED_LOCALES,
+                   default: :en,
+                   allow_blank: false,
+                   desc: "Two-letter locale describing language of document (defaults to :en)"
+
           at_least_one_of :content, :description
         end
         post do
@@ -67,14 +74,48 @@ module API
 
         desc "Update a document"
         params do
-          optional :title, type: String, desc: "Document title"
-          optional :path, type: String, desc: "Document link URL"
-          optional :created, type: DateTime, desc: "When document was initially created"
-          optional :description, type: String, desc: "Document description"
-          optional :content, type: String, desc: "Document content/body"
-          optional :changed, type: DateTime, desc: "When document was modified"
-          optional :promote, type: Boolean, desc: "Whether to promote the document in the relevance ranking"
-          at_least_one_of :title, :path, :created, :content, :description, :changed, :promote
+          optional :document_id,
+                   allow_blank: false,
+                   type: String,
+                   desc: "User-assigned document ID"
+          optional :title,
+                   type: String,
+                   allow_blank: false,
+                   desc: "Document title"
+          optional :path,
+                   type: String,
+                   allow_blank: false,
+                   regexp: %r(^https?:\/\/[^\s\/$.?#].[^\s]*$),
+                   desc: "Document link URL"
+          optional :created,
+                   type: DateTime,
+                   allow_blank: false,
+                   desc: "When document was initially created",
+                   documentation: { example: '2013-02-27T10:00:00Z' }
+          optional :description,
+                   type: String,
+                   allow_blank: false,
+                   desc: "Document description"
+          optional :content,
+                   type: String,
+                   allow_blank: false,
+                   desc: "Document content/body"
+          optional :changed,
+                   type: DateTime,
+                   allow_blank: false,
+                   desc: "When document was modified",
+                   documentation: { example: '2013-02-27T10:00:01Z' }
+          optional :promote,
+                   type: Boolean,
+                   allow_blank: false,
+                   desc: "Whether to promote the document in the relevance ranking"
+          optional :language,
+                   type: Symbol,
+                   values: SUPPORTED_LOCALES,
+                   default: :en,
+                   allow_blank: false,
+                   desc: "Two-letter locale describing language of document (defaults to :en)"
+          at_least_one_of :title, :path, :created, :content, :description, :changed, :promote, :language
         end
         put ':document_id' do
           ok("Your document was successfully updated.")

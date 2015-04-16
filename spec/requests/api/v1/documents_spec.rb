@@ -9,13 +9,25 @@ describe API::V1::Documents do
   describe "POST /api/v1/documents" do
     context 'success case' do
       before do
-        valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true }
+        valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true, "language" => 'hy' }
         post "/api/v1/documents", valid_params, valid_session
       end
 
       it 'returns success message as JSON' do
         expect(response.status).to eq(201)
         expect(JSON.parse(response.body)).to match(hash_including('status' => 200, "developer_message" => "OK", "user_message" => "Your document was successfully created."))
+      end
+    end
+
+    context 'invalid language param' do
+      before do
+        valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true, "language" => 'qq' }
+        post "/api/v1/documents", valid_params, valid_session
+      end
+
+      it 'returns failure message as JSON' do
+        expect(response.status).to eq(400)
+        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, "developer_message" => "language does not have a valid value"))
       end
     end
 

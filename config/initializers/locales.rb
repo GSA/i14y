@@ -1,0 +1,1 @@
+SUPPORTED_LOCALES = [:en, :es, :sq, :ar, :hy, :bn, :be, :bg, :ca, :zh, :ht, :hr, :cs, :da, :nl, :et, :fi, :fr, :ka, :de, :el, :he, :hi, :hu, :id, :it, :ja, :km, :ko, :lv, :lt, :mk, :ps, :fa, :pl, :pt, :ro, :ru, :sr, :sk, :so, :sw, :th, :tr, :uk, :ur, :uz, :vi]
