@@ -8,23 +8,23 @@ class Document
   validates :collection_handle, presence: true
   attribute :path, String
   validates :path, presence: true
+  attribute :language, String
+  validates :language, presence: true
+  attribute :created, DateTime
+  validates :created, presence: true
 
   attribute :title, String
   attribute :description, String
   attribute :content, String
 
-  attribute :language, String
-  validates :language, presence: true
   attribute :updated, DateTime
-  attribute :created, DateTime
-  validates :created, presence: true
   attribute :promote, Boolean
 
   after_save { Rails.logger.info "Successfully saved #{self.class.name.tableize}: #{self}" }
 
   gateway do
     def serialize(document)
-      document_hash = super
+      document_hash = document.to_hash
       language = document_hash[:language]
 
       title = document_hash.delete :title
