@@ -62,12 +62,12 @@ namespace :i14y do
   end
 
   def move_alias(alias_name, old_index_name, new_index_name)
-    Elasticsearch::Persistence.client.indices.update_aliases(body: {
-                                                               actions: [
-                                                                 { remove: { index: old_index_name, alias: alias_name } },
-                                                                 { add: { index: new_index_name, alias: alias_name } }
-                                                               ]
-                                                             })
+    update_aliases_hash = { body:
+                              { actions: [
+                                { remove: { index: old_index_name, alias: alias_name } },
+                                { add: { index: new_index_name, alias: alias_name } }
+                              ] } }
+    Elasticsearch::Persistence.client.indices.update_aliases(update_aliases_hash)
   end
 
 end
