@@ -12,8 +12,6 @@ namespace :i14y do
       persistence_model_klass.create_index!(index: es_index_name)
       Elasticsearch::Persistence.client.indices.put_alias index: es_index_name, name: persistence_model_klass.index_name
     end
-    Document.create(document_id: "a1234", language: 'en', title_en: "hi there", description_en: 'bigger desc', content_en: "huge content",
-                    created: 1.hour.ago, changed: Time.now, updated: Time.now, promote: true, path: "http://www.gov.gov/url.html")
   end
 
   desc "Copies data from one version of the i14y index to the next (e.g., collections, documents)"
@@ -59,7 +57,7 @@ namespace :i14y do
       hash = { query: { filtered: { filter: { range: { updated_at: { gte: timestamp } } } } } }
       options << "--query '#{hash.to_json}'"
     end
-    result = `#{Rails.root.join(vendor, 'stream2es')} es #{options.join(' ')}`
+    result = `#{Rails.root.join('vendor', 'stream2es')} es #{options.join(' ')}`
     puts "Stream2es completed", result
   end
 
