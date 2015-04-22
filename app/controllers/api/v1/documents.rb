@@ -9,15 +9,20 @@ module API
         rack_response({ developer_message: e.message, status: 400 }.to_json, 400)
       end
 
-      http_basic do |index_handle, index_key|
+      http_basic do |collection_handle, token|
         error_hash = { developer_message: "Unauthorized", status: 400 }
-        error!(error_hash, 400) unless index_handle == 'test_index' && index_key == 'test_key'
+        error!(error_hash, 400) unless collection_handle == 'test_index' && token == 'test_key'
+        @collection_handle = collection_handle
         true
       end
 
       helpers do
         def ok(user_message)
           { status: 200, developer_message: "OK", user_message: user_message }
+        end
+
+        def id_from(document_id)
+          [@collection_handle, document_id].join(':')
         end
       end
 
@@ -57,7 +62,6 @@ module API
                    documentation: { example: '2013-02-27T10:00:01Z' }
           optional :promote,
                    type: Boolean,
-                   allow_blank: false,
                    desc: "Whether to promote the document in the relevance ranking"
           optional :language,
                    type: Symbol,
@@ -69,15 +73,13 @@ module API
           at_least_one_of :content, :description
         end
         post do
+          document = Document.create(params.merge(collection_handle: @collection_handle, _id: id_from(params[:document_id])))
+          error!(document.errors.messages, 400) unless document.valid?
           ok("Your document was successfully created.")
         end
 
         desc "Update a document"
         params do
-          optional :document_id,
-                   allow_blank: false,
-                   type: String,
-                   desc: "User-assigned document ID"
           optional :title,
                    type: String,
                    allow_blank: false,
@@ -107,17 +109,22 @@ module API
                    documentation: { example: '2013-02-27T10:00:01Z' }
           optional :promote,
                    type: Boolean,
-                   allow_blank: false,
                    desc: "Whether to promote the document in the relevance ranking"
           optional :language,
                    type: Symbol,
                    values: SUPPORTED_LOCALES,
-                   default: :en,
                    allow_blank: false,
-                   desc: "Two-letter locale describing language of document (defaults to :en)"
+                   desc: "Two-letter locale describing language of document"
           at_least_one_of :title, :path, :created, :content, :description, :changed, :promote, :language
         end
         put ':document_id' do
+          document_id = params.delete(:document_id)
+          document = Document.find(id_from(document_id))
+          title = params.delete :title
+          params.store("title_#{document.language}", title) if title.present?
+
+          document.update(params)
+          error!(document.errors.messages, 400) unless document.update(params)
           ok("Your document was successfully updated.")
         end
 

@@ -9,13 +9,20 @@ describe API::V1::Documents do
   describe "POST /api/v1/documents" do
     context 'success case' do
       before do
+        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
         valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true, "language" => 'hy' }
         post "/api/v1/documents", valid_params, valid_session
+        Document.refresh_index!
       end
 
       it 'returns success message as JSON' do
         expect(response.status).to eq(201)
         expect(JSON.parse(response.body)).to match(hash_including('status' => 200, "developer_message" => "OK", "user_message" => "Your document was successfully created."))
+      end
+
+      it 'uses the collection handle and the document_id in the Elasticsearch ID' do
+        puts Document.all
+        expect(Document.find("test_index:a1234")).to be_present
       end
     end
 
@@ -28,6 +35,17 @@ describe API::V1::Documents do
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
         expect(JSON.parse(response.body)).to match(hash_including('status' => 400, "developer_message" => "language does not have a valid value"))
+      end
+    end
+
+    context 'missing language param' do
+      before do
+        valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc" }
+        post "/api/v1/documents", valid_params, valid_session
+      end
+
+      it 'uses English (en) as default' do
+        expect(Document.find("test_index:a1234").language).to eq('en')
       end
     end
 
@@ -82,8 +100,9 @@ describe API::V1::Documents do
       end
     end
 
-    xcontext 'something terrible happens' do
+    context 'something terrible happens' do
       before do
+        allow(Document).to receive(:create) { raise_error(Exception) }
         valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true }
         post "/api/v1/documents", valid_params, valid_session
       end
@@ -99,13 +118,23 @@ describe API::V1::Documents do
   describe "PUT /api/v1/documents/{document_id}" do
     context 'success case' do
       before do
-        valid_params = {"title" => "my title" }
-        put "/api/v1/documents/a1234", valid_params, valid_session
+        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
+        Document.create(collection_handle: "test_index", document_id: "mycms_124", language: 'en', title: "hi there 4", description: 'bigger desc 4', content: "huge content 4", created: 2.hours.ago, updated: Time.now, promote: true, path: "http://www.gov.gov/url4.html", _id: "test_index:mycms_124")
+        valid_params = { "title" => "my title", "path" => "http://www.next.gov/updated.html", "promote" => false }
+        put "/api/v1/documents/mycms_124", valid_params, valid_session
+        Document.refresh_index!
       end
 
       it 'returns success message as JSON' do
         expect(response.status).to eq(200)
         expect(JSON.parse(response.body)).to match(hash_including('status' => 200, "developer_message" => "OK", "user_message" => "Your document was successfully updated."))
+      end
+
+      it 'updates the document' do
+        document = Document.find("test_index:mycms_124")
+        expect(document.path).to eq("http://www.next.gov/updated.html")
+        expect(document.promote).to be_falsey
+        expect(document.title).to eq('my title')
       end
 
     end

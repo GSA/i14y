@@ -5,7 +5,7 @@ module API
 
       Airbrake.notify(e)
 
-      rack_response({ developer_message: "Something unexpected happened and we've been alerted.", status: 500 }, 500)
+      rack_response({ developer_message: "Something unexpected happened and we've been alerted.", status: 500 }.to_json, 500)
     end
 
     mount API::V1::Base
