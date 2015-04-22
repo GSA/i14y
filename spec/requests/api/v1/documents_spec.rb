@@ -120,7 +120,11 @@ describe API::V1::Documents do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
         Document.create(collection_handle: "test_index", document_id: "mycms_124", language: 'en', title: "hi there 4", description: 'bigger desc 4', content: "huge content 4", created: 2.hours.ago, updated: Time.now, promote: true, path: "http://www.gov.gov/url4.html", _id: "test_index:mycms_124")
-        valid_params = { "title" => "my title", "path" => "http://www.next.gov/updated.html", "promote" => false }
+        valid_params = { "title" => "my title",
+                         "description" => "new desc",
+                         "content" => "new content",
+                         "path" => "http://www.next.gov/updated.html",
+                         "promote" => false }
         put "/api/v1/documents/mycms_124", valid_params, valid_session
         Document.refresh_index!
       end
@@ -135,6 +139,8 @@ describe API::V1::Documents do
         expect(document.path).to eq("http://www.next.gov/updated.html")
         expect(document.promote).to be_falsey
         expect(document.title).to eq('my title')
+        expect(document.description).to eq('new desc')
+        expect(document.content).to eq('new content')
       end
 
     end
@@ -143,12 +149,18 @@ describe API::V1::Documents do
   describe "DELETE /api/v1/documents/{document_id}" do
     context 'success case' do
       before do
-        delete "/api/v1/documents/a1234", nil, valid_session
+        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
+        Document.create(collection_handle: "test_index", document_id: "mycms_124", language: 'en', title: "hi there 4", description: 'bigger desc 4', content: "huge content 4", created: 2.hours.ago, updated: Time.now, promote: true, path: "http://www.gov.gov/url4.html", _id: "test_index:mycms_124")
+        delete "/api/v1/documents/mycms_124", nil, valid_session
       end
 
       it 'returns success message as JSON' do
         expect(response.status).to eq(200)
         expect(JSON.parse(response.body)).to match(hash_including('status' => 200, "developer_message" => "OK", "user_message" => "Your document was successfully deleted."))
+      end
+
+      it 'deletes the document' do
+        expect(Document.exists?("test_index:mycms_124")).to be_falsey
       end
 
     end

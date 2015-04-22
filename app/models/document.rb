@@ -22,37 +22,18 @@ class Document
 
   after_save { Rails.logger.info "Successfully saved #{self.class.name.tableize}: #{self}" }
 
+  LANGUAGE_FIELDS = %w(title description content)
+
   gateway do
     def serialize(document)
-      document_hash = document.to_hash
-      language = document_hash[:language]
-
-      title = document_hash.delete :title
-      document_hash.store("title_#{language}", title) if title.present?
-
-      description = document_hash.delete :description
-      document_hash.store("description_#{language}", description) if description.present?
-
-      content = document_hash.delete :content
-      document_hash.store("content_#{language}", content) if content.present?
-
-      document_hash
+      LanguageSerde.serialize_hash(document.to_hash, document.language, LANGUAGE_FIELDS)
     end
 
     def deserialize(hash)
-      document_source_hash = hash['_source']
-      language = document_source_hash['language']
+      doc_hash = hash['_source']
+      deserialized_hash = LanguageSerde.deserialize_hash(doc_hash, doc_hash['language'], LANGUAGE_FIELDS)
 
-      title = document_source_hash.delete "title_#{language}"
-      document_source_hash[:title] = title if title.present?
-
-      description = document_source_hash.delete "description_#{language}"
-      document_source_hash[:description] = description if description.present?
-
-      content = document_source_hash.delete "content_#{language}"
-      document_source_hash[:content] = content if content.present?
-
-      document = Document.new document_source_hash
+      document = Document.new deserialized_hash
       document.instance_variable_set :@_id, hash['_id']
       document.instance_variable_set :@_index, hash['_index']
       document.instance_variable_set :@_type, hash['_type']

@@ -120,16 +120,18 @@ module API
         put ':document_id' do
           document_id = params.delete(:document_id)
           document = Document.find(id_from(document_id))
-          title = params.delete :title
-          params.store("title_#{document.language}", title) if title.present?
 
-          document.update(params)
-          error!(document.errors.messages, 400) unless document.update(params)
+          serialized_params = LanguageSerde.serialize_hash(params, document.language, Document::LANGUAGE_FIELDS)
+
+          error!(document.errors.messages, 400) unless document.update(serialized_params)
           ok("Your document was successfully updated.")
         end
 
         desc "Delete a document"
         delete ':document_id' do
+          document_id = params.delete(:document_id)
+          document = Document.find(id_from(document_id))
+          error!(document.errors.messages, 400) unless document.destroy
           ok("Your document was successfully deleted.")
         end
       end
