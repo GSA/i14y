@@ -1,1 +1,3 @@
-SUPPORTED_LOCALES = [:en, :es, :sq, :ar, :hy, :bn, :be, :bg, :ca, :zh, :ht, :hr, :cs, :da, :nl, :et, :fi, :fr, :ka, :de, :el, :he, :hi, :hu, :id, :it, :ja, :km, :ko, :lv, :lt, :mk, :ps, :fa, :pl, :pt, :ro, :ru, :sr, :sk, :so, :sw, :th, :tr, :uk, :ur, :uz, :vi]
+SUPPORTED_LOCALES = [:ar, :be, :bg, :bn, :ca, :cs, :da, :de, :el, :en, :es, :et, :fa, :fi, :fr, :he, :hi, :hr, :ht,
+                     :hu, :hy, :id, :it, :ja, :ka, :km, :ko, :lt, :lv, :mk, :nl, :pl, :ps, :pt, :ro, :ru, :sk, :so,
+                     :sq, :sr, :sw, :th, :tr, :uk, :ur, :uz, :vi, :zh]
