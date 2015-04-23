@@ -1,4 +1,9 @@
-# i14y
+i14y
+====
+
+[![Code Climate](https://codeclimate.com/github/GSA/i14y/badges/gpa.svg)](https://codeclimate.com/github/GSA/i14y)
+[![Test Coverage](https://codeclimate.com/github/GSA/i14y/badges/coverage.svg)](https://codeclimate.com/github/GSA/i14y)
+
 Search engine for agencies' published content
 
 ## Dependencies/Prerequisistes
