@@ -2,10 +2,10 @@ class Document
   include Elasticsearch::Persistence::Model
   index_name [Rails.env, Rails.application.engine_name.split('_').first, self.name.tableize].join('-')
 
-  attribute :document_id, String
-  validates :document_id, presence: true
   attribute :collection_handle, String
   validates :collection_handle, presence: true
+  attribute :document_id, String
+  validates :document_id, presence: true
   attribute :path, String
   validates :path, presence: true
   attribute :language, String

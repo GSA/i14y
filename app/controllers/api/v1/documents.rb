@@ -11,7 +11,7 @@ module API
 
       http_basic do |collection_handle, token|
         error_hash = { developer_message: "Unauthorized", status: 400 }
-        error!(error_hash, 400) unless collection_handle == 'test_index' && token == 'test_key'
+        error!(error_hash, 400) unless auth?(collection_handle, token)
         @collection_handle = collection_handle
         true
       end
@@ -23,6 +23,12 @@ module API
 
         def id_from(document_id)
           [@collection_handle, document_id].join(':')
+        end
+
+        def auth?(collection_handle, token)
+          Collection.find(collection_handle).token == token
+        rescue Elasticsearch::Persistence::Repository::DocumentNotFound
+          false
         end
       end
 

@@ -2,6 +2,7 @@ require 'rails_helper'
 
 describe API::V1::Documents do
   let(:valid_session) do
+    Collection.create(_id: 'test_index', token: "test_key")
     credentials = ActionController::HttpAuthentication::Basic.encode_credentials "test_index", "test_key"
     { 'HTTP_AUTHORIZATION' => credentials }
   end
@@ -10,7 +11,7 @@ describe API::V1::Documents do
     context 'success case' do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
-        valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true, "language" => 'hy' }
+        valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true, "language" => 'hy', "content" => "my content" }
         post "/api/v1/documents", valid_params, valid_session
         Document.refresh_index!
       end
@@ -21,8 +22,18 @@ describe API::V1::Documents do
       end
 
       it 'uses the collection handle and the document_id in the Elasticsearch ID' do
-        puts Document.all
         expect(Document.find("test_index:a1234")).to be_present
+      end
+
+      it 'stores the appropriate fields in the Elasticsearch document' do
+        document = Document.find("test_index:a1234")
+        expect(document.collection_handle).to eq("test_index")
+        expect(document.document_id).to eq("a1234")
+        expect(document.path).to eq("http://www.gov.gov/goo.html")
+        expect(document.promote).to be_truthy
+        expect(document.title).to eq('my title')
+        expect(document.description).to eq('my desc')
+        expect(document.content).to eq('my content')
       end
     end
 
