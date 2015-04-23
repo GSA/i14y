@@ -16,8 +16,8 @@ gem 'capistrano-passenger'
 
 gem "elasticsearch-persistence", require: 'elasticsearch/persistence/model'
 
-# gem 'newrelic_rpm'
-# gem 'newrelic_grape'
+gem 'newrelic_rpm'
+gem 'newrelic-grape'
 gem "airbrake"
 
 group :development, :test do
