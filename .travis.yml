@@ -8,6 +8,7 @@ before_install:
   - sudo service elasticsearch start
 before_script:
   - cp -p config/secrets_example.yml config/secrets.yml
+  - bundle exec rake i14y:setup_all
 addons:
   code_climate:
     repo_token: 09d5a7d453407f367679c8f86c4c582ec3583bed3c7a06286d61d16e89290bd1
