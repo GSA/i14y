@@ -23,7 +23,7 @@ namespace :i14y do
                                                            body: File.read(template_file),
                                                            order: 0)
     old_es_index_name = Elasticsearch::Persistence.client.indices.get_alias(name: persistence_model_klass.index_name).keys.first
-    new_es_index_name = old_es_index_name.succ
+    new_es_index_name = next_version(old_es_index_name)
     puts "Beginning copy of #{persistence_model_klass.count} #{entity_name} from #{old_es_index_name} to #{new_es_index_name}"
     persistence_model_klass.create_index!(index: new_es_index_name)
     since_timestamp = Time.now
@@ -45,6 +45,11 @@ namespace :i14y do
       Elasticsearch::Persistence.client.indices.delete_template(name: entity_name) rescue Elasticsearch::Transport::Transport::Errors::NotFound
     end
     Elasticsearch::Persistence.client.indices.delete(index: [Rails.env, Rails.application.engine_name.split('_').first, '*'].join('-'))
+  end
+
+  def next_version(index_name)
+    matches = index_name.match(/(.*-v)(\d+)/)
+    "#{matches[1]}#{matches[2].succ}"
   end
 
   def index_namespace(entity_name)
