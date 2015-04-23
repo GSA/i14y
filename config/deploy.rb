@@ -50,5 +50,5 @@ namespace :deploy do
 
 end
 
-require './config/boot'
-require 'airbrake/capistrano'
+require 'airbrake/capistrano3'
+after "deploy:finished", "airbrake:deploy"
