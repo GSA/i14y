@@ -6,6 +6,8 @@ before_install:
   - curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.5.1.deb && sudo dpkg -i elasticsearch-1.5.1.deb && true
   - 'echo ''index.number_of_shards: 1'' | sudo tee --append /etc/elasticsearch/elasticsearch.yml'
   - sudo service elasticsearch start
+before_script:
+  - cp -p config/secrets_example.yml config/secrets.yml
 addons:
   code_climate:
     repo_token: 09d5a7d453407f367679c8f86c4c582ec3583bed3c7a06286d61d16e89290bd1
