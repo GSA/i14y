@@ -6,8 +6,7 @@ set :repo_url, "git@github.com:GSA/i14y.git"
 set :rails_env, "production"
 set :deploy_to, "/home/search/i14y"
 set :linked_dirs, %w{log tmp/pids tmp/cache tmp/sockets}
-# set :linked_files, %w{config/airbrake.yml config/newrelic.yml config/secrets.yml config/elasticsearch.yml}
-set :linked_files, %w{config/secrets.yml}
+set :linked_files, %w{config/airbrake.yml config/newrelic.yml config/secrets.yml config/elasticsearch.yml}
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
@@ -50,3 +49,6 @@ namespace :deploy do
   after :finishing, "deploy:cleanup"
 
 end
+
+require './config/boot'
+require 'airbrake/capistrano'

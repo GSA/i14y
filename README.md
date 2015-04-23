@@ -26,3 +26,7 @@ If you ever want to start from scratch with your indexes/templates, you can clea
 
 `bundle exec rake`
 
+## Deployment
+
+- Set your Airbrake api key in `config/airbrake.yml` in the deployment directory for `/i14y/shared/config`. This will get copied into the current release directory on deployment.
+- Update your `config/secrets.yml` file in the deployment directory for `/i14y/shared/config`. This will get copied into the current release directory on deployment.
