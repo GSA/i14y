@@ -22,7 +22,7 @@ class Document
 
   after_save { Rails.logger.info "Successfully saved #{self.class.name.tableize}: #{self}" }
 
-  LANGUAGE_FIELDS = %w(title description content)
+  LANGUAGE_FIELDS = [:title, :description, :content]
 
   gateway do
     def serialize(document)
