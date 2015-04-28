@@ -20,6 +20,8 @@ gem 'newrelic_rpm'
 gem 'newrelic-grape'
 gem "airbrake"
 
+gem 'patron'
+
 group :development, :test do
   gem 'rspec-rails', '~> 3.0.0'
 end
