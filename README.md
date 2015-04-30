@@ -22,7 +22,7 @@ Be sure to restart Elasticsearch after you have installed the plugins.
 - Use `rvm` to install the version of Ruby specified in the `Gemfile`.
 - `bundle install`.
 - Copy `config/secrets_example.yml` to `config/secrets.yml` and fill in your own secrets. To generate a random long secret, use `rake secret`.
-- Run `bundle exec rake i14y:setup_all` to create the neccessary indexes, index templates, and dynamic field templates
+- Run `bundle exec rake i14y:setup` to create the neccessary indexes, index templates, and dynamic field templates
 
 If you ever want to start from scratch with your indexes/templates, you can clear everything out:
 `bundle exec rake i14y:clear_all`

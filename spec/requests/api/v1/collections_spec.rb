@@ -40,7 +40,19 @@ describe API::V1::Collections do
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, "developer_message" => "handle is missing, handle is empty, token is missing, token is empty"))
+        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, "developer_message" => "handle is missing, handle is empty, handle is invalid, token is missing, token is empty"))
+      end
+    end
+
+    context 'handle uses illegal characters' do
+      before do
+        invalid_params = { "handle" => "agency-blogs", "token" => "secret" }
+        post "/api/v1/collections", invalid_params, valid_session
+      end
+
+      it 'returns failure message as JSON' do
+        expect(response.status).to eq(400)
+        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, "developer_message" => "handle is invalid"))
       end
     end
 

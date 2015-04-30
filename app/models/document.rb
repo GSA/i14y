@@ -1,11 +1,9 @@
 class Document
   include Elasticsearch::Persistence::Model
-  index_name [Rails.env, Rails.application.engine_name.split('_').first, self.name.tableize].join('-')
+  extend NamespacedIndex
 
-  attribute :collection_handle, String
-  validates :collection_handle, presence: true
-  attribute :document_id, String
-  validates :document_id, presence: true
+  index_name index_namespace
+
   attribute :path, String
   validates :path, presence: true
   attribute :language, String
@@ -19,8 +17,6 @@ class Document
 
   attribute :updated, DateTime
   attribute :promote, Boolean
-
-  after_save { Rails.logger.info "Successfully saved #{self.class.name.tableize}: #{self}" }
 
   LANGUAGE_FIELDS = [:title, :description, :content]
 

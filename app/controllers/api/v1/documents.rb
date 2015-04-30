@@ -21,10 +21,6 @@ module API
           { status: 200, developer_message: "OK", user_message: user_message }
         end
 
-        def id_from(document_id)
-          [@collection_handle, document_id].join(':')
-        end
-
         def auth?(collection_handle, token)
           Collection.find(collection_handle).token == token
         rescue Elasticsearch::Persistence::Repository::DocumentNotFound
@@ -79,7 +75,9 @@ module API
           at_least_one_of :content, :description
         end
         post do
-          document = Document.create(params.merge(collection_handle: @collection_handle, _id: id_from(params[:document_id])))
+          Document.index_name = Document.index_namespace(@collection_handle)
+          id = params.delete(:document_id)
+          document = Document.create(params.merge(_id: id))
           error!(document.errors.messages, 400) unless document.valid?
           ok("Your document was successfully created.")
         end
@@ -124,19 +122,17 @@ module API
           at_least_one_of :title, :path, :created, :content, :description, :changed, :promote, :language
         end
         put ':document_id' do
-          document_id = params.delete(:document_id)
-          document = Document.find(id_from(document_id))
-
+          Document.index_name = Document.index_namespace(@collection_handle)
+          document = Document.find(params.delete(:document_id))
           serialized_params = LanguageSerde.serialize_hash(params, document.language, Document::LANGUAGE_FIELDS)
-
           error!(document.errors.messages, 400) unless document.update(serialized_params)
           ok("Your document was successfully updated.")
         end
 
         desc "Delete a document"
         delete ':document_id' do
-          document_id = params.delete(:document_id)
-          document = Document.find(id_from(document_id))
+          Document.index_name = Document.index_namespace(@collection_handle)
+          document = Document.find(params.delete(:document_id))
           error!(document.errors.messages, 400) unless document.destroy
           ok("Your document was successfully deleted.")
         end

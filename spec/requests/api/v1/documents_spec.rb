@@ -1,8 +1,17 @@
 require 'rails_helper'
 
 describe API::V1::Documents do
+  before(:all) do
+    yaml = YAML.load_file("#{Rails.root}/config/secrets.yml")
+    env_secrets = yaml[Rails.env]
+    credentials = ActionController::HttpAuthentication::Basic.encode_credentials env_secrets['admin_user'], env_secrets['admin_password']
+    valid_collection_session = { 'HTTP_AUTHORIZATION' => credentials }
+    valid_collection_params = { "handle" => "test_index", "token" => "test_key" }
+    post "/api/v1/collections", valid_collection_params, valid_collection_session
+    Document.index_name = Document.index_namespace('test_index')
+  end
+
   let(:valid_session) do
-    Collection.create(_id: 'test_index', token: "test_key")
     credentials = ActionController::HttpAuthentication::Basic.encode_credentials "test_index", "test_key"
     { 'HTTP_AUTHORIZATION' => credentials }
   end
@@ -22,13 +31,11 @@ describe API::V1::Documents do
       end
 
       it 'uses the collection handle and the document_id in the Elasticsearch ID' do
-        expect(Document.find("test_index:a1234")).to be_present
+        expect(Document.find("a1234")).to be_present
       end
 
       it 'stores the appropriate fields in the Elasticsearch document' do
-        document = Document.find("test_index:a1234")
-        expect(document.collection_handle).to eq("test_index")
-        expect(document.document_id).to eq("a1234")
+        document = Document.find("a1234")
         expect(document.path).to eq("http://www.gov.gov/goo.html")
         expect(document.promote).to be_truthy
         expect(document.title).to eq('my title')
@@ -56,7 +63,7 @@ describe API::V1::Documents do
       end
 
       it 'uses English (en) as default' do
-        expect(Document.find("test_index:a1234").language).to eq('en')
+        expect(Document.find("a1234").language).to eq('en')
       end
     end
 
@@ -130,7 +137,7 @@ describe API::V1::Documents do
     context 'success case' do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
-        Document.create(collection_handle: "test_index", document_id: "mycms_124", language: 'en', title: "hi there 4", description: 'bigger desc 4', content: "huge content 4", created: 2.hours.ago, updated: Time.now, promote: true, path: "http://www.gov.gov/url4.html", _id: "test_index:mycms_124")
+        Document.create(_id: "mycms_124", language: 'en', title: "hi there 4", description: 'bigger desc 4', content: "huge content 4", created: 2.hours.ago, updated: Time.now, promote: true, path: "http://www.gov.gov/url4.html")
         valid_params = { "title" => "my title",
                          "description" => "new desc",
                          "content" => "new content",
@@ -146,7 +153,7 @@ describe API::V1::Documents do
       end
 
       it 'updates the document' do
-        document = Document.find("test_index:mycms_124")
+        document = Document.find("mycms_124")
         expect(document.path).to eq("http://www.next.gov/updated.html")
         expect(document.promote).to be_falsey
         expect(document.title).to eq('my title')
@@ -161,7 +168,7 @@ describe API::V1::Documents do
     context 'success case' do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
-        Document.create(collection_handle: "test_index", document_id: "mycms_124", language: 'en', title: "hi there 4", description: 'bigger desc 4', content: "huge content 4", created: 2.hours.ago, updated: Time.now, promote: true, path: "http://www.gov.gov/url4.html", _id: "test_index:mycms_124")
+        Document.create(_id: "mycms_124", language: 'en', title: "hi there 4", description: 'bigger desc 4', content: "huge content 4", created: 2.hours.ago, updated: Time.now, promote: true, path: "http://www.gov.gov/url4.html")
         delete "/api/v1/documents/mycms_124", nil, valid_session
       end
 
@@ -171,7 +178,7 @@ describe API::V1::Documents do
       end
 
       it 'deletes the document' do
-        expect(Document.exists?("test_index:mycms_124")).to be_falsey
+        expect(Document.exists?("mycms_124")).to be_falsey
       end
 
     end

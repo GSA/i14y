@@ -19,12 +19,13 @@ module API
         def ok(user_message)
           { status: 200, developer_message: "OK", user_message: user_message }
         end
-        
+
         def auth?(admin_user, admin_password)
           yaml = YAML.load_file("#{Rails.root}/config/secrets.yml")
           env_secrets = yaml[Rails.env]
           admin_user == env_secrets['admin_user'] && admin_password == env_secrets['admin_password']
         end
+
       end
 
       resource :collections do
@@ -33,6 +34,7 @@ module API
           requires :handle,
                    allow_blank: false,
                    type: String,
+                   regexp: %r(^[a-z0-9._]+$),
                    desc: "Immutable name of the logical index used when authenticating Document API calls"
           requires :token,
                    type: String,
@@ -40,8 +42,13 @@ module API
                    desc: "Token to be used when authenticating Document API calls"
         end
         post do
-          collection = Collection.create(_id: params[:handle], token: params[:token])
+          handle = params[:handle]
+          collection = Collection.create(_id: handle, token: params[:token])
           error!(collection.errors.messages, 400) unless collection.valid?
+          es_documents_index_name = [Document.index_namespace(handle), 'v1'].join('-')
+          Document.create_index!(index: es_documents_index_name)
+          Elasticsearch::Persistence.client.indices.put_alias index: es_documents_index_name,
+                                                              name: Document.index_namespace(handle)
           ok("Your collection was successfully created.")
         end
 
@@ -50,6 +57,7 @@ module API
           handle = params.delete(:handle)
           collection = Collection.find(handle)
           error!(collection.errors.messages, 400) unless collection.destroy
+          Elasticsearch::Persistence.client.indices.delete(index: [Document.index_namespace(handle), '*'].join('-'))
           ok("Your collection was successfully deleted.")
         end
       end
