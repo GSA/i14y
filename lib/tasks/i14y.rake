@@ -1,10 +1,12 @@
 namespace :i14y do
   desc "Creates templates, indexes, and reader/writer aliases for all i14y models"
   task setup: :environment do
-    Dir[Rails.root.join('config', 'templates', '*.json')].map do |template_file|
-      entity_name = File.basename(template_file, '.*')
+    Dir[Rails.root.join('app', 'templates', '*.rb')].each do |template_generator|
+      entity_name = File.basename(template_generator, '.rb')
+      klass = entity_name.camelize.constantize
+      template_generator = klass.new
       Elasticsearch::Persistence.client.indices.put_template(name: entity_name,
-                                                             body: File.read(template_file),
+                                                             body: template_generator.body,
                                                              order: 0,
                                                              create: true)
     end
@@ -17,9 +19,10 @@ namespace :i14y do
   task :reindex, [:entity_name] => [:environment] do |t, args|
     entity_name = args.entity_name
     persistence_model_klass = entity_name.singularize.camelize.constantize
-    template_file = Rails.root.join('config', 'templates', "#{entity_name}.json")
+    klass = entity_name.camelize.constantize
+    template_generator = klass.new
     Elasticsearch::Persistence.client.indices.put_template(name: entity_name,
-                                                           body: File.read(template_file),
+                                                           body: template_generator.body,
                                                            order: 0)
 
     wildcard = [persistence_model_klass.index_namespace, '*'].join
@@ -46,8 +49,8 @@ namespace :i14y do
 
   desc "Deletes templates, indexes, and reader/writer aliases for all i14y models. Useful for development."
   task clear_all: :environment do
-    Dir[Rails.root.join('config', 'templates', '*.json')].map do |template_file|
-      entity_name = File.basename(template_file, '.*')
+    Dir[Rails.root.join('app', 'templates', '*.rb')].each do |template_generator|
+      entity_name = File.basename(template_generator, '.rb')
       Elasticsearch::Persistence.client.indices.delete_template(name: entity_name) rescue Elasticsearch::Transport::Transport::Errors::NotFound
     end
     Elasticsearch::Persistence.client.indices.delete(index: [Rails.env, APP_NAME, '*'].join('-'))
