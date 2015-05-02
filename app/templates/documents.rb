@@ -36,8 +36,9 @@ class Documents
 
   def filter(json)
     json.filter do
-      json.bigram_filter do
+      json.bigrams_filter do
         json.type "shingle"
+        json.output_unigrams false
       end
       language_synonyms(json)
       language_protwords(json)
@@ -76,6 +77,12 @@ class Documents
         json.filter ["smartcn_word", "icu_normalizer", "icu_folding"]
         json.tokenizer "smartcn_sentence"
         json.char_filter ["html_strip"]
+      end
+      json.bigrams do
+        json.type "custom"
+        json.filter ["icu_normalizer", "icu_folding", "bigrams_filter"]
+        json.tokenizer "icu_tokenizer"
+        json.char_filter ["html_strip", "quotes"]
       end
       json.default do
         json.type "custom"
@@ -134,6 +141,16 @@ class Documents
   def dynamic_templates(json)
     json.dynamic_templates do
       language_templates(json)
+      json.child! do
+        json.bigrams do
+          json.mapping do
+            json.analyzer "bigrams"
+            json.type "string"
+          end
+          json.match_mapping_type "string"
+          json.match "*_bigrams"
+        end
+      end
       json.child! do
         json.string_fields do
           json.mapping do

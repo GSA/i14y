@@ -14,7 +14,6 @@ describe API::V1::Collections do
         Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*'
         valid_params = { "handle" => "agency_blogs", "token" => "secret" }
         post "/api/v1/collections", valid_params, valid_session
-        Collection.refresh_index!
       end
 
       it 'returns success message as JSON' do

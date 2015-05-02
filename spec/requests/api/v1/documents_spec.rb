@@ -22,7 +22,6 @@ describe API::V1::Documents do
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
         valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true, "language" => 'hy', "content" => "my content" }
         post "/api/v1/documents", valid_params, valid_session
-        Document.refresh_index!
       end
 
       it 'returns success message as JSON' do
@@ -144,7 +143,6 @@ describe API::V1::Documents do
                          "path" => "http://www.next.gov/updated.html",
                          "promote" => false }
         put "/api/v1/documents/mycms_124", valid_params, valid_session
-        Document.refresh_index!
       end
 
       it 'returns success message as JSON' do
