@@ -16,7 +16,7 @@ require "action_controller/railtie"
 Bundler.require(*Rails.groups)
 
 module I14y
-  I14y::APP_NAME = 'i14y'
+  APP_NAME = 'i14y'
   class Application < Rails::Application
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers

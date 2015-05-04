@@ -53,7 +53,7 @@ namespace :i14y do
       entity_name = File.basename(template_generator, '.rb')
       Elasticsearch::Persistence.client.indices.delete_template(name: entity_name) rescue Elasticsearch::Transport::Transport::Errors::NotFound
     end
-    Elasticsearch::Persistence.client.indices.delete(index: [Rails.env, APP_NAME, '*'].join('-'))
+    Elasticsearch::Persistence.client.indices.delete(index: [Rails.env, I14y::APP_NAME, '*'].join('-'))
   end
 
   def next_version(index_name)
