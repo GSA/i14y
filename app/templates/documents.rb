@@ -6,7 +6,7 @@ class Documents
 
   def body
     Jbuilder.encode do |json|
-      json.template "*-#{APP_NAME}-documents-*"
+      json.template "*-#{I14y::APP_NAME}-documents-*"
       json.settings do
         json.analysis do
           char_filter(json)

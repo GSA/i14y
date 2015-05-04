@@ -1,7 +1,7 @@
 class Collections
   def body
     Jbuilder.encode do |json|
-      json.template "*-#{APP_NAME}-collections-*"
+      json.template "*-#{I14y::APP_NAME}-collections-*"
       json.mappings do
         json.collection do
           dynamic_templates(json)
