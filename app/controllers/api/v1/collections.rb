@@ -60,6 +60,44 @@ module API
           Elasticsearch::Persistence.client.indices.delete(index: [Document.index_namespace(handle), '*'].join('-'))
           ok("Your collection was successfully deleted.")
         end
+
+        desc 'Search for documents in collections'
+        params do
+          requires :handles,
+                   allow_blank: false,
+                   type: String,
+                   desc: "Restrict results to this comma-separated list of document collections"
+          requires :language,
+                   type: Symbol,
+                   values: SUPPORTED_LOCALES,
+                   allow_blank: false,
+                   desc: "Restrict results to documents in a particular language"
+          requires :query,
+                   allow_blank: false,
+                   type: String,
+                   desc: "Search term. See documentation on supported query syntax."
+          optional :size,
+                   allow_blank: false,
+                   type: Integer,
+                   default: 20,
+                   values: 1..100,
+                   desc: "Number of results to return"
+          optional :offset,
+                   allow_blank: false,
+                   type: Integer,
+                   default: 0,
+                   values: 0..100,
+                   desc: "Offset of results"
+        end
+        get :search do
+          handles = params.delete(:handles).split(',')
+          valid_collections = Collection.find(handles).compact
+          error!("Could not find all the specified collection handles", 400) unless valid_collections.size == handles.size
+          document_search = DocumentSearch.new(params.merge(handles: valid_collections.collect(&:id)))
+          document_search_results = document_search.search
+          metadata_hash = { total: document_search_results.total, offset: document_search_results.offset }
+          { status: 200, developer_message: "OK", metadata: metadata_hash, results: document_search_results.results }
+        end
       end
     end
   end
