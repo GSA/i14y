@@ -144,7 +144,50 @@ describe DocumentSearch do
   end
 
   describe "filtering on site:" do
+    before do
+      Document.create(language: 'en', title: 'america title 1', description: 'description 1', created: DateTime.now, path: 'http://www.agency.gov/dir1/page1.html')
+      Document.create(language: 'en', title: 'america title 1', description: 'description 1', created: DateTime.now, path: 'http://www.agency.gov/dir1/dir2/page1.html')
+      Document.create(language: 'en', title: 'america title 1', description: 'description 1', created: DateTime.now, path: 'http://www.other.gov/dir2/dir3/page1.html')
+      Document.create(language: 'en', title: 'america title 1', description: 'description 1', created: DateTime.now, path: 'http://agency.gov/page1.html')
+      Document.refresh_index!
+    end
 
+    it 'returns results from only those sites' do
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:www.agency.gov/dir1/dir2) america")
+      document_search_results = document_search.search
+      expect(document_search_results.total).to eq(1)
 
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:www.agency.gov/dir1) america")
+      document_search_results = document_search.search
+      expect(document_search_results.total).to eq(2)
+
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:agency.gov/) america")
+      document_search_results = document_search.search
+      expect(document_search_results.total).to eq(3)
+
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:agency.gov) america")
+      document_search_results = document_search.search
+      expect(document_search_results.total).to eq(3)
+
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:agency.gov site:other.gov site:missing.gov/not_there) america")
+      document_search_results = document_search.search
+      expect(document_search_results.total).to eq(4)
+
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:agency.gov/dir2 site:other.gov/dir1) america")
+      document_search_results = document_search.search
+      expect(document_search_results.total).to be_zero
+
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:www.agency.gov/dir2) america")
+      document_search_results = document_search.search
+      expect(document_search_results.total).to be_zero
+
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:www.other.gov)")
+      document_search_results = document_search.search
+      expect(document_search_results.total).to eq(1)
+
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "site:agency.gov")
+      document_search_results = document_search.search
+      expect(document_search_results.total).to eq(3)
+    end
   end
 end

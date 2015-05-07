@@ -84,6 +84,16 @@ class Documents
         json.tokenizer "icu_tokenizer"
         json.char_filter ["html_strip", "quotes"]
       end
+      json.url_path_analyzer do
+        json.type "custom"
+        json.filter "lowercase"
+        json.tokenizer "url_path_tokenizer"
+      end
+      json.domain_name_analyzer do
+        json.type "custom"
+        json.filter "lowercase"
+        json.tokenizer "domain_name_tokenizer"
+      end
       json.default do
         json.type "custom"
         json.filter ["icu_normalizer", "icu_folding"]
@@ -99,6 +109,14 @@ class Documents
         json.type "kuromoji_tokenizer"
         json.mode "search"
         json.char_filter ["html_strip"]
+      end
+      json.url_path_tokenizer do
+        json.type "PathHierarchy"
+      end
+      json.domain_name_tokenizer do
+        json.type "PathHierarchy"
+        json.delimiter "."
+        json.reverse true
       end
     end
   end
@@ -132,6 +150,14 @@ class Documents
         json.type "string"
         json.index "not_analyzed"
       end
+      json.url_path do
+        json.type "string"
+        json.analyzer "url_path_analyzer"
+      end
+      json.domain_name do
+        json.type "string"
+        json.analyzer "domain_name_analyzer"
+      end
       json.promote do
         json.type "boolean"
       end
@@ -141,25 +167,33 @@ class Documents
   def dynamic_templates(json)
     json.dynamic_templates do
       language_templates(json)
-      json.child! do
-        json.bigrams do
-          json.mapping do
-            json.analyzer "bigrams"
-            json.type "string"
-          end
-          json.match_mapping_type "string"
-          json.match "*_bigrams"
+      bigrams_template(json)
+      default_template(json)
+    end
+  end
+
+  def default_template(json)
+    json.child! do
+      json.string_fields do
+        json.mapping do
+          json.analyzer "default"
+          json.type "string"
         end
+        json.match_mapping_type "string"
+        json.match "*"
       end
-      json.child! do
-        json.string_fields do
-          json.mapping do
-            json.analyzer "default"
-            json.type "string"
-          end
-          json.match_mapping_type "string"
-          json.match "*"
+    end
+  end
+
+  def bigrams_template(json)
+    json.child! do
+      json.bigrams do
+        json.mapping do
+          json.analyzer "bigrams"
+          json.type "string"
         end
+        json.match_mapping_type "string"
+        json.match "*_bigrams"
       end
     end
   end

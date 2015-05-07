@@ -21,6 +21,7 @@ gem 'newrelic-grape'
 gem "airbrake"
 
 gem 'patron'
+gem 'sanitize'
 
 group :development, :test do
   gem 'rspec-rails', '~> 3.0.0'

@@ -3,19 +3,23 @@ class Serde
     language_field_keys.each do |key|
       value = hash[key.to_sym]
       if value.present?
-        hash.store("#{key}_#{language}", value)
-        hash.store("#{key}_bigrams", value)
+        sanitized_value = Sanitize.fragment(value).strip.squish
+        hash.store("#{key}_#{language}", sanitized_value)
+        hash.store("#{key}_bigrams", sanitized_value)
+        hash[key] = sanitized_value
       end
     end
     uri = URI.parse(hash[:path])
     hash[:basename] = File.basename(uri.path, '.*')
+    hash[:url_path] = uri.path
+    hash[:domain_name] = uri.host
     hash
   end
 
   def self.deserialize_hash(hash, language, language_field_keys)
     derivative_language_fields = language_field_keys.collect { |key| "#{key}_#{language}" }
     derivative_bigrams_fields = language_field_keys.collect { |key| "#{key}_bigrams" }
-    misc_fields = %w(basename)
+    misc_fields = %w(basename url_path domain_namer)
     hash.except(*(derivative_bigrams_fields + derivative_language_fields + misc_fields))
   end
 end

@@ -10,6 +10,9 @@ class DocumentQuery
 
   def initialize(options)
     @options = options
+    site_params_parser = QueryParser.new(options[:query])
+    @site_filters = site_params_parser.site_filters
+    @options[:query] = site_params_parser.remaining_query
   end
 
   def body
@@ -29,7 +32,7 @@ class DocumentQuery
   def filtered_query(json)
     json.query do
       json.filtered do
-        filtered_query_query(json)
+        filtered_query_query(json) if @options[:query].present?
         filtered_query_filter(json)
       end
     end
@@ -37,8 +40,44 @@ class DocumentQuery
 
   def filtered_query_filter(json)
     json.filter do
-      json.term do
-        json.language @options[:language]
+      json.bool do
+        json.must do
+          json.child! do
+            json.term do
+              json.language @options[:language]
+            end
+          end
+          filter_on_sites(json) if @site_filters.any?
+        end
+      end
+    end
+  end
+
+  def filter_on_sites(json)
+    json.child! do
+      json.bool do
+        json.set! :should do
+          json.array!(@site_filters) do |site_filter|
+            filter_on_site(json, site_filter)
+          end
+        end
+      end
+    end
+  end
+
+  def filter_on_site(json, site_filter)
+    json.bool do
+      json.must do
+        json.child! do
+          json.term do
+            json.domain_name site_filter.domain_name
+          end
+        end
+        json.child! do
+          json.term do
+            json.url_path site_filter.url_path
+          end
+        end if site_filter.url_path.present?
       end
     end
   end
