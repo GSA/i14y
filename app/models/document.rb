@@ -22,12 +22,12 @@ class Document
 
   gateway do
     def serialize(document)
-      LanguageSerde.serialize_hash(document.to_hash, document.language, LANGUAGE_FIELDS)
+      Serde.serialize_hash(document.to_hash, document.language, LANGUAGE_FIELDS)
     end
 
     def deserialize(hash)
       doc_hash = hash['_source']
-      deserialized_hash = LanguageSerde.deserialize_hash(doc_hash, doc_hash['language'], LANGUAGE_FIELDS)
+      deserialized_hash = Serde.deserialize_hash(doc_hash, doc_hash['language'], LANGUAGE_FIELDS)
 
       document = Document.new deserialized_hash
       document.instance_variable_set :@_id, hash['_id']

@@ -14,7 +14,7 @@ describe DocumentSearch do
   context 'searching across a single index collection' do
     context 'matching documents exist' do
       before do
-        Document.create( language: 'en', title: 'title 1 common content', description: 'description 1 common content', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
+        Document.create(language: 'en', title: 'title 1 common content', description: 'description 1 common content', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
         Document.refresh_index!
       end
 
@@ -30,6 +30,16 @@ describe DocumentSearch do
         document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "common")
         document_search_results = document_search.search
         expect(document_search_results.total).to eq(0)
+      end
+    end
+
+    context 'something terrible happens during the search' do
+      it 'returns a no results response' do
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "uh oh")
+        expect(Elasticsearch::Persistence).to receive(:client).and_return(nil)
+        document_search_results = document_search.search
+        expect(document_search_results.total).to eq(0)
+        expect(document_search_results.results).to eq([])
       end
     end
 
@@ -56,8 +66,18 @@ describe DocumentSearch do
   end
 
   describe "recall" do
-    xit 'matches on words in URL filename'
+    context 'matches on all query terms in URL basename' do
+      before do
+        Document.create(language: 'en', title: 'The president drops by Housing and Urban Development', description: 'Here he is', created: DateTime.now, path: 'http://www.agency.gov/archives/obama-visits-hud.html')
+        Document.refresh_index!
+      end
 
+      it "matches" do
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "obama hud")
+        document_search_results = document_search.search
+        expect(document_search_results.total).to eq(1)
+      end
+    end
 
     context "at least 6/7 query term words are found" do
       before do
@@ -75,11 +95,36 @@ describe DocumentSearch do
 
   describe "English relevancy" do
     context 'exact phrase matches' do
-      xit 'ranks those higher'
+      before do
+        common_params = { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html',
+                          description: 'description'}
+        Document.create(common_params.merge(title: 'jefferson township Petitions and Memorials'))
+        Document.create(common_params.merge(title: 'jefferson Memorial and township Petitions'))
+        Document.refresh_index!
+      end
+
+      it 'ranks those higher' do
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "jefferson Memorial")
+        document_search_results = document_search.search
+        expect(document_search_results.results.first['title']).to match(/jefferson Memorial/)
+      end
     end
 
     context 'exact word form matches' do
-      xit 'ranks those higher'
+      before do
+        common_params = { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html',
+                          title: "I would prefer a document about seasons than seasoning if I am on a weather site",
+                          description: %q(Some people, when confronted with an information retrieval problem, think "I know, I'll use a stemmer." Now they have two problems.)}
+        Document.create(common_params.merge(description: 'jefferson township Memorial new'))
+        Document.create(common_params.merge(description: 'jefferson township memorials news'))
+        Document.refresh_index!
+      end
+
+      it 'ranks those higher' do
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "news memorials")
+        document_search_results = document_search.search
+        expect(document_search_results.results.first['description']).to match(/memorials news/)
+      end
     end
   end
 

@@ -1,7 +1,7 @@
 class Documents
   def initialize
-    @active_synonym_filter_locales = Set.new
-    @active_protected_filter_locales = Set.new
+    @synonym_filter_locales = Set.new
+    @protected_filter_locales = Set.new
   end
 
   def body
@@ -105,9 +105,9 @@ class Documents
 
   def filter_array(locale)
     array = ["icu_normalizer"]
-    array << "#{locale}_protected_filter" if @active_protected_filter_locales.include? locale
+    array << "#{locale}_protected_filter" if @protected_filter_locales.include? locale
     array << "#{locale}_stem_filter"
-    array << "#{locale}_synonym" if @active_synonym_filter_locales.include? locale
+    array << "#{locale}_synonym" if @synonym_filter_locales.include? locale
     array << "icu_folding"
     array
   end
@@ -222,7 +222,7 @@ class Documents
   end
 
   def synonym_filter(json, locale, lines)
-    @active_synonym_filter_locales.add locale
+    @synonym_filter_locales.add locale
     json.set! "#{locale}_synonym" do
       json.type "synonym"
       json.synonyms lines
@@ -230,7 +230,7 @@ class Documents
   end
 
   def protected_filter(json, locale, lines)
-    @active_protected_filter_locales.add locale
+    @protected_filter_locales.add locale
     json.set! "#{locale}_protected_filter" do
       json.type "keyword_marker"
       json.keywords lines

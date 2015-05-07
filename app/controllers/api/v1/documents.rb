@@ -124,7 +124,7 @@ module API
         put ':document_id' do
           Document.index_name = Document.index_namespace(@collection_handle)
           document = Document.find(params.delete(:document_id))
-          serialized_params = LanguageSerde.serialize_hash(params, document.language, Document::LANGUAGE_FIELDS)
+          serialized_params = Serde.serialize_hash(params, document.language, Document::LANGUAGE_FIELDS)
           error!(document.errors.messages, 400) unless document.update(serialized_params)
           ok("Your document was successfully updated.")
         end
