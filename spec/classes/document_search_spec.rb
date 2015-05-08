@@ -19,7 +19,7 @@ describe DocumentSearch do
       end
 
       it 'returns results' do
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "common")
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "common", size: 10, offset: 0)
         document_search_results = document_search.search
         expect(document_search_results.total).to eq(1)
       end
@@ -27,7 +27,7 @@ describe DocumentSearch do
 
     context 'no matching documents exist' do
       it 'returns no results ' do
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "common")
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "common", size: 10, offset: 0)
         document_search_results = document_search.search
         expect(document_search_results.total).to eq(0)
       end
@@ -35,11 +35,39 @@ describe DocumentSearch do
 
     context 'something terrible happens during the search' do
       it 'returns a no results response' do
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "uh oh")
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "uh oh", size: 10, offset: 0)
         expect(Elasticsearch::Persistence).to receive(:client).and_return(nil)
         document_search_results = document_search.search
         expect(document_search_results.total).to eq(0)
         expect(document_search_results.results).to eq([])
+      end
+    end
+
+  end
+
+  context 'paginating' do
+    before do
+      Document.create(language: 'en', title: "most relevant title common content title common content", description: "description common content description common content", created: DateTime.now, path: "http://www.agency.gov/page0.html")
+      10.times do |x|
+        Document.create(language: 'en', title: "title common content #{x}", description: "description common content #{x}", created: DateTime.now, path: "http://www.agency.gov/page#{x}.html")
+      end
+      Document.refresh_index!
+    end
+
+    it 'returns "size" results' do
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "common", size: 3, offset: 0)
+      document_search_results = document_search.search
+      expect(document_search_results.total).to eq(11)
+      expect(document_search_results.results.size).to eq(3)
+    end
+
+    it 'obeys the offset' do
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "common content", size: 10, offset: 1)
+      document_search_results = document_search.search
+      expect(document_search_results.total).to eq(11)
+      expect(document_search_results.results.size).to eq(10)
+      document_search_results.results.each do |result|
+        expect(result['title']).to start_with('title')
       end
     end
 
@@ -59,7 +87,7 @@ describe DocumentSearch do
     end
 
     it 'returns results from all indexes' do
-      document_search = DocumentSearch.new(handles: %w(agency_blogs other_agency_blogs), language: :en, query: "common")
+      document_search = DocumentSearch.new(handles: %w(agency_blogs other_agency_blogs), language: :en, query: "common", size: 10, offset: 0)
       document_search_results = document_search.search
       expect(document_search_results.total).to eq(2)
     end
@@ -73,7 +101,7 @@ describe DocumentSearch do
       end
 
       it "matches" do
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "obama hud")
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "obama hud", size: 10, offset: 0)
         document_search_results = document_search.search
         expect(document_search_results.total).to eq(1)
       end
@@ -86,7 +114,7 @@ describe DocumentSearch do
       end
 
       it "matches" do
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "one two three four five six MISSING")
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "one two three four five six MISSING", size: 10, offset: 0)
         document_search_results = document_search.search
         expect(document_search_results.total).to eq(1)
       end
@@ -97,14 +125,14 @@ describe DocumentSearch do
     context 'exact phrase matches' do
       before do
         common_params = { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html',
-                          description: 'description'}
+                          description: 'description' }
         Document.create(common_params.merge(title: 'jefferson township Petitions and Memorials'))
         Document.create(common_params.merge(title: 'jefferson Memorial and township Petitions'))
         Document.refresh_index!
       end
 
       it 'ranks those higher' do
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "jefferson Memorial")
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "jefferson Memorial", size: 10, offset: 0)
         document_search_results = document_search.search
         expect(document_search_results.results.first['title']).to match(/jefferson Memorial/)
       end
@@ -114,14 +142,14 @@ describe DocumentSearch do
       before do
         common_params = { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html',
                           title: "I would prefer a document about seasons than seasoning if I am on a weather site",
-                          description: %q(Some people, when confronted with an information retrieval problem, think "I know, I'll use a stemmer." Now they have two problems.)}
+                          description: %q(Some people, when confronted with an information retrieval problem, think "I know, I'll use a stemmer." Now they have two problems.) }
         Document.create(common_params.merge(description: 'jefferson township Memorial new'))
         Document.create(common_params.merge(description: 'jefferson township memorials news'))
         Document.refresh_index!
       end
 
       it 'ranks those higher' do
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "news memorials")
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "news memorials", size: 10, offset: 0)
         document_search_results = document_search.search
         expect(document_search_results.results.first['description']).to match(/memorials news/)
       end
@@ -136,7 +164,7 @@ describe DocumentSearch do
     end
 
     it 'returns results from only that language' do
-      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :fr, query: "america")
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :fr, query: "america", size: 10, offset: 0)
       document_search_results = document_search.search
       expect(document_search_results.total).to eq(1)
       expect(document_search_results.results.first['language']).to eq('fr')
@@ -153,39 +181,39 @@ describe DocumentSearch do
     end
 
     it 'returns results from only those sites' do
-      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:www.agency.gov/dir1/dir2) america")
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:www.agency.gov/dir1/dir2) america", size: 10, offset: 0)
       document_search_results = document_search.search
       expect(document_search_results.total).to eq(1)
 
-      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:www.agency.gov/dir1) america")
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:www.agency.gov/dir1) america", size: 10, offset: 0)
       document_search_results = document_search.search
       expect(document_search_results.total).to eq(2)
 
-      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:agency.gov/) america")
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:agency.gov/) america", size: 10, offset: 0)
       document_search_results = document_search.search
       expect(document_search_results.total).to eq(3)
 
-      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:agency.gov) america")
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:agency.gov) america", size: 10, offset: 0)
       document_search_results = document_search.search
       expect(document_search_results.total).to eq(3)
 
-      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:agency.gov site:other.gov site:missing.gov/not_there) america")
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:agency.gov site:other.gov site:missing.gov/not_there) america", size: 10, offset: 0)
       document_search_results = document_search.search
       expect(document_search_results.total).to eq(4)
 
-      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:agency.gov/dir2 site:other.gov/dir1) america")
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:agency.gov/dir2 site:other.gov/dir1) america", size: 10, offset: 0)
       document_search_results = document_search.search
       expect(document_search_results.total).to be_zero
 
-      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:www.agency.gov/dir2) america")
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:www.agency.gov/dir2) america", size: 10, offset: 0)
       document_search_results = document_search.search
       expect(document_search_results.total).to be_zero
 
-      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:www.other.gov)")
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:www.other.gov)", size: 10, offset: 0)
       document_search_results = document_search.search
       expect(document_search_results.total).to eq(1)
 
-      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "site:agency.gov")
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "site:agency.gov", size: 10, offset: 0)
       document_search_results = document_search.search
       expect(document_search_results.total).to eq(3)
     end

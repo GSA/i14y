@@ -17,7 +17,7 @@ class DocumentSearch
 
   def execute_client_search
     query = DocumentQuery.new(@options)
-    params = { index: document_indexes, body: query.body }
+    params = { index: document_indexes, body: query.body, from: @options[:offset], size: @options[:size] }
     result = Elasticsearch::Persistence.client.search(params)
     DocumentSearchResults.new(result, @options[:offset])
   end
