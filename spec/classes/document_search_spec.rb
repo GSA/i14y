@@ -107,16 +107,30 @@ describe DocumentSearch do
       end
     end
 
-    context "at least 6/7 query term words are found" do
+    context "enough low frequency and high frequency words are found" do
       before do
-        Document.create(language: 'en', title: 'one two three four five six seven', description: 'america description 1', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
+        Document.create(language: 'en', title: 'low frequency term', description: 'some description', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
+        Document.create(language: 'en', title: 'very rare words', description: 'some other description', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
+        80.times do |x|
+          Document.create(language: 'en', title: 'high occurrence tokens', description: 'these are like stopwords', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
+          Document.create(language: 'en', title: 'showing up everywhere', description: 'these are like stopwords', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
+        end
         Document.refresh_index!
       end
 
-      it "matches" do
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "one two three four five six MISSING", size: 10, offset: 0)
+      it "matches 3 out of 4 low freq or missing terms" do
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "very low frequency term", size: 10, offset: 0)
         document_search_results = document_search.search
         expect(document_search_results.total).to eq(1)
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "MISSING low frequency term", size: 10, offset: 0)
+        document_search_results = document_search.search
+        expect(document_search_results.total).to eq(1)
+      end
+
+      it "matches 2 out of 3 high freq terms" do
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "high occurrence everywhere", size: 10, offset: 0)
+        document_search_results = document_search.search
+        expect(document_search_results.total).to eq(80)
       end
     end
   end

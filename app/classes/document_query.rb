@@ -142,8 +142,11 @@ class DocumentQuery
     json.common do
       json.set! "#{field}_#{@options[:language]}" do
         json.query @options[:query]
-        json.cutoff_frequency 0.001
-        json.minimum_should_match "85%"
+        json.cutoff_frequency 0.05
+        json.minimum_should_match do
+          json.low_freq "3<90%"
+          json.high_freq "2<90%"
+        end
       end
     end
   end
