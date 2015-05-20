@@ -95,7 +95,7 @@ module API
           error!("Could not find all the specified collection handles", 400) unless valid_collections.size == handles.size
           document_search = DocumentSearch.new(params.merge(handles: valid_collections.collect(&:id)))
           document_search_results = document_search.search
-          metadata_hash = { total: document_search_results.total, offset: document_search_results.offset }
+          metadata_hash = { total: document_search_results.total, offset: document_search_results.offset, suggestion: document_search_results.suggestion }
           { status: 200, developer_message: "OK", metadata: metadata_hash, results: document_search_results.results }
         end
       end

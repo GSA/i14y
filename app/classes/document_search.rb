@@ -15,9 +15,9 @@ class DocumentSearch
       i14y_search_results.override_suggestion(suggestion) if i14y_search_results.total > 0
     end
     i14y_search_results
-  # rescue Exception => e
-  #   Rails.logger.error "Problem in DocumentSearch#search(): #{e}"
-  #   DocumentSearchResults.new(NO_HITS)
+  rescue Exception => e
+    Rails.logger.error "Problem in DocumentSearch#search(): #{e}"
+    DocumentSearchResults.new(NO_HITS)
   end
 
   private

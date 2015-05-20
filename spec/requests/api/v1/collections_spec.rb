@@ -123,10 +123,10 @@ describe API::V1::Collections do
         Document.create(hash1)
         Document.create(hash2)
         Document.refresh_index!
-        valid_params = { 'language' => 'en', 'query' => 'common content', 'handles' => 'agency_blogs' }
+        valid_params = { 'language' => 'en', 'query' => 'common contentx', 'handles' => 'agency_blogs' }
         get "/api/v1/collections/search", valid_params, valid_session
         expect(response.status).to eq(200)
-        metadata_hash = { 'total' => 2, 'offset' => 0 }
+        metadata_hash = { 'total' => 2, 'offset' => 0 , "suggestion" => { "text" => "common content", "highlighted" => "common content" }}
         result1 = { "language" => "en", "created" => datetime.to_s, "path" => 'http://www.agency.gov/page1.html', "promote" => false, "updated" => datetime.to_s, "title" => 'title 1 common content', "description" => 'description 1 common content', "content" => 'content 1 common content' }
         result2 = { "language" => "en", "created" => datetime.to_s, "path" => 'http://www.agency.gov/page2.html', "promote" => true, "title" => 'title 2 common content', "description" => 'description 2 common content', "content" => 'other unrelated stuff'  }
         results_array = [result1, result2]
@@ -147,7 +147,7 @@ describe API::V1::Collections do
         valid_params = { 'language' => 'en', 'query' => 'no hits', 'handles' => 'agency_blogs' }
         get "/api/v1/collections/search", valid_params, valid_session
         expect(response.status).to eq(200)
-        metadata_hash = { 'total' => 0, 'offset' => 0 }
+        metadata_hash = { 'total' => 0, 'offset' => 0, 'suggestion' => nil }
         results_array = []
         expect(JSON.parse(response.body)).to match(hash_including('status' => 200, "developer_message" => "OK", "metadata" => metadata_hash, 'results' => results_array))
       end
