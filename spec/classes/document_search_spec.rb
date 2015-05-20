@@ -232,4 +232,29 @@ describe DocumentSearch do
       expect(document_search_results.total).to eq(3)
     end
   end
+
+  context 'when search term yields no results but a similar spelling does have results' do
+    before do
+      Document.create(language: 'en', title: '99 problems', description: 'but speling aint one of the 99 problems', created: DateTime.now, path: 'http://en.agency.gov/page1.html', content: "Will I have to pay more if I have employees with health problems")
+      Document.create(language: 'es', title: '99 problemas', description: 'pero la ortografía no es uno dello las 99 problemas', created: DateTime.now, path: 'http://es.agency.gov/page1.html', content: '¿Tendré que pagar más si tengo empleados con problemas de la salud?')
+      Document.refresh_index!
+    end
+
+    it 'should return results for the close spelling for English' do
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "99 problemz", size: 10, offset: 0)
+      document_search_results = document_search.search
+      expect(document_search_results.total).to eq(1)
+      expect(document_search_results.suggestion['text']).to eq('99 problems')
+      expect(document_search_results.suggestion['highlighted']).to eq("99 problems")
+    end
+
+    it 'should return results for the close spelling for Spanish' do
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :es, query: "99 problemz", size: 10, offset: 0)
+      document_search_results = document_search.search
+      expect(document_search_results.total).to eq(1)
+      expect(document_search_results.suggestion['text']).to eq('99 problemas')
+      expect(document_search_results.suggestion['highlighted']).to eq("99 problemas")
+    end
+  end
+
 end

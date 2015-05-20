@@ -7,10 +7,17 @@ class DocumentSearch
   end
 
   def search
-    execute_client_search
-  rescue Exception => e
-    Rails.logger.error "Problem in DocumentSearch#search(): #{e}"
-    DocumentSearchResults.new(NO_HITS)
+    i14y_search_results = execute_client_search
+    if i14y_search_results.total.zero? && i14y_search_results.suggestion.present?
+      suggestion = i14y_search_results.suggestion
+      @options[:query] = suggestion['text']
+      i14y_search_results = execute_client_search
+      i14y_search_results.override_suggestion(suggestion) if i14y_search_results.total > 0
+    end
+    i14y_search_results
+  # rescue Exception => e
+  #   Rails.logger.error "Problem in DocumentSearch#search(): #{e}"
+  #   DocumentSearchResults.new(NO_HITS)
   end
 
   private

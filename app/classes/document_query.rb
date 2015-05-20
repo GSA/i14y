@@ -1,7 +1,6 @@
 class DocumentQuery
   INCLUDED_SOURCE_FIELDS = %w(title description content path created updated promote language)
   FULLTEXT_FIELDS = %w(title description content)
-  BIGRAM_FIELDS = FULLTEXT_FIELDS.map { |field| "#{field}_bigrams" }
 
   HIGHLIGHT_OPTIONS = {
     pre_tags: ["\ue000"],
@@ -20,6 +19,7 @@ class DocumentQuery
       source_fields(json)
       filtered_query(json)
       highlight(json)
+      suggest(json)
     end
   end
 
@@ -98,9 +98,8 @@ class DocumentQuery
 
   def prefer_bigram_matches(json)
     json.child! do
-      json.multi_match do
-        json.query @options[:query]
-        json.fields BIGRAM_FIELDS
+      json.match do
+        json.bigrams @options[:query]
       end
     end
   end
@@ -164,6 +163,43 @@ class DocumentQuery
       json.set! "title_#{@options[:language]}", { number_of_fragments: 0 }
       json.set! "description_#{@options[:language]}", { fragment_size: 75, number_of_fragments: 2 }
       json.set! "content_#{@options[:language]}", { fragment_size: 75, number_of_fragments: 2 }
+    end
+  end
+
+  def suggest(json)
+    json.suggest do
+      json.text @options[:query]
+      json.suggestion do
+        phrase_suggestion(json)
+      end
+    end
+  end
+
+  def phrase_suggestion(json)
+    json.phrase do
+      json.field "bigrams"
+      json.size 1
+      suggestion_highlight(json)
+      collate(json)
+    end
+  end
+
+  def suggestion_highlight(json)
+    json.highlight do
+      json.pre_tag HIGHLIGHT_OPTIONS[:pre_tags].first
+      json.post_tag HIGHLIGHT_OPTIONS[:post_tags].first
+    end
+  end
+
+  def collate(json)
+    json.collate do
+      json.query do
+        json.multi_match do
+          json.query "{{suggestion}}"
+          json.type "phrase"
+          json.fields "*_#{@options[:language]}"
+        end
+      end
     end
   end
 

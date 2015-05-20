@@ -1,13 +1,34 @@
 class DocumentSearchResults
-  attr_reader :total, :offset, :results
+  attr_reader :total, :offset, :results, :suggestion
 
   def initialize(result, offset = 0)
     @total = result['hits']['total']
     @offset = offset
     @results = extract_hits(result['hits']['hits'])
+    @suggestion = extract_suggestion(result['suggest']['suggestion']) if result['suggest']
+  end
+
+  def override_suggestion(suggestion)
+    @suggestion = suggestion
   end
 
   private
+
+  def extract_suggestion(suggestions)
+    suggestion = suggestions.first['options'].first
+    suggestion.delete('score')
+    suggestion
+  rescue NoMethodError => e
+    nil
+  end
+
+  # def highest_score_from(suggest)
+  #   suggest.values.map do |suggestion_hash_values|
+  #     suggestion_hash_values.first['options']
+  #   end.flatten.sort do |options_array|
+  #     options_array['score']
+  #   end.first
+  # end
 
   def extract_hits(hits)
     hits.map do |hit|

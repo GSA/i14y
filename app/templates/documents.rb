@@ -38,7 +38,6 @@ class Documents
     json.filter do
       json.bigrams_filter do
         json.type "shingle"
-        json.output_unigrams false
       end
       language_synonyms(json)
       language_protwords(json)
@@ -78,7 +77,7 @@ class Documents
         json.tokenizer "smartcn_sentence"
         json.char_filter ["html_strip"]
       end
-      json.bigrams do
+      json.bigrams_analyzer do
         json.type "custom"
         json.filter ["icu_normalizer", "icu_folding", "bigrams_filter"]
         json.tokenizer "icu_tokenizer"
@@ -161,13 +160,16 @@ class Documents
       json.promote do
         json.type "boolean"
       end
+      json.bigrams do
+        json.analyzer "bigrams_analyzer"
+        json.type "string"
+      end
     end
   end
 
   def dynamic_templates(json)
     json.dynamic_templates do
       language_templates(json)
-      bigrams_template(json)
       default_template(json)
     end
   end
@@ -181,19 +183,6 @@ class Documents
         end
         json.match_mapping_type "string"
         json.match "*"
-      end
-    end
-  end
-
-  def bigrams_template(json)
-    json.child! do
-      json.bigrams do
-        json.mapping do
-          json.analyzer "bigrams"
-          json.type "string"
-        end
-        json.match_mapping_type "string"
-        json.match "*_bigrams"
       end
     end
   end
@@ -222,13 +211,16 @@ class Documents
 
   def language_templates(json)
     LANGUAGE_ANALYZER_LOCALES.each do |locale|
-      json.child! do
-        json.set! locale do
-          json.match "*_#{locale}"
-          json.match_mapping_type "string"
-          json.mapping do
-            json.analyzer "#{locale}_analyzer"
-            json.type "string"
+      Document::LANGUAGE_FIELDS.each do |field|
+        json.child! do
+          json.set! locale do
+            json.match "#{field}_#{locale}"
+            json.match_mapping_type "string"
+            json.mapping do
+              json.analyzer "#{locale}_analyzer"
+              json.type "string"
+              json.copy_to 'bigrams'
+            end
           end
         end
       end

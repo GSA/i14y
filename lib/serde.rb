@@ -5,7 +5,6 @@ class Serde
       if value.present?
         sanitized_value = Sanitize.fragment(value).strip.squish
         hash.store("#{key}_#{language}", sanitized_value)
-        hash.store("#{key}_bigrams", sanitized_value)
         hash[key] = sanitized_value
       end
     end
@@ -18,8 +17,7 @@ class Serde
 
   def self.deserialize_hash(hash, language, language_field_keys)
     derivative_language_fields = language_field_keys.collect { |key| "#{key}_#{language}" }
-    derivative_bigrams_fields = language_field_keys.collect { |key| "#{key}_bigrams" }
-    misc_fields = %w(basename url_path domain_namer)
-    hash.except(*(derivative_bigrams_fields + derivative_language_fields + misc_fields))
+    misc_fields = %w(basename url_path domain_namer bigrams)
+    hash.except(*(derivative_language_fields + misc_fields))
   end
 end
