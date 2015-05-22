@@ -1,5 +1,7 @@
 class Documents
   include Templatable
+  MINIMAL_STEMMERS = { de: "german", en: "english", fr: "french", pt: "portuguese" }
+  LIGHT_STEMMERS = { es: "spanish", fi: "finnish", hu: "hungarian", it: "italian", ru: "russian", sv: "swedish" }
 
   def initialize
     @synonym_filter_locales = Set.new
@@ -97,12 +99,7 @@ class Documents
 
   def generic_analyzers(json)
     GENERIC_ANALYZER_LOCALES.each do |locale|
-      json.set! "#{locale}_analyzer" do
-        json.type "custom"
-        json.filter filter_array(locale)
-        json.tokenizer "icu_tokenizer"
-        json.char_filter ["html_strip", "quotes"]
-      end
+      generic_analyzer(json, locale)
     end
   end
 
@@ -208,35 +205,32 @@ class Documents
   def dynamic_templates(json)
     json.dynamic_templates do
       language_templates(json)
-      default_template(json)
-    end
-  end
-
-  def default_template(json)
-    json.child! do
       string_fields_template(json, "default")
     end
   end
 
   def language_stemmers(json)
-    minimal_stemmers = { de: "german", en: "english", fr: "french", pt: "portuguese" }
-    minimal_stemmers.each do |locale, language|
-      generic_stemmer(json, locale, language, "minimal")
-    end
-    light_stemmers = { es: "spanish", fi: "finnish", hu: "hungarian", it: "italian", ru: "russian", sv: "swedish" }
-    light_stemmers.each do |locale, language|
-      generic_stemmer(json, locale, language, "light")
-    end
+    minimal_stemmers(json)
+    light_stemmers(json)
+    japanese_position_filter(json)
+  end
+
+  def japanese_position_filter(json)
     json.ja_pos_filter do
       json.type "kuromoji_part_of_speech"
       json.stoptags ["\\u52a9\\u8a5e-\\u683c\\u52a9\\u8a5e-\\u4e00\\u822c", "\\u52a9\\u8a5e-\\u7d42\\u52a9\\u8a5e"]
     end
   end
 
-  def generic_stemmer(json, locale, language, degree)
-    json.set! "#{locale}_stem_filter" do
-      json.type "stemmer"
-      json.name "#{degree}_#{language}"
+  def light_stemmers(json)
+    LIGHT_STEMMERS.each do |locale, language|
+      generic_stemmer(json, locale, language, "light")
+    end
+  end
+
+  def minimal_stemmers(json)
+    MINIMAL_STEMMERS.each do |locale, language|
+      generic_stemmer(json, locale, language, "minimal")
     end
   end
 
@@ -264,21 +258,6 @@ class Documents
     parse_configuration_file(json, 'protwords')
   end
 
-  def parse_configuration_file(json, type)
-    LANGUAGE_ANALYZER_LOCALES.map do |locale|
-      [locale, Rails.root.join("config", "locales", "analysis", "#{locale}_#{type}.txt")]
-    end.select do |locale_file_array|
-      File.exists? locale_file_array.last
-    end.each do |locale, file|
-      lines = get_lines_from(file)
-      send("#{type}_filter", json, locale, lines) if lines.any?
-    end
-  end
-
-  def get_lines_from(file)
-    File.readlines(file).map(&:chomp).reject { |line| line.starts_with?("#") }
-  end
-
   def synonyms_filter(json, locale, lines)
     @synonym_filter_locales.add locale
     linguistic_filter(json, locale, lines, "synonym", "synonyms", "synonym")
@@ -289,10 +268,4 @@ class Documents
     linguistic_filter(json, locale, lines, "protected_filter", "keywords", "keyword_marker")
   end
 
-  def linguistic_filter(json, locale, lines, name, field, type)
-    json.set! "#{locale}_#{name}" do
-      json.type type
-      json.set! field, lines
-    end
-  end
 end
