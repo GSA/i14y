@@ -16,7 +16,7 @@ class Collections
   def dynamic_templates(json)
     json.dynamic_templates do
       json.child! do
-        string_fields(json, "not_analyzed")
+        string_fields_template(json, "not_analyzed")
       end
     end
   end

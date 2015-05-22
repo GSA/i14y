@@ -242,16 +242,14 @@ class Documents
 
   def language_templates(json)
     LANGUAGE_ANALYZER_LOCALES.each do |locale|
-      Document::LANGUAGE_FIELDS.each do |field|
-        json.child! do
-          json.set! locale do
-            json.match "#{field}_#{locale}"
-            json.match_mapping_type "string"
-            json.mapping do
-              json.analyzer "#{locale}_analyzer"
-              json.type "string"
-              json.copy_to 'bigrams'
-            end
+      json.child! do
+        json.set! locale do
+          json.match "*_#{locale}"
+          json.match_mapping_type "string"
+          json.mapping do
+            json.analyzer "#{locale}_analyzer"
+            json.type "string"
+            json.copy_to 'bigrams'
           end
         end
       end
@@ -259,26 +257,29 @@ class Documents
   end
 
   def language_synonyms(json)
-    LANGUAGE_ANALYZER_LOCALES.each do |locale|
-      synonym_file = Rails.root.join("config", "locales", "analysis", "#{locale}_synonyms.txt")
-      if File.exists? synonym_file
-        lines = File.readlines(synonym_file).map(&:chomp).reject { |line| line.starts_with?("#") }
-        synonym_filter(json, locale, lines) if lines.any?
-      end
-    end
+    parse_configuration_file(json, 'synonyms')
   end
 
   def language_protwords(json)
-    LANGUAGE_ANALYZER_LOCALES.each do |locale|
-      protwords_file = Rails.root.join("config", "locales", "analysis", "#{locale}_protwords.txt")
-      if File.exists? protwords_file
-        lines = File.readlines(protwords_file).map(&:chomp).reject { |line| line.starts_with?("#") }
-        protected_filter(json, locale, lines)
-      end
+    parse_configuration_file(json, 'protwords')
+  end
+
+  def parse_configuration_file(json, type)
+    LANGUAGE_ANALYZER_LOCALES.map do |locale|
+      [locale, Rails.root.join("config", "locales", "analysis", "#{locale}_#{type}.txt")]
+    end.select do |locale_file_array|
+      File.exists? locale_file_array.last
+    end.each do |locale, file|
+      lines = get_lines_from(file)
+      send("#{type}_filter", json, locale, lines) if lines.any?
     end
   end
 
-  def synonym_filter(json, locale, lines)
+  def get_lines_from(file)
+    File.readlines(file).map(&:chomp).reject { |line| line.starts_with?("#") }
+  end
+
+  def synonyms_filter(json, locale, lines)
     @synonym_filter_locales.add locale
     json.set! "#{locale}_synonym" do
       json.type "synonym"
@@ -286,7 +287,7 @@ class Documents
     end
   end
 
-  def protected_filter(json, locale, lines)
+  def protwords_filter(json, locale, lines)
     @protected_filter_locales.add locale
     json.set! "#{locale}_protected_filter" do
       json.type "keyword_marker"
