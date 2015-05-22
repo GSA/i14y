@@ -281,17 +281,18 @@ class Documents
 
   def synonyms_filter(json, locale, lines)
     @synonym_filter_locales.add locale
-    json.set! "#{locale}_synonym" do
-      json.type "synonym"
-      json.synonyms lines
-    end
+    linguistic_filter(json, locale, lines, "synonym", "synonyms", "synonym")
   end
 
   def protwords_filter(json, locale, lines)
     @protected_filter_locales.add locale
-    json.set! "#{locale}_protected_filter" do
-      json.type "keyword_marker"
-      json.keywords lines
+    linguistic_filter(json, locale, lines, "protected_filter", "keywords", "keyword_marker")
+  end
+
+  def linguistic_filter(json, locale, lines, name, field, type)
+    json.set! "#{locale}_#{name}" do
+      json.type type
+      json.set! field, lines
     end
   end
 end
