@@ -28,8 +28,10 @@ class DocumentSearchResults
       source = hit['_source']
       if highlight.present?
         source['title'] = highlight["title_#{source['language']}"].first if highlight["title_#{source['language']}"]
-        source['description'] = highlight["description_#{source['language']}"].join('...') if highlight["description_#{source['language']}"]
-        source['content'] = highlight["content_#{source['language']}"].join('...') if highlight["content_#{source['language']}"]
+        %w(description content).each do |optional_field|
+          language_field = "#{optional_field}_#{source['language']}"
+          source[optional_field] = highlight[language_field].join('...') if highlight[language_field]
+        end
       end
       source['created'] = DateTime.parse(source['created']).utc.to_s
       if source['updated'].present?
