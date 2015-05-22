@@ -1,4 +1,6 @@
 class Collections
+  include Templatable
+
   def body
     Jbuilder.encode do |json|
       json.template "*-#{I14y::APP_NAME}-collections-*"
@@ -14,14 +16,7 @@ class Collections
   def dynamic_templates(json)
     json.dynamic_templates do
       json.child! do
-        json.string_fields do
-          json.mapping do
-            json.index "not_analyzed"
-            json.type "string"
-          end
-          json.match_mapping_type "string"
-          json.match "*"
-        end
+        string_fields(json, "not_analyzed")
       end
     end
   end

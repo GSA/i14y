@@ -22,14 +22,6 @@ class DocumentSearchResults
     nil
   end
 
-  # def highest_score_from(suggest)
-  #   suggest.values.map do |suggestion_hash_values|
-  #     suggestion_hash_values.first['options']
-  #   end.flatten.sort do |options_array|
-  #     options_array['score']
-  #   end.first
-  # end
-
   def extract_hits(hits)
     hits.map do |hit|
       highlight = hit['highlight']

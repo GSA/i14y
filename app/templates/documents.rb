@@ -1,4 +1,6 @@
 class Documents
+  include Templatable
+
   def initialize
     @synonym_filter_locales = Set.new
     @protected_filter_locales = Set.new
@@ -47,58 +49,94 @@ class Documents
 
   def analyzer(json)
     json.analyzer do
-      GENERIC_ANALYZER_LOCALES.each do |locale|
-        json.set! "#{locale}_analyzer" do
-          json.type "custom"
-          json.filter filter_array(locale)
-          json.tokenizer "icu_tokenizer"
-          json.char_filter ["html_strip", "quotes"]
-        end
-      end
-      json.fr_analyzer do
+      generic_analyzers(json)
+      french_analyzer(json)
+      japanese_analyzer(json)
+      korean_analyzer(json)
+      chinese_analyzer(json)
+      bigrams_analyzer(json)
+      url_path_analyzer(json)
+      domain_name_analyzer(json)
+      default_analyzer(json)
+    end
+  end
+
+  def default_analyzer(json)
+    json.default do
+      json.type "custom"
+      json.filter ["icu_normalizer", "icu_folding"]
+      json.tokenizer "icu_tokenizer"
+      json.char_filter ["html_strip", "quotes"]
+    end
+  end
+
+  def domain_name_analyzer(json)
+    json.domain_name_analyzer do
+      json.type "custom"
+      json.filter "lowercase"
+      json.tokenizer "domain_name_tokenizer"
+    end
+  end
+
+  def url_path_analyzer(json)
+    json.url_path_analyzer do
+      json.type "custom"
+      json.filter "lowercase"
+      json.tokenizer "url_path_tokenizer"
+    end
+  end
+
+  def bigrams_analyzer(json)
+    json.bigrams_analyzer do
+      json.type "custom"
+      json.filter ["icu_normalizer", "icu_folding", "bigrams_filter"]
+      json.tokenizer "icu_tokenizer"
+      json.char_filter ["html_strip", "quotes"]
+    end
+  end
+
+  def generic_analyzers(json)
+    GENERIC_ANALYZER_LOCALES.each do |locale|
+      json.set! "#{locale}_analyzer" do
         json.type "custom"
-        json.filter ["icu_normalizer", "elision", "fr_stem_filter", "icu_folding"]
+        json.filter filter_array(locale)
         json.tokenizer "icu_tokenizer"
         json.char_filter ["html_strip", "quotes"]
       end
-      json.ja_analyzer do
-        json.type "custom"
-        json.filter ["kuromoji_baseform", "ja_pos_filter", "icu_normalizer", "icu_folding", "cjk_width"]
-        json.tokenizer "kuromoji_tokenizer"
-        json.char_filter ["html_strip"]
-      end
-      json.ko_analyzer do
-        json.type "cjk"
-        json.filter []
-      end
-      json.zh_analyzer do
-        json.type "custom"
-        json.filter ["smartcn_word", "icu_normalizer", "icu_folding"]
-        json.tokenizer "smartcn_sentence"
-        json.char_filter ["html_strip"]
-      end
-      json.bigrams_analyzer do
-        json.type "custom"
-        json.filter ["icu_normalizer", "icu_folding", "bigrams_filter"]
-        json.tokenizer "icu_tokenizer"
-        json.char_filter ["html_strip", "quotes"]
-      end
-      json.url_path_analyzer do
-        json.type "custom"
-        json.filter "lowercase"
-        json.tokenizer "url_path_tokenizer"
-      end
-      json.domain_name_analyzer do
-        json.type "custom"
-        json.filter "lowercase"
-        json.tokenizer "domain_name_tokenizer"
-      end
-      json.default do
-        json.type "custom"
-        json.filter ["icu_normalizer", "icu_folding"]
-        json.tokenizer "icu_tokenizer"
-        json.char_filter ["html_strip", "quotes"]
-      end
+    end
+  end
+
+  def chinese_analyzer(json)
+    json.zh_analyzer do
+      json.type "custom"
+      json.filter ["smartcn_word", "icu_normalizer", "icu_folding"]
+      json.tokenizer "smartcn_sentence"
+      json.char_filter ["html_strip"]
+    end
+  end
+
+  def korean_analyzer(json)
+    json.ko_analyzer do
+      json.type "cjk"
+      json.filter []
+    end
+  end
+
+  def japanese_analyzer(json)
+    json.ja_analyzer do
+      json.type "custom"
+      json.filter ["kuromoji_baseform", "ja_pos_filter", "icu_normalizer", "icu_folding", "cjk_width"]
+      json.tokenizer "kuromoji_tokenizer"
+      json.char_filter ["html_strip"]
+    end
+  end
+
+  def french_analyzer(json)
+    json.fr_analyzer do
+      json.type "custom"
+      json.filter ["icu_normalizer", "elision", "fr_stem_filter", "icu_folding"]
+      json.tokenizer "icu_tokenizer"
+      json.char_filter ["html_strip", "quotes"]
     end
   end
 
@@ -131,39 +169,39 @@ class Documents
 
   def properties(json)
     json.properties do
-      json.created do
-        json.type "date"
-      end
-      json.updated do
-        json.type "date"
-      end
-      json.document_id do
-        json.type "string"
-        json.index "not_analyzed"
-      end
-      json.language do
-        json.type "string"
-        json.index "not_analyzed"
-      end
-      json.path do
-        json.type "string"
-        json.index "not_analyzed"
-      end
-      json.url_path do
-        json.type "string"
-        json.analyzer "url_path_analyzer"
-      end
-      json.domain_name do
-        json.type "string"
-        json.analyzer "domain_name_analyzer"
-      end
-      json.promote do
-        json.type "boolean"
-      end
-      json.bigrams do
-        json.analyzer "bigrams_analyzer"
-        json.type "string"
-      end
+      %w(updated created).each { |field| date(json, field) }
+      %w(document_id language path).each { |field| keyword(json, field) }
+      url_path(json)
+      domain_name(json)
+      promote(json)
+      bigrams(json)
+    end
+  end
+
+  def bigrams(json)
+    json.bigrams do
+      json.analyzer "bigrams_analyzer"
+      json.type "string"
+    end
+  end
+
+  def promote(json)
+    json.promote do
+      json.type "boolean"
+    end
+  end
+
+  def domain_name(json)
+    json.domain_name do
+      json.type "string"
+      json.analyzer "domain_name_analyzer"
+    end
+  end
+
+  def url_path(json)
+    json.url_path do
+      json.type "string"
+      json.analyzer "url_path_analyzer"
     end
   end
 
@@ -176,14 +214,7 @@ class Documents
 
   def default_template(json)
     json.child! do
-      json.string_fields do
-        json.mapping do
-          json.analyzer "default"
-          json.type "string"
-        end
-        json.match_mapping_type "string"
-        json.match "*"
-      end
+      string_fields_template(json, "default")
     end
   end
 
