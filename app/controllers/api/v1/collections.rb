@@ -98,6 +98,13 @@ module API
           metadata_hash = { total: document_search_results.total, offset: document_search_results.offset, suggestion: document_search_results.suggestion }
           { status: 200, developer_message: "OK", metadata: metadata_hash, results: document_search_results.results }
         end
+
+        desc "Get collection info and stats"
+        get ':handle' do
+          handle = params.delete(:handle)
+          collection = Collection.find(handle)
+          { status: 200, developer_message: "OK"}.merge(collection.as_json(root: true, methods: [:document_total, :last_document_sent]))
+        end
       end
     end
   end

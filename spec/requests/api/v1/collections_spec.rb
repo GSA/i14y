@@ -105,6 +105,32 @@ describe API::V1::Collections do
     end
   end
 
+  describe "GET /api/v1/collections/{handle}" do
+    context 'success case' do
+      before do
+        Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*'
+        valid_params = { "handle" => "agency_blogs", "token" => "secret" }
+        post "/api/v1/collections", valid_params, valid_session
+        Document.index_name = Document.index_namespace('agency_blogs')
+        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
+      end
+
+      let(:datetime) { DateTime.now.utc }
+      let(:hash1) { { _id: 'a1', language: 'en', title: 'title 1 common content', description: 'description 1 common content', created: Time.now, path: 'http://www.agency.gov/page1.html' } }
+      let(:hash2) { { _id: 'a2', language: 'en', title: 'title 2 common content', description: 'description 2 common content', created: Time.now, path: 'http://www.agency.gov/page2.html' } }
+
+      it 'returns success message with Collection stats as JSON' do
+        Document.create(hash1)
+        Document.create(hash2)
+        Document.refresh_index!
+        get "/api/v1/collections/agency_blogs", nil, valid_session
+        expect(response.status).to eq(200)
+        expect(JSON.parse(response.body)).to match(hash_including('status' => 200, "developer_message" => "OK", "collection" => { "document_total" => 2, "last_document_sent" => an_instance_of(String), "token" => "secret", "id" => "agency_blogs", "created_at" => an_instance_of(String), "updated_at" => an_instance_of(String)}))
+      end
+
+    end
+  end
+
   describe "GET /api/v1/collections/search" do
     context 'success case' do
       before do
@@ -126,9 +152,9 @@ describe API::V1::Collections do
         valid_params = { 'language' => 'en', 'query' => 'common contentx', 'handles' => 'agency_blogs' }
         get "/api/v1/collections/search", valid_params, valid_session
         expect(response.status).to eq(200)
-        metadata_hash = { 'total' => 2, 'offset' => 0 , "suggestion" => { "text" => "common content", "highlighted" => "common content" }}
+        metadata_hash = { 'total' => 2, 'offset' => 0, "suggestion" => { "text" => "common content", "highlighted" => "common content" } }
         result1 = { "language" => "en", "created" => datetime.to_s, "path" => 'http://www.agency.gov/page1.html', "promote" => false, "updated" => datetime.to_s, "title" => 'title 1 common content', "description" => 'description 1 common content', "content" => 'content 1 common content' }
-        result2 = { "language" => "en", "created" => datetime.to_s, "path" => 'http://www.agency.gov/page2.html', "promote" => true, "title" => 'title 2 common content', "description" => 'description 2 common content', "content" => 'other unrelated stuff'  }
+        result2 = { "language" => "en", "created" => datetime.to_s, "path" => 'http://www.agency.gov/page2.html', "promote" => true, "title" => 'title 2 common content', "description" => 'description 2 common content', "content" => 'other unrelated stuff' }
         results_array = [result1, result2]
         expect(JSON.parse(response.body)).to match(hash_including('status' => 200, "developer_message" => "OK", "metadata" => metadata_hash, 'results' => results_array))
       end
