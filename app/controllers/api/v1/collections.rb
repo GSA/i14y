@@ -86,7 +86,7 @@ module API
                    allow_blank: false,
                    type: Integer,
                    default: 0,
-                   values: 0..100,
+                   values: 0..1000,
                    desc: "Offset of results"
         end
         get :search do
