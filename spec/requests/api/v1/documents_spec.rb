@@ -180,5 +180,16 @@ describe API::V1::Documents do
       end
 
     end
+
+    context 'deleting a non-existent document' do
+      before do
+        delete "/api/v1/documents/non_existent_document_id", nil, valid_session
+      end
+
+      it 'returns error message as JSON' do
+        expect(response.status).to eq(400)
+        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, "developer_message" => "Resource could not be found."))
+      end
+    end
   end
 end
