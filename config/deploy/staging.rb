@@ -1,3 +1,4 @@
+set :passenger_restart_with_sudo, true
 set :stage, :staging
 # server-based syntax
 # ======================
