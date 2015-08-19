@@ -170,6 +170,23 @@ describe DocumentSearch do
     end
   end
 
+  describe "sorting by date" do
+    before do
+      Document.create(language: 'en', title: 'historical document 1 is historical', description: 'historical description 1 is historical', created: 1.month.ago, path: 'http://www.agency.gov/dir1/page1.html')
+      Document.create(language: 'en', title: 'historical document 2 is historical', description: 'historical description 2', created: 1.week.ago, path: 'http://www.agency.gov/dir1/page2.html')
+      Document.create(language: 'en', title: 'document 3', description: 'historical description 3', created: DateTime.now, path: 'http://www.agency.gov/dir1/page3.html')
+      Document.refresh_index!
+    end
+
+    it 'returns results in reverse chronological order based on created timestamp' do
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "historical", size: 10, offset: 0, sort_by_date: true)
+      document_search_results = document_search.search
+      expect(document_search_results.results[0]['path']).to eq('http://www.agency.gov/dir1/page3.html')
+      expect(document_search_results.results[1]['path']).to eq('http://www.agency.gov/dir1/page2.html')
+      expect(document_search_results.results[2]['path']).to eq('http://www.agency.gov/dir1/page1.html')
+    end
+  end
+
   describe "filtering on language" do
     before do
       Document.create(language: 'en', title: 'america title 1', description: 'description 1', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
@@ -182,6 +199,22 @@ describe DocumentSearch do
       document_search_results = document_search.search
       expect(document_search_results.total).to eq(1)
       expect(document_search_results.results.first['language']).to eq('fr')
+    end
+  end
+
+  describe "filtering on date" do
+    before do
+      Document.create(language: 'en', title: 'historical document 1', description: 'historical description 1', created: 1.month.ago, path: 'http://www.agency.gov/dir1/page1.html')
+      Document.create(language: 'en', title: 'historical document 2', description: 'historical description 2', created: 1.week.ago, path: 'http://www.agency.gov/dir1/page2.html')
+      Document.create(language: 'en', title: 'historical document 3', description: 'historical description 3', created: DateTime.now, path: 'http://www.agency.gov/dir1/page3.html')
+      Document.refresh_index!
+    end
+
+    it 'returns results from only that date range' do
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "historical", size: 10, offset: 0, min_timestamp: 2.weeks.ago, max_timestamp: 1.day.ago)
+      document_search_results = document_search.search
+      expect(document_search_results.total).to eq(1)
+      expect(document_search_results.results.first['path']).to eq('http://www.agency.gov/dir1/page2.html')
     end
   end
 

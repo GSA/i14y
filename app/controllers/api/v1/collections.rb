@@ -88,6 +88,20 @@ module API
                    default: 0,
                    values: 0..1000,
                    desc: "Offset of results"
+          optional :min_timestamp,
+                   type: DateTime,
+                   allow_blank: false,
+                   desc: "Return documents that were created at or after this time",
+                   documentation: { example: '2013-02-27T10:00:00Z' }
+          optional :max_timestamp,
+                   type: DateTime,
+                   allow_blank: false,
+                   desc: "Return documents that were created before this time",
+                   documentation: { example: '2013-02-27T10:01:00Z' }
+          optional :sort_by_date,
+                   type: Boolean,
+                   desc: "Whether to order documents by created date instead of relevance"
+
         end
         get :search do
           handles = params.delete(:handles).split(',')
@@ -103,7 +117,7 @@ module API
         get ':handle' do
           handle = params.delete(:handle)
           collection = Collection.find(handle)
-          { status: 200, developer_message: "OK"}.merge(collection.as_json(root: true, methods: [:document_total, :last_document_sent]))
+          { status: 200, developer_message: "OK" }.merge(collection.as_json(root: true, methods: [:document_total, :last_document_sent]))
         end
       end
     end

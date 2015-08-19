@@ -17,9 +17,18 @@ class DocumentQuery
   def body
     Jbuilder.encode do |json|
       source_fields(json)
+      sort_by_date(json) if @options[:sort_by_date]
       filtered_query(json)
       highlight(json)
       suggest(json)
+    end
+  end
+
+  def sort_by_date(json)
+    json.sort do
+      json.created do
+        json.order :desc
+      end
     end
   end
 
@@ -42,12 +51,28 @@ class DocumentQuery
     json.filter do
       json.bool do
         json.must do
-          json.child! do
-            json.term do
-              json.language @options[:language]
-            end
-          end
+          filter_on_language(json)
           filter_on_sites(json) if @site_filters.any?
+          filter_on_time(json) if timestamp_filters_present?
+        end
+      end
+    end
+  end
+
+  def filter_on_language(json)
+    json.child! do
+      json.term do
+        json.language @options[:language]
+      end
+    end
+  end
+
+  def filter_on_time(json)
+    json.child! do
+      json.range do
+        json.set! "created" do
+          json.gte @options[:min_timestamp] if @options[:min_timestamp].present?
+          json.lt @options[:max_timestamp] if @options[:max_timestamp].present?
         end
       end
     end
@@ -201,6 +226,10 @@ class DocumentQuery
         end
       end
     end
+  end
+
+  def timestamp_filters_present?
+    @options[:min_timestamp].present? or @options[:max_timestamp].present?
   end
 
 end

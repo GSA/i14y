@@ -125,7 +125,7 @@ describe API::V1::Collections do
         Document.refresh_index!
         get "/api/v1/collections/agency_blogs", nil, valid_session
         expect(response.status).to eq(200)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 200, "developer_message" => "OK", "collection" => { "document_total" => 2, "last_document_sent" => an_instance_of(String), "token" => "secret", "id" => "agency_blogs", "created_at" => an_instance_of(String), "updated_at" => an_instance_of(String)}))
+        expect(JSON.parse(response.body)).to match(hash_including('status' => 200, "developer_message" => "OK", "collection" => { "document_total" => 2, "last_document_sent" => an_instance_of(String), "token" => "secret", "id" => "agency_blogs", "created_at" => an_instance_of(String), "updated_at" => an_instance_of(String) }))
       end
 
     end
@@ -157,6 +157,23 @@ describe API::V1::Collections do
         result2 = { "language" => "en", "created" => datetime.to_s, "path" => 'http://www.agency.gov/page2.html', "promote" => true, "title" => 'title 2 common content', "description" => 'description 2 common content', "content" => 'other unrelated stuff' }
         results_array = [result1, result2]
         expect(JSON.parse(response.body)).to match(hash_including('status' => 200, "developer_message" => "OK", "metadata" => metadata_hash, 'results' => results_array))
+      end
+
+      it "uses the appropriate parameters for the DocumentSearch" do
+        valid_params = { 'language' => 'en', 'query' => 'common content', 'handles' => 'agency_blogs',
+                         'sort_by_date' => 1, 'min_timestamp' => '2013-02-27T10:00:00Z',
+                         'max_timestamp' => '2013-02-27T10:01:00Z', 'offset' => 2, 'size' => 3 }
+        expected_params = Hashie::Mash.new('language' => :en,
+                                           'query' => 'common content',
+                                           'handles' => %w(agency_blogs),
+                                           'offset' => 2,
+                                           'size' => 3,
+                                           'sort_by_date' => true,
+                                           'min_timestamp' => DateTime.parse('2013-02-27T10:00:00Z'),
+                                           'max_timestamp' => DateTime.parse('2013-02-27T10:01:00Z')
+        )
+        expect(DocumentSearch).to receive(:new).with(expected_params)
+        get "/api/v1/collections/search", valid_params, valid_session
       end
     end
 
