@@ -86,7 +86,6 @@ module API
                    allow_blank: false,
                    type: Integer,
                    default: 0,
-                   values: 0..1000,
                    desc: "Offset of results"
           optional :min_timestamp,
                    type: DateTime,

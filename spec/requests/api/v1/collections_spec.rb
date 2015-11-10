@@ -162,11 +162,11 @@ describe API::V1::Collections do
       it "uses the appropriate parameters for the DocumentSearch" do
         valid_params = { 'language' => 'en', 'query' => 'common content', 'handles' => 'agency_blogs',
                          'sort_by_date' => 1, 'min_timestamp' => '2013-02-27T10:00:00Z',
-                         'max_timestamp' => '2013-02-27T10:01:00Z', 'offset' => 2, 'size' => 3 }
+                         'max_timestamp' => '2013-02-27T10:01:00Z', 'offset' => 2**32, 'size' => 3 }
         expected_params = Hashie::Mash.new('language' => :en,
                                            'query' => 'common content',
                                            'handles' => %w(agency_blogs),
-                                           'offset' => 2,
+                                           'offset' => 2**32,
                                            'size' => 3,
                                            'sort_by_date' => true,
                                            'min_timestamp' => DateTime.parse('2013-02-27T10:00:00Z'),
