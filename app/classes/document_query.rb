@@ -50,16 +50,24 @@ class DocumentQuery
   def filtered_query_filter(json)
     json.filter do
       json.bool do
-        json.must do
-          filter_on_language(json)
-          filter_on_sites(json) if @site_filters.any?
-          filter_on_tags(json, @options[:tags]) if @options[:tags].present?
-          filter_on_time(json) if timestamp_filters_present?
-        end
-        json.must_not do
-          filter_on_tags(json, @options[:ignore_tags]) if @options[:ignore_tags].present?
-        end
+        musts(json)
+        must_nots(json)
       end
+    end
+  end
+
+  def must_nots(json)
+    json.must_not do
+      filter_on_tags(json, @options[:ignore_tags]) if @options[:ignore_tags].present?
+    end
+  end
+
+  def musts(json)
+    json.must do
+      filter_on_language(json)
+      filter_on_sites(json) if @site_filters.any?
+      filter_on_tags(json, @options[:tags], :and) if @options[:tags].present?
+      filter_on_time(json) if timestamp_filters_present?
     end
   end
 
@@ -78,8 +86,13 @@ class DocumentQuery
     end
   end
 
-  def filter_on_tags(json, tags)
-    child_term_filter(json, :tags, tags)
+  def filter_on_tags(json, tags, execution = :plain)
+    json.child! do
+      json.terms do
+        json.tags tags
+        json.execution execution
+      end
+    end
   end
 
   def filter_on_sites(json)

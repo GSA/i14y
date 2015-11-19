@@ -1,4 +1,4 @@
-class Serde
+module Serde
   def self.serialize_hash(hash, language, language_field_keys)
     language_field_keys.each do |key|
       value = hash[key.to_sym]
@@ -8,11 +8,8 @@ class Serde
         hash[key] = sanitized_value
       end
     end
-    uri = URI.parse(hash[:path])
-    hash[:basename] = File.basename(uri.path, '.*')
-    hash[:url_path] = uri.path
-    hash[:domain_name] = uri.host
-    hash[:tags] = hash[:tags].split(',').map(&:strip).map(&:downcase) if hash[:tags].present?
+    hash.merge!(uri_params_hash(hash[:path]))
+    hash[:tags] = hash[:tags].extract_tags if hash[:tags].present?
     hash
   end
 
@@ -20,5 +17,16 @@ class Serde
     derivative_language_fields = language_field_keys.collect { |key| "#{key}_#{language}" }
     misc_fields = %w(basename url_path domain_name bigrams)
     hash.except(*(derivative_language_fields + misc_fields))
+  end
+
+  private
+
+  def self.uri_params_hash(path)
+    hash = {}
+    uri = URI.parse(path)
+    hash[:basename] = File.basename(uri.path, '.*')
+    hash[:url_path] = uri.path
+    hash[:domain_name] = uri.host
+    hash
   end
 end

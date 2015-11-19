@@ -228,13 +228,13 @@ describe DocumentSearch do
     end
 
     context 'inclusive filtering' do
-      it 'returns results with those exact tags' do
+      it 'returns results with all of those exact tags' do
         document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "title", size: 10, offset: 0, tags: %w(york) )
         document_search_results = document_search.search
         expect(document_search_results.total).to eq(1)
         expect(document_search_results.results.first['tags']).to match_array(%w(york usa))
 
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "title", size: 10, offset: 0, tags: %w(usa york) )
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "title", size: 10, offset: 0, tags: %w(york usa) )
         document_search_results = document_search.search
         expect(document_search_results.total).to eq(1)
         expect(document_search_results.results.first['tags']).to match_array(%w(york usa))
@@ -243,7 +243,7 @@ describe DocumentSearch do
 
     context 'exclusive filtering' do
       it 'returns results without those exact tags' do
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "title", size: 10, offset: 0, ignore_tags: %w(usa) )
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "title", size: 10, offset: 0, ignore_tags: %w(york usa) )
         document_search_results = document_search.search
         expect(document_search_results.total).to eq(0)
 
