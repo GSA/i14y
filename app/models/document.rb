@@ -17,6 +17,7 @@ class Document
 
   attribute :updated, DateTime
   attribute :promote, Boolean
+  attribute :tags, String
 
   LANGUAGE_FIELDS = [:title, :description, :content]
 

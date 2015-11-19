@@ -71,6 +71,10 @@ module API
                    default: :en,
                    allow_blank: false,
                    desc: "Two-letter locale describing language of document (defaults to :en)"
+          optional :tags,
+                   type: String,
+                   allow_blank: false,
+                   desc: "Comma-separated list of category tags"
 
           at_least_one_of :content, :description
         end
@@ -119,7 +123,12 @@ module API
                    values: SUPPORTED_LOCALES,
                    allow_blank: false,
                    desc: "Two-letter locale describing language of document"
-          at_least_one_of :title, :path, :created, :content, :description, :changed, :promote, :language
+          optional :tags,
+                   type: String,
+                   allow_blank: false,
+                   desc: "Comma-separated list of category tags"
+
+          at_least_one_of :title, :path, :created, :content, :description, :changed, :promote, :language, :tags
         end
         put ':document_id' do
           Document.index_name = Document.index_namespace(@collection_handle)

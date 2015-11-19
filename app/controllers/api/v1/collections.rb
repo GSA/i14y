@@ -26,6 +26,10 @@ module API
           admin_user == env_secrets['admin_user'] && admin_password == env_secrets['admin_password']
         end
 
+        def normalize_tags(tag_string)
+          tag_string.split(',').map(&:strip).map(&:downcase)
+        end
+
       end
 
       resource :collections do
@@ -100,12 +104,22 @@ module API
           optional :sort_by_date,
                    type: Boolean,
                    desc: "Whether to order documents by created date instead of relevance"
+          optional :tags,
+                   type: String,
+                   allow_blank: false,
+                   desc: "Comma-separated list of category tags"
+          optional :ignore_tags,
+                   type: String,
+                   allow_blank: false,
+                   desc: "Comma-separated list of category tags to exclude"
 
         end
         get :search do
           handles = params.delete(:handles).split(',')
           valid_collections = Collection.find(handles).compact
           error!("Could not find all the specified collection handles", 400) unless valid_collections.size == handles.size
+          %i(tags ignore_tags).each { |key| params[key] = normalize_tags(params[key]) if params[key].present? }
+
           document_search = DocumentSearch.new(params.merge(handles: valid_collections.collect(&:id)))
           document_search_results = document_search.search
           metadata_hash = { total: document_search_results.total, offset: document_search_results.offset, suggestion: document_search_results.suggestion }

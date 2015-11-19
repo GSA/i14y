@@ -20,7 +20,9 @@ describe API::V1::Documents do
     context 'success case' do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
-        valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true, "language" => 'hy', "content" => "my content" }
+        valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html",
+                         "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true,
+                         "language" => 'hy', "content" => "my content", "tags" => "Foo, Bar blat" }
         post "/api/v1/documents", valid_params, valid_session
       end
 
@@ -40,6 +42,7 @@ describe API::V1::Documents do
         expect(document.title).to eq('my title')
         expect(document.description).to eq('my desc')
         expect(document.content).to eq('my content')
+        expect(document.tags).to match_array(['bar blat', 'foo'])
       end
     end
 
@@ -141,7 +144,8 @@ describe API::V1::Documents do
                          "description" => "new desc",
                          "content" => "new content",
                          "path" => "http://www.next.gov/updated.html",
-                         "promote" => false }
+                         "promote" => false,
+                         "tags" => "My category" }
         put "/api/v1/documents/mycms_124", valid_params, valid_session
       end
 
@@ -157,6 +161,7 @@ describe API::V1::Documents do
         expect(document.title).to eq('my title')
         expect(document.description).to eq('new desc')
         expect(document.content).to eq('new content')
+        expect(document.tags).to match_array(['my category'])
       end
 
     end

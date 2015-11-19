@@ -135,7 +135,7 @@ describe DocumentSearch do
     end
   end
 
-  describe "English relevancy" do
+  describe "overall relevancy" do
     context 'exact phrase matches' do
       before do
         common_params = { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html',
@@ -166,6 +166,23 @@ describe DocumentSearch do
         document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "news memorials", size: 10, offset: 0)
         document_search_results = document_search.search
         expect(document_search_results.results.first['description']).to match(/memorials news/)
+      end
+    end
+
+    context 'exact match on a document tag' do
+      before do
+        common_params = { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html',
+                          title: "I would prefer a document about seasons than seasoning if I am on a weather site",
+                          description: %q(Some people, when confronted with an information retrieval problem, think "I know, I'll use a stemmer." Now they have two problems.) }
+        Document.create(common_params)
+        Document.create(common_params.merge(tags: 'information retrieval'))
+        Document.refresh_index!
+      end
+
+      it 'ranks those higher' do
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "Information Retrieval", size: 10, offset: 0)
+        document_search_results = document_search.search
+        expect(document_search_results.results.first['tags']).to match_array(['information retrieval'])
       end
     end
   end
@@ -199,6 +216,41 @@ describe DocumentSearch do
       document_search_results = document_search.search
       expect(document_search_results.total).to eq(1)
       expect(document_search_results.results.first['language']).to eq('fr')
+    end
+  end
+
+  describe "filtering on tags" do
+    before do
+      Document.create(language: 'en', title: 'title 1', description: 'description 1', created: DateTime.now, path: 'http://www.agency.gov/page1.html', tags: 'usa')
+      Document.create(language: 'en', title: 'title 2', description: 'description 2', created: DateTime.now, path: 'http://www.agency.gov/page2.html', tags: 'york, usa')
+      Document.create(language: 'en', title: 'title 3', description: 'description 3', created: DateTime.now, path: 'http://www.agency.gov/page3.html', tags: 'new york, usa')
+      Document.refresh_index!
+    end
+
+    context 'inclusive filtering' do
+      it 'returns results with those exact tags' do
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "title", size: 10, offset: 0, tags: %w(york) )
+        document_search_results = document_search.search
+        expect(document_search_results.total).to eq(1)
+        expect(document_search_results.results.first['tags']).to match_array(%w(york usa))
+
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "title", size: 10, offset: 0, tags: %w(usa york) )
+        document_search_results = document_search.search
+        expect(document_search_results.total).to eq(1)
+        expect(document_search_results.results.first['tags']).to match_array(%w(york usa))
+      end
+    end
+
+    context 'exclusive filtering' do
+      it 'returns results without those exact tags' do
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "title", size: 10, offset: 0, ignore_tags: %w(usa) )
+        document_search_results = document_search.search
+        expect(document_search_results.total).to eq(0)
+
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "title", size: 10, offset: 0, ignore_tags: %w(york) )
+        document_search_results = document_search.search
+        expect(document_search_results.total).to eq(2)
+      end
     end
   end
 

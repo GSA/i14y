@@ -167,7 +167,7 @@ class Documents
   def properties(json)
     json.properties do
       %w(updated created).each { |field| date(json, field) }
-      %w(document_id language path).each { |field| keyword(json, field) }
+      %w(document_id language path tags).each { |field| keyword(json, field) }
       url_path(json)
       domain_name(json)
       promote(json)

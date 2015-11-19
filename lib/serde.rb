@@ -12,12 +12,13 @@ class Serde
     hash[:basename] = File.basename(uri.path, '.*')
     hash[:url_path] = uri.path
     hash[:domain_name] = uri.host
+    hash[:tags] = hash[:tags].split(',').map(&:strip).map(&:downcase) if hash[:tags].present?
     hash
   end
 
   def self.deserialize_hash(hash, language, language_field_keys)
     derivative_language_fields = language_field_keys.collect { |key| "#{key}_#{language}" }
-    misc_fields = %w(basename url_path domain_namer bigrams)
+    misc_fields = %w(basename url_path domain_name bigrams)
     hash.except(*(derivative_language_fields + misc_fields))
   end
 end

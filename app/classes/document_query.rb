@@ -1,5 +1,5 @@
 class DocumentQuery
-  INCLUDED_SOURCE_FIELDS = %w(title description content path created updated promote language)
+  INCLUDED_SOURCE_FIELDS = %w(title description content path created updated promote language tags)
   FULLTEXT_FIELDS = %w(title description content)
 
   HIGHLIGHT_OPTIONS = {
@@ -53,18 +53,18 @@ class DocumentQuery
         json.must do
           filter_on_language(json)
           filter_on_sites(json) if @site_filters.any?
+          filter_on_tags(json, @options[:tags]) if @options[:tags].present?
           filter_on_time(json) if timestamp_filters_present?
+        end
+        json.must_not do
+          filter_on_tags(json, @options[:ignore_tags]) if @options[:ignore_tags].present?
         end
       end
     end
   end
 
   def filter_on_language(json)
-    json.child! do
-      json.term do
-        json.language @options[:language]
-      end
-    end
+    child_term_filter(json, :language, @options[:language])
   end
 
   def filter_on_time(json)
@@ -76,6 +76,10 @@ class DocumentQuery
         end
       end
     end
+  end
+
+  def filter_on_tags(json, tags)
+    child_term_filter(json, :tags, tags)
   end
 
   def filter_on_sites(json)
@@ -93,16 +97,8 @@ class DocumentQuery
   def filter_on_site(json, site_filter)
     json.bool do
       json.must do
-        json.child! do
-          json.term do
-            json.domain_name site_filter.domain_name
-          end
-        end
-        json.child! do
-          json.term do
-            json.url_path site_filter.url_path
-          end
-        end if site_filter.url_path.present?
+        child_term_filter(json, :domain_name, site_filter.domain_name)
+        child_term_filter(json, :url_path, site_filter.url_path) if site_filter.url_path.present?
       end
     end
   end
@@ -116,6 +112,7 @@ class DocumentQuery
         json.set! :should do
           prefer_bigram_matches(json)
           prefer_word_form_matches(json)
+          prefer_tag_matches(json)
         end
       end
     end
@@ -134,6 +131,14 @@ class DocumentQuery
       json.multi_match do
         json.query @options[:query]
         json.fields FULLTEXT_FIELDS
+      end
+    end
+  end
+
+  def prefer_tag_matches(json)
+    json.child! do
+      json.match do
+        json.tags @options[:query].downcase
       end
     end
   end
@@ -230,6 +235,16 @@ class DocumentQuery
 
   def timestamp_filters_present?
     @options[:min_timestamp].present? or @options[:max_timestamp].present?
+  end
+
+  private
+
+  def child_term_filter(json, field, value)
+    json.child! do
+      json.term do
+        json.set! field, value
+      end
+    end
   end
 
 end

@@ -143,7 +143,7 @@ describe API::V1::Collections do
 
       let(:datetime) { DateTime.now.utc }
       let(:hash1) { { _id: 'a1', language: 'en', title: 'title 1 common content', description: 'description 1 common content', content: 'content 1 common content', created: datetime.to_s, path: 'http://www.agency.gov/page1.html', promote: false, updated: datetime.to_s } }
-      let(:hash2) { { _id: 'a2', language: 'en', title: 'title 2 common content', description: 'description 2 common content', content: 'other unrelated stuff', created: datetime.to_s, path: 'http://www.agency.gov/page2.html', promote: true } }
+      let(:hash2) { { _id: 'a2', language: 'en', title: 'title 2 common content', description: 'description 2 common content', content: 'other unrelated stuff', created: datetime.to_s, path: 'http://www.agency.gov/page2.html', promote: true, tags: 'tag1, tag2' } }
 
       it 'returns highlighted JSON search results' do
         Document.create(hash1)
@@ -153,8 +153,8 @@ describe API::V1::Collections do
         get "/api/v1/collections/search", valid_params, valid_session
         expect(response.status).to eq(200)
         metadata_hash = { 'total' => 2, 'offset' => 0, "suggestion" => { "text" => "common content", "highlighted" => "common content" } }
-        result1 = { "language" => "en", "created" => datetime.to_s, "path" => 'http://www.agency.gov/page1.html', "promote" => false, "updated" => datetime.to_s, "title" => 'title 1 common content', "description" => 'description 1 common content', "content" => 'content 1 common content' }
-        result2 = { "language" => "en", "created" => datetime.to_s, "path" => 'http://www.agency.gov/page2.html', "promote" => true, "title" => 'title 2 common content', "description" => 'description 2 common content', "content" => 'other unrelated stuff' }
+        result1 = { "language" => "en", "created" => datetime.to_s, "path" => 'http://www.agency.gov/page1.html', "promote" => false, "updated" => datetime.to_s, "title" => 'title 1 common content', "description" => 'description 1 common content', "content" => 'content 1 common content', "tags" => nil }
+        result2 = { "language" => "en", "created" => datetime.to_s, "path" => 'http://www.agency.gov/page2.html', "promote" => true, "title" => 'title 2 common content', "description" => 'description 2 common content', "content" => 'other unrelated stuff', "tags" => %w(tag1 tag2) }
         results_array = [result1, result2]
         expect(JSON.parse(response.body)).to match(hash_including('status' => 200, "developer_message" => "OK", "metadata" => metadata_hash, 'results' => results_array))
       end
@@ -162,7 +162,8 @@ describe API::V1::Collections do
       it "uses the appropriate parameters for the DocumentSearch" do
         valid_params = { 'language' => 'en', 'query' => 'common content', 'handles' => 'agency_blogs',
                          'sort_by_date' => 1, 'min_timestamp' => '2013-02-27T10:00:00Z',
-                         'max_timestamp' => '2013-02-27T10:01:00Z', 'offset' => 2**32, 'size' => 3 }
+                         'max_timestamp' => '2013-02-27T10:01:00Z', 'offset' => 2**32, 'size' => 3,
+                         'tags' => 'Foo, Bar blat', 'ignore_tags' => 'ignored' }
         expected_params = Hashie::Mash.new('language' => :en,
                                            'query' => 'common content',
                                            'handles' => %w(agency_blogs),
@@ -170,7 +171,9 @@ describe API::V1::Collections do
                                            'size' => 3,
                                            'sort_by_date' => true,
                                            'min_timestamp' => DateTime.parse('2013-02-27T10:00:00Z'),
-                                           'max_timestamp' => DateTime.parse('2013-02-27T10:01:00Z')
+                                           'max_timestamp' => DateTime.parse('2013-02-27T10:01:00Z'),
+                                           'tags' => ['foo', 'bar blat'],
+                                           'ignore_tags' => ['ignored']
         )
         expect(DocumentSearch).to receive(:new).with(expected_params)
         get "/api/v1/collections/search", valid_params, valid_session
