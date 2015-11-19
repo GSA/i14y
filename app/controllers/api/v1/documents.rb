@@ -34,6 +34,7 @@ module API
           requires :document_id,
                    allow_blank: false,
                    type: String,
+                   regexp: %r(^[^\/].*$),
                    desc: "User-assigned document ID"
           requires :title,
                    type: String,
@@ -130,7 +131,7 @@ module API
 
           at_least_one_of :title, :path, :created, :content, :description, :changed, :promote, :language, :tags
         end
-        put ':document_id' do
+        put ':document_id', requirements: { document_id: /.*/ } do
           Document.index_name = Document.index_namespace(@collection_handle)
           document = Document.find(params.delete(:document_id))
           serialized_params = Serde.serialize_hash(params, document.language, Document::LANGUAGE_FIELDS)
@@ -139,7 +140,7 @@ module API
         end
 
         desc "Delete a document"
-        delete ':document_id' do
+        delete ':document_id', requirements: { document_id: /.*/ } do
           Document.index_name = Document.index_namespace(@collection_handle)
           document = Document.find(params.delete(:document_id))
           error!(document.errors.messages, 400) unless document.destroy

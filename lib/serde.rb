@@ -8,7 +8,7 @@ module Serde
         hash[key] = sanitized_value
       end
     end
-    hash.merge!(uri_params_hash(hash[:path]))
+    hash.merge!(uri_params_hash(hash[:path])) if hash[:path].present?
     hash[:tags] = hash[:tags].extract_tags if hash[:tags].present?
     hash
   end
