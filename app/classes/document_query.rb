@@ -125,18 +125,13 @@ class DocumentQuery
         json.set! :should do
           prefer_bigram_matches(json)
           prefer_word_form_matches(json)
-          prefer_tag_matches(json)
         end
       end
     end
   end
 
   def prefer_bigram_matches(json)
-    json.child! do
-      json.match do
-        json.bigrams @options[:query]
-      end
-    end
+    child_match(json, :bigrams, @options[:query])
   end
 
   def prefer_word_form_matches(json)
@@ -148,36 +143,30 @@ class DocumentQuery
     end
   end
 
-  def prefer_tag_matches(json)
-    json.child! do
-      json.match do
-        json.tags @options[:query].downcase
-      end
-    end
-  end
-
-  def url_basename_matches(json)
-    json.match do
-      json.basename do
-        json.query @options[:query]
-        json.operator :and
-      end
-    end
-  end
-
   def broadest_match(json)
     json.bool do
       json.set! :should do
-        FULLTEXT_FIELDS.each do |field|
-          json.child! do
-            common_terms(json, field)
-          end
-        end
-        json.child! do
-          url_basename_matches(json)
-        end
+        common_terms_matches(json)
+        basename_matches(json)
+        tag_matches(json)
       end
     end
+  end
+
+  def common_terms_matches(json)
+    FULLTEXT_FIELDS.each do |field|
+      json.child! do
+        common_terms(json, field)
+      end
+    end
+  end
+
+  def basename_matches(json)
+    child_match(json, :basename, @options[:query])
+  end
+
+  def tag_matches(json)
+    child_match(json, :tags, @options[:query].downcase)
   end
 
   def common_terms(json, field)
@@ -251,6 +240,17 @@ class DocumentQuery
   end
 
   private
+
+  def child_match(json, field, query, operator = :and)
+    json.child! do
+      json.match do
+        json.set! field do
+          json.operator operator
+          json.query query
+        end
+      end
+    end if query
+  end
 
   def child_term_filter(json, field, value)
     json.child! do
