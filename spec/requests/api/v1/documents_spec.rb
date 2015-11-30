@@ -49,6 +49,22 @@ describe API::V1::Documents do
       end
     end
 
+    context 'trying to create an existing document' do
+      before do
+        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
+        Document.create(_id: 'its_a_dupe', language: 'en', title: "hi there 4", description: 'bigger desc 4', content: "huge content 4", created: 2.hours.ago, updated: Time.now, promote: true, path: "http://www.gov.gov/url4.html")
+        dupe_params = { "document_id" => 'its_a_dupe', "title" => "my title", "path" => "http://www.gov.gov/goo.html",
+                         "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true,
+                         "language" => 'hy', "content" => "my content", "tags" => "Foo, Bar blat" }
+        post "/api/v1/documents", dupe_params, valid_session
+      end
+
+      it 'returns failure message as JSON' do
+        expect(response.status).to eq(422)
+        expect(JSON.parse(response.body)).to match(hash_including('status' => 422, "developer_message" => "Document already exists with that ID"))
+      end
+    end
+
     context 'invalid language param' do
       before do
         valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true, "language" => 'qq' }
@@ -137,7 +153,7 @@ describe API::V1::Documents do
 
     context 'something terrible happens' do
       before do
-        allow(Document).to receive(:create) { raise_error(Exception) }
+        allow(Document).to receive(:new) { raise_error(Exception) }
         valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true }
         post "/api/v1/documents", valid_params, valid_session
       end

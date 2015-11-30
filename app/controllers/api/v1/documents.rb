@@ -8,6 +8,9 @@ module API
       rescue_from Grape::Exceptions::ValidationErrors do |e|
         rack_response({ developer_message: e.message, status: 400 }.to_json, 400)
       end
+      rescue_from Elasticsearch::Transport::Transport::Errors::Conflict do |e|
+        rack_response({ developer_message: 'Document already exists with that ID', status: 422 }.to_json, 422)
+      end
 
       http_basic do |collection_handle, token|
         error_hash = { developer_message: "Unauthorized", status: 400 }
@@ -82,8 +85,9 @@ module API
         post do
           Document.index_name = Document.index_namespace(@collection_handle)
           id = params.delete(:document_id)
-          document = Document.create(params.merge(_id: id))
+          document = Document.new(params.merge(_id: id))
           error!(document.errors.messages, 400) unless document.valid?
+          document.save(op_type: :create)
           ok("Your document was successfully created.")
         end
 
