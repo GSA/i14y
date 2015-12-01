@@ -151,7 +151,20 @@ describe API::V1::Documents do
       end
     end
 
-    context 'something terrible happens' do
+    context 'something terrible happens during authentication' do
+      before do
+        allow(Collection).to receive(:find).and_raise(Elasticsearch::Transport::Transport::Errors::BadRequest)
+        valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true }
+        post "/api/v1/documents", valid_params, valid_session
+      end
+
+      it 'returns error message as JSON' do
+        expect(response.status).to eq(400)
+        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, "developer_message" => "Unauthorized"))
+      end
+    end
+
+    context 'something terrible happens creating the document' do
       before do
         allow(Document).to receive(:new) { raise_error(Exception) }
         valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true }

@@ -26,7 +26,7 @@ module API
 
         def auth?(collection_handle, token)
           Collection.find(collection_handle).token == token
-        rescue Elasticsearch::Persistence::Repository::DocumentNotFound
+        rescue Elasticsearch::Persistence::Repository::DocumentNotFound, Elasticsearch::Transport::Transport::Errors::BadRequest
           false
         end
       end
