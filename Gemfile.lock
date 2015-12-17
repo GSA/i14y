@@ -62,7 +62,6 @@ GEM
     coercible (1.0.0)
       descendants_tracker (~> 0.0.1)
     colorize (0.7.7)
-    crass (1.0.2)
     daemons (1.2.3)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
@@ -133,8 +132,6 @@ GEM
     newrelic_rpm (3.12.1.298)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
-    nokogumbo (1.4.1)
-      nokogiri
     patron (0.4.20)
     rack (1.6.4)
     rack-accept (0.4.5)
@@ -193,10 +190,6 @@ GEM
       rspec-support (~> 3.0.0)
     rspec-support (3.0.4)
     ruby-progressbar (1.7.5)
-    sanitize (4.0.0)
-      crass (~> 1.0.2)
-      nokogiri (>= 1.4.4)
-      nokogumbo (= 1.4.1)
     simplecov (0.10.0)
       docile (~> 1.1.0)
       json (~> 1.8)
@@ -247,6 +240,5 @@ DEPENDENCIES
   rails (= 4.2.3)
   rails-api
   rspec-rails (~> 3.0.0)
-  sanitize
   simplecov
   thin

@@ -15,11 +15,11 @@ describe Document do
     Elasticsearch::Persistence.client.indices.delete(index: [Document.index_namespace('test_index'), '*'].join('-'))
   end
 
-  context 'language fields contain HTML/CSS' do
+  context 'language fields contain HTML/CSS and HTML entities' do
     before do
       html = %[
   <div style="height: 100px; width: 100px;"></div>
-  <p>hello!</p>
+  <p>hello & goodbye!</p>
 ]
       Document.create(_id: 'a123', language: 'en', title: '<b><a href="http://foo.com/">foo</a></b><img src="bar.jpg">', description: html, created: DateTime.now, path: 'http://www.agency.gov/page1.html', content: "this <b>is</b> <a href='http://gov.gov/url.html'>html</a>")
     end
@@ -27,7 +27,7 @@ describe Document do
     it 'sanitizes the language fields' do
       document = Document.find 'a123'
       expect(document.title).to eq("foo")
-      expect(document.description).to eq("hello!")
+      expect(document.description).to eq("hello & goodbye!")
       expect(document.content).to eq("this is html")
     end
   end
