@@ -16,7 +16,8 @@ class DocumentSearch
     end
     i14y_search_results
   rescue Exception => e
-    Rails.logger.error "Problem in DocumentSearch#search(): #{e}"
+    Rails.logger.error "Problem in DocumentSearch#search(): #{e}
+    #{e.backtrace}"
     DocumentSearchResults.new(NO_HITS)
   end
 

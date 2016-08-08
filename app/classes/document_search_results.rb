@@ -33,11 +33,8 @@ class DocumentSearchResults
           source[optional_field] = highlight[language_field].join('...') if highlight[language_field]
         end
       end
-      source['created'] = DateTime.parse(source['created']).utc.to_s
-      if source['updated'].present?
-        source['updated'] = DateTime.parse(source['updated']).utc.to_s
-      else
-        source.delete('updated')
+      %w( created_at created changed updated_at updated ).each do |date|
+        source[date] = DateTime.parse(source[date]).utc.to_s if source[date].present?
       end
       source
     end

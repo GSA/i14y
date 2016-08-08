@@ -66,20 +66,20 @@ module API
                    allow_blank: false,
                    type: String,
                    desc: "Restrict results to this comma-separated list of document collections"
-          requires :language,
+          optional :language,
                    type: Symbol,
                    values: SUPPORTED_LOCALES,
                    allow_blank: false,
                    desc: "Restrict results to documents in a particular language"
-          requires :query,
-                   allow_blank: false,
+          optional :query,
+                   allow_blank: true,
                    type: String,
                    desc: "Search term. See documentation on supported query syntax."
           optional :size,
                    allow_blank: false,
                    type: Integer,
                    default: 20,
-                   values: 1..100,
+                   values: 1..1000,
                    desc: "Number of results to return"
           optional :offset,
                    allow_blank: false,
@@ -107,14 +107,17 @@ module API
                    type: String,
                    allow_blank: false,
                    desc: "Comma-separated list of category tags to exclude"
-
+          optional :include,
+                   type: String,
+                   allow_blank: false,
+                   desc: "Comma-separated list of fields to include in results",
+                   documentation: { example: 'title,path,description,content,updated_at' }
         end
         get :search do
           handles = params.delete(:handles).split(',')
           valid_collections = Collection.find(handles).compact
           error!("Could not find all the specified collection handles", 400) unless valid_collections.size == handles.size
-          %i(tags ignore_tags).each { |key| params[key] = params[key].extract_tags if params[key].present? }
-
+          %i(tags ignore_tags include).each { |key| params[key] = params[key].extract_array if params[key].present? }
           document_search = DocumentSearch.new(params.merge(handles: valid_collections.collect(&:id)))
           document_search_results = document_search.search
           metadata_hash = { total: document_search_results.total, offset: document_search_results.offset, suggestion: document_search_results.suggestion }

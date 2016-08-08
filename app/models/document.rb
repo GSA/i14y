@@ -16,6 +16,7 @@ class Document
   attribute :content, String
 
   attribute :updated, DateTime
+  attribute :changed, DateTime
   attribute :promote, Boolean
   attribute :tags, String
 

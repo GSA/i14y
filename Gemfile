@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-# ruby '2.2.1'
+ruby '2.1.9'
 gem 'rails', '4.2.3'
 
 gem 'rails-api'
@@ -18,12 +18,13 @@ gem "elasticsearch-persistence", require: 'elasticsearch/persistence/model'
 
 gem 'newrelic_rpm'
 gem 'newrelic-grape'
-gem "airbrake"
+gem 'airbrake', '~> 4.3.8'
 
 gem 'patron'
 
 group :development, :test do
   gem 'rspec-rails', '~> 3.0.0'
+  gem 'pry-byebug'
 end
 
 group :test do

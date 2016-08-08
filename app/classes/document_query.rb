@@ -1,5 +1,5 @@
 class DocumentQuery
-  INCLUDED_SOURCE_FIELDS = %w(title description content path created updated promote language tags)
+  INCLUDED_SOURCE_FIELDS = %w(title description content path created updated promote language tags changed updated_at)
   FULLTEXT_FIELDS = %w(title description content)
 
   HIGHLIGHT_OPTIONS = {
@@ -9,9 +9,11 @@ class DocumentQuery
 
   def initialize(options)
     @options = options
-    site_params_parser = QueryParser.new(options[:query])
-    @site_filters = site_params_parser.site_filters
-    @options[:query] = site_params_parser.remaining_query
+    if options[:query]
+      site_params_parser = QueryParser.new(options[:query])
+      @site_filters = site_params_parser.site_filters
+      @options[:query] = site_params_parser.remaining_query
+    end
   end
 
   def body
@@ -19,8 +21,10 @@ class DocumentQuery
       source_fields(json)
       sort_by_date(json) if @options[:sort_by_date]
       filtered_query(json)
-      highlight(json)
-      suggest(json)
+      if @options[:query].present?
+        highlight(json)
+        suggest(json)
+      end
     end
   end
 
@@ -34,7 +38,7 @@ class DocumentQuery
 
   def source_fields(json)
     json._source do
-      json.include INCLUDED_SOURCE_FIELDS
+      json.include @options[:include] || INCLUDED_SOURCE_FIELDS
     end
   end
 
@@ -59,7 +63,7 @@ class DocumentQuery
   def must_nots(json)
     json.must_not do
       filter_on_tags(json, @options[:ignore_tags]) if @options[:ignore_tags].present?
-      if @site_filters[:excluded_sites].any?
+      if @site_filters
         @site_filters[:excluded_sites].each do |site_filter|
           child_term_filter(json, :domain_name, site_filter.domain_name)
           child_term_filter(json, :url_path, site_filter.url_path) if site_filter.url_path.present?
@@ -70,8 +74,8 @@ class DocumentQuery
 
   def musts(json)
     json.must do
-      filter_on_language(json)
-      filter_on_sites(json) if @site_filters[:included_sites].any?
+      filter_on_language(json) if @options[:language].present?
+      filter_on_sites(json) if @site_filters.present?
       filter_on_tags(json, @options[:tags], :and) if @options[:tags].present?
       filter_on_time(json) if timestamp_filters_present?
     end
@@ -177,7 +181,7 @@ class DocumentQuery
 
   def common_terms(json, field)
     json.common do
-      json.set! "#{field}_#{@options[:language]}" do
+      json.set! [field, @options[:language]].compact.join('_') do
         json.query @options[:query]
         json.cutoff_frequency 0.05
         json.minimum_should_match do
@@ -198,9 +202,10 @@ class DocumentQuery
 
   def highlight_fields(json)
     json.fields do
-      json.set! "title_#{@options[:language]}", { number_of_fragments: 0 }
-      json.set! "description_#{@options[:language]}", { fragment_size: 75, number_of_fragments: 2 }
-      json.set! "content_#{@options[:language]}", { fragment_size: 75, number_of_fragments: 2 }
+      json.set! ['title',@options[:language]].compact.join('_'), { number_of_fragments: 0 }
+      json.set! ['description',@options[:language]].compact.join('_'), { fragment_size: 75, number_of_fragments: 2 }
+      json.set! ['content',@options[:language]].compact.join('_'), { fragment_size: 75, number_of_fragments: 2 }
+
     end
   end
 
