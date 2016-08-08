@@ -9,7 +9,7 @@ module Serde
       end
     end
     hash.merge!(uri_params_hash(hash[:path])) if hash[:path].present?
-    hash[:tags] = hash[:tags].extract_tags if hash[:tags].present?
+    hash[:tags] = hash[:tags].extract_array if hash[:tags].present?
     hash
   end
 

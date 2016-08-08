@@ -12,6 +12,9 @@ describe DocumentSearch do
   end
 
   context 'searching across a single index collection' do
+    let(:search_options) do
+      { handles: %w(agency_blogs), language: :en, query: "common", size: 10, offset: 0 }
+    end
     context 'matching documents exist' do
       before do
         Document.create(language: 'en', title: 'title 1 common content', description: 'description 1 common content', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
@@ -19,9 +22,33 @@ describe DocumentSearch do
       end
 
       it 'returns results' do
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "common", size: 10, offset: 0)
+        document_search = DocumentSearch.new(search_options)
         document_search_results = document_search.search
         expect(document_search_results.total).to eq(1)
+      end
+
+      context 'searching without a query' do
+        it 'returns results' do
+          document_search = DocumentSearch.new(search_options.except(:query))
+          document_search_results = document_search.search
+          expect(document_search_results.total).to eq(1)
+        end
+      end
+
+      context 'searching without a language' do
+        it 'returns results' do
+          document_search = DocumentSearch.new(search_options.except(:language))
+          document_search_results = document_search.search
+          expect(document_search_results.total).to eq(1)
+        end
+      end
+
+      context 'specifying included fields' do
+        it 'returns only the specified fields' do
+          document_search = DocumentSearch.new(search_options.merge(include: ['title', 'path']))
+          result = document_search.search.results.first
+          expect(result.keys).to match_array ['title', 'path']
+        end
       end
     end
 
@@ -42,7 +69,6 @@ describe DocumentSearch do
         expect(document_search_results.results).to eq([])
       end
     end
-
   end
 
   context 'paginating' do

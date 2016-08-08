@@ -180,17 +180,22 @@ describe API::V1::Documents do
   end
 
   describe "PUT /api/v1/documents/{document_id}" do
+    let(:update_params) do
+      { "title" => "my title",
+        "description" => "new desc",
+        "content" => "new content",
+        "path" => "http://www.next.gov/updated.html",
+        "promote" => false,
+        "tags" => "My category",
+        "changed" => "2016-01-01T10:00:01Z" }
+
+    end
+
     context 'success case' do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
         Document.create(_id: id, language: 'en', title: "hi there 4", description: 'bigger desc 4', content: "huge content 4", created: 2.hours.ago, updated: Time.now, promote: true, path: "http://www.gov.gov/url4.html")
-        valid_params = { "title" => "my title",
-                         "description" => "new desc",
-                         "content" => "new content",
-                         "path" => "http://www.next.gov/updated.html",
-                         "promote" => false,
-                         "tags" => "My category" }
-        put "/api/v1/documents/#{URI.encode(id)}", valid_params, valid_session
+        put "/api/v1/documents/#{URI.encode(id)}", update_params, valid_session
       end
 
       it 'returns success message as JSON' do
@@ -206,6 +211,7 @@ describe API::V1::Documents do
         expect(document.description).to eq('new desc')
         expect(document.content).to eq('new content')
         expect(document.tags).to match_array(['my category'])
+        expect(document.changed).to eq('2016-01-01T10:00:01Z')
       end
 
     end
