@@ -74,7 +74,7 @@ class DocumentQuery
 
   def musts(json)
     json.must do
-      filter_on_language(json)  if @options[:language].present?
+      filter_on_language(json) if @options[:language].present?
       filter_on_sites(json) if @site_filters.present?
       filter_on_tags(json, @options[:tags], :and) if @options[:tags].present?
       filter_on_time(json) if timestamp_filters_present?
