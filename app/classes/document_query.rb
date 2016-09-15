@@ -59,13 +59,19 @@ class DocumentQuery
   def must_nots(json)
     json.must_not do
       filter_on_tags(json, @options[:ignore_tags]) if @options[:ignore_tags].present?
+      if @site_filters[:excluded_sites].any?
+        @site_filters[:excluded_sites].each do |site_filter|
+          child_term_filter(json, :domain_name, site_filter.domain_name)
+          child_term_filter(json, :url_path, site_filter.url_path) if site_filter.url_path.present?
+        end
+      end
     end
   end
 
   def musts(json)
     json.must do
       filter_on_language(json)
-      filter_on_sites(json) if @site_filters.any?
+      filter_on_sites(json) if @site_filters[:included_sites].any?
       filter_on_tags(json, @options[:tags], :and) if @options[:tags].present?
       filter_on_time(json) if timestamp_filters_present?
     end
@@ -99,7 +105,7 @@ class DocumentQuery
     json.child! do
       json.bool do
         json.set! :should do
-          json.array!(@site_filters) do |site_filter|
+          json.array!(@site_filters[:included_sites]) do |site_filter|
             filter_on_site(json, site_filter)
           end
         end
