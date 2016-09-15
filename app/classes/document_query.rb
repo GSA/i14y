@@ -203,8 +203,8 @@ class DocumentQuery
   def highlight_fields(json)
     json.fields do
       json.set! ['title',@options[:language]].compact.join('_'), { number_of_fragments: 0 }
-      json.set! ['description',@options[:language]].compact.join('_'), { number_of_fragments: 0 }
-      json.set! ['content',@options[:language]].compact.join('_'), { number_of_fragments: 0 }
+      json.set! ['description',@options[:language]].compact.join('_'), { fragment_size: 75, number_of_fragments: 2 }
+      json.set! ['content',@options[:language]].compact.join('_'), { fragment_size: 75, number_of_fragments: 2 }
 
     end
   end
