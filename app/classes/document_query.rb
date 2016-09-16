@@ -63,7 +63,7 @@ class DocumentQuery
   def must_nots(json)
     json.must_not do
       filter_on_tags(json, @options[:ignore_tags]) if @options[:ignore_tags].present?
-      if @site_filters[:excluded_sites].any?
+      if @site_filters
         @site_filters[:excluded_sites].each do |site_filter|
           child_term_filter(json, :domain_name, site_filter.domain_name)
           child_term_filter(json, :url_path, site_filter.url_path) if site_filter.url_path.present?
