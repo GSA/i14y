@@ -25,6 +25,8 @@ gem 'patron'
 group :development, :test do
   gem 'rspec-rails', '~> 3.0.0'
   gem 'pry-byebug'
+  gem 'pry-rails'
+  gem 'faker'
 end
 
 group :test do
