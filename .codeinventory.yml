@@ -1,0 +1,13 @@
+name: i14y
+description: 'An API for indexing agency web content in real time.'
+license: 'https://creativecommons.org/publicdomain/zero/1.0'
+openSourceProject: 1
+governmentWideReuseProject: 1
+tags:
+    - GSA
+    - DigitalGovSearch
+    - websites
+    - search
+    - indexing
+contact:
+    email: dawn.mccleskey@gsa.gov
