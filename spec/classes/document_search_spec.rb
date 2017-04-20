@@ -36,10 +36,15 @@ describe DocumentSearch do
       end
 
       context 'searching without a language' do
+        let(:document_search) { DocumentSearch.new(search_options.except(:language)) }
+        let(:results) { document_search.search.results }
+
         it 'returns results' do
-          document_search = DocumentSearch.new(search_options.except(:language))
-          document_search_results = document_search.search
-          expect(document_search_results.total).to eq(1)
+          expect(results.count).to eq(1)
+        end
+
+        it 'returns a highlighted snippet' do
+          expect(results.first['description']).to eq "description 1 common content"
         end
       end
 

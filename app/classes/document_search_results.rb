@@ -30,7 +30,8 @@ class DocumentSearchResults
         source['title'] = highlight["title_#{source['language']}"].first if highlight["title_#{source['language']}"]
         %w(description content).each do |optional_field|
           language_field = "#{optional_field}_#{source['language']}"
-          source[optional_field] = highlight[language_field].join('...') if highlight[language_field]
+          highlighted_field = highlight[language_field] || highlight[optional_field]
+          source[optional_field] = highlighted_field.join('...') if highlighted_field
         end
       end
       %w( created_at created changed updated_at updated ).each do |date|
