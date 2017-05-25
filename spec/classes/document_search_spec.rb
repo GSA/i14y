@@ -317,6 +317,10 @@ describe DocumentSearch do
       Document.refresh_index!
     end
 
+    let(:base_search_params) do
+      { handles: %w(agency_blogs), language: :en, size: 10, offset: 0 }
+    end
+
     it 'returns results from only those sites' do
       document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "(site:www.agency.gov/dir1/dir2) america", size: 10, offset: 0)
       document_search_results = document_search.search
@@ -353,6 +357,52 @@ describe DocumentSearch do
       document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "site:agency.gov", size: 10, offset: 0)
       document_search_results = document_search.search
       expect(document_search_results.total).to eq(3)
+    end
+
+    context 'when excluding domains' do
+      let(:query) { '-site:agency.gov america' }
+      let(:document_search_results) { DocumentSearch.new(base_search_params.merge(query: query )).search.results }
+      let(:document_paths) { document_search_results.map{ |result| result['path'] }.join(' ') }
+
+      it 'excludes results from those domains' do
+        expect(document_search_results.count).to eq(1)
+        expect(document_paths).not_to match(%r(agency.gov))
+      end
+
+      context 'when excluding a path' do
+        let(:query) { '-site:www.agency.gov/dir1 america' }
+
+        it 'excludes results from that path' do
+          expect(document_paths).not_to match(%r(agency.gov/dir1))
+          expect(document_search_results.count).to eq(2)
+        end
+
+        context 'when the path includes a trailing slash' do
+          let(:query) { '-site:www.agency.gov/dir1/ america' }
+
+          it 'excludes results from that path' do
+            expect(document_paths).not_to match(%r(agency.gov/dir1))
+            expect(document_search_results.count).to eq(2)
+          end
+        end
+
+        context 'when excluding sub-subdirectories' do
+          let(:query) { '-site:www.agency.gov/dir1/dir2 america' }
+
+          it 'excludes results from those paths' do
+            expect(document_paths).not_to match(%r(agency.gov/dir1/dir2))
+            expect(document_search_results.count).to eq(3)
+          end
+        end
+      end
+
+      context 'when excluding a path that is a partial match' do
+        let(:query) { '-site:www.agency.gov/di america' }
+
+        it 'does not exclude those results' do
+          expect(document_search_results.count).to eq(4)
+        end
+      end
     end
   end
 

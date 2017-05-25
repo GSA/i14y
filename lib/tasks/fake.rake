@@ -14,14 +14,23 @@ namespace :fake do
 
   def fake_doc
     { _id: Time.now.to_f.to_s,
-      title: Faker::Lorem.words(3).join(' '),
-      path: Faker::Internet.url,
+      title: Faker::TwinPeaks.character,
+      path: fake_url,
       created: Faker::Time.between(3.years.ago, Date.today).to_json,
-      description:  Faker::Lorem.sentence,
-      content: Faker::Lorem.paragraphs.join("\n"),
+      description:  [nil, Faker::TwinPeaks.location].sample,
+      content: Faker::TwinPeaks.quote,
       promote: [true,false].sample,
-      language: ['en','es','fr'].sample,
-      tags: %w(foo bar baz).sample([1,2,3].sample).join(',')
+      language: 'en',
+      tags: %w(trees coffee pie).sample([1,2,3].sample).join(',')
     }
+  end
+
+  def fake_url
+    domain = [ [nil,'www','coffee','pie'].sample, 'twinpeaks.gov'].compact.join('.')
+    directories = [%w(plastic fish mill).sample, %w(gum whittling fire).sample].join('/')
+    file = Faker::TwinPeaks.location.parameterize
+    filetype = %w(html doc pdf).sample
+    protocol = %w(http https).sample
+    "#{protocol}://#{domain}/#{directories}/#{file}.#{filetype}"
   end
 end
