@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 ruby '2.1.9'
-gem 'rails', '4.2.3'
+gem 'rails', '4.2.7.1'
 
 gem 'rails-api'
 gem 'rack-cors'
@@ -23,7 +23,7 @@ gem 'airbrake', '~> 4.3.8'
 gem 'patron'
 
 group :development, :test do
-  gem 'rspec-rails', '~> 3.0.0'
+  gem 'rspec-rails', '~> 3.6.0'
   gem 'pry-byebug'
   gem 'pry-rails'
   gem 'faker'
