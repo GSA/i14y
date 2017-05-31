@@ -3,7 +3,7 @@ module Serde
     language_field_keys.each do |key|
       value = hash[key.to_sym]
       if value.present?
-        sanitized_value = ActionController::Base.helpers.strip_tags(value).squish
+        sanitized_value = Loofah.fragment(value).text(encode_special_chars: false).squish
         hash.store("#{key}_#{language}", sanitized_value)
         hash[key] = sanitized_value
       end
