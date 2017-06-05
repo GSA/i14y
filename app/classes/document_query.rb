@@ -17,6 +17,8 @@ class DocumentQuery
   end
 
   def body
+    # At some point, we should probably refactor this class to use the elasticsearch-dsl library:
+    # https://github.com/elastic/elasticsearch-ruby/tree/master/elasticsearch-dsl
     Jbuilder.encode do |json|
       source_fields(json)
       sort_by_date(json) if @options[:sort_by_date]
@@ -65,8 +67,7 @@ class DocumentQuery
       filter_on_tags(json, @options[:ignore_tags]) if @options[:ignore_tags].present?
       if @site_filters
         @site_filters[:excluded_sites].each do |site_filter|
-          child_term_filter(json, :domain_name, site_filter.domain_name)
-          child_term_filter(json, :url_path, site_filter.url_path) if site_filter.url_path.present?
+          filter_excluded_sites(json, site_filter)
         end
       end
     end
@@ -114,6 +115,14 @@ class DocumentQuery
           end
         end
       end
+    end
+  end
+
+  def filter_excluded_sites(json, site_filter)
+    if site_filter.url_path.present?
+      child_regexp_filter(json, :path, "https?:\/\/#{site_filter.domain_name}#{site_filter.url_path}/.*" )
+    else
+      child_term_filter(json, :domain_name, site_filter.domain_name)
     end
   end
 
@@ -271,4 +280,15 @@ class DocumentQuery
     end
   end
 
+  def child_regexp_filter(json, field, value)
+    json.child! do
+      json.query do
+        json.regexp do
+          json.set! field do
+            json.set! 'value', value
+          end
+        end
+      end
+    end
+  end
 end
