@@ -1,21 +1,25 @@
 class DocumentSearch
   NO_HITS = { "hits" => { "total" => 0, "hits" => [] }}
 
+  attr_reader :doc_query, :offset, :size, :indices
+
   def initialize(options)
-    @options = options
-    @options[:offset] ||= 0
+    @offset = options[:offset] || 0
+    @size = options[:size]
+    @doc_query = DocumentQuery.new(options)
+    @indices = options[:handles].map { |handle| Document.index_namespace(handle) }
   end
 
   def search
     i14y_search_results = execute_client_search
     if i14y_search_results.total.zero? && i14y_search_results.suggestion.present?
       suggestion = i14y_search_results.suggestion
-      @options[:query] = suggestion['text']
+      doc_query.query = suggestion['text']
       i14y_search_results = execute_client_search
       i14y_search_results.override_suggestion(suggestion) if i14y_search_results.total > 0
     end
     i14y_search_results
-  rescue Exception => e
+  rescue StandardError => e
     Rails.logger.error "Problem in DocumentSearch#search(): #{e}
     #{e.backtrace}"
     DocumentSearchResults.new(NO_HITS)
@@ -24,14 +28,8 @@ class DocumentSearch
   private
 
   def execute_client_search
-    query = DocumentQuery.new(@options)
-    params = { index: document_indexes, body: query.body, from: @options[:offset], size: @options[:size] }
+    params = { index: indices, body: doc_query.body, from: offset, size: size }
     result = Elasticsearch::Persistence.client.search(params)
-    DocumentSearchResults.new(result, @options[:offset])
+    DocumentSearchResults.new(result, offset)
   end
-
-  def document_indexes
-    @options[:handles].map { |collection_handle| Document.index_namespace(collection_handle) }
-  end
-
 end
