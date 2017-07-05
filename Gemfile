@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 ruby '2.3.4'
-gem 'rails', '5.1.1'
+gem 'rails', '5.1.2'
 
 gem 'rack-cors', '~> 0.4.1'
 gem 'grape', '~> 0.19.2'
