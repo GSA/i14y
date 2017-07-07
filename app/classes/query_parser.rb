@@ -1,20 +1,16 @@
 class QueryParser
   SiteFilter = Struct.new(:domain_name, :url_path)
-  attr_reader :site_filters
+  attr_reader :site_filters, :query, :stripped_query
 
   def initialize(query)
     @query = query
     @site_filters = extract_site_filters
   end
 
-  def remaining_query
-    @query.gsub(/[()]/,'').squish
-  end
-
   private
   def extract_site_filters
     site_filters = { included_sites: [], excluded_sites: [] }
-    @query.gsub!(/(-?site:\S+)\b\/?/i) do
+    @stripped_query = @query.gsub(/\(?(-?site:\S+)\b\/?\)?/i) do
       match = $1
       if match.first == '-'
         site_filters[:excluded_sites] << extract_site_filter(match)
@@ -22,7 +18,8 @@ class QueryParser
         site_filters[:included_sites] << extract_site_filter(match)
       end
       nil
-    end
+    end.squish
+
     site_filters
   end
 

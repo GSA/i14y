@@ -428,6 +428,12 @@ describe DocumentSearch do
       expect(document_search_results.suggestion['text']).to eq('99 problemas')
       expect(document_search_results.suggestion['highlighted']).to eq("99 problemas")
     end
+
+    it 'does not return results from excluded sites' do
+      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "99 problemz -site:agency.gov", size: 10, offset: 0)
+      document_search_results = document_search.search
+      expect(document_search_results.total).to eq(0)
+    end
   end
 
 end

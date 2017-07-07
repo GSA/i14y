@@ -7,12 +7,16 @@ class DocumentQuery
     post_tags: ["\ue001"]
   }
 
+  attr_reader :language, :site_filters
+  attr_accessor :query
+
   def initialize(options)
     @options = options
+    @language = options[:language]
     if options[:query]
       site_params_parser = QueryParser.new(options[:query])
       @site_filters = site_params_parser.site_filters
-      @options[:query] = site_params_parser.remaining_query
+      @query = site_params_parser.stripped_query
     end
   end
 
@@ -23,7 +27,7 @@ class DocumentQuery
       source_fields(json)
       sort_by_date(json) if @options[:sort_by_date]
       filtered_query(json)
-      if @options[:query].present?
+      if query.present?
         highlight(json)
         suggest(json)
       end
@@ -47,7 +51,7 @@ class DocumentQuery
   def filtered_query(json)
     json.query do
       json.filtered do
-        filtered_query_query(json) if @options[:query].present?
+        filtered_query_query(json) if query.present?
         filtered_query_filter(json)
       end
     end
@@ -65,8 +69,8 @@ class DocumentQuery
   def must_nots(json)
     json.must_not do
       filter_on_tags(json, @options[:ignore_tags]) if @options[:ignore_tags].present?
-      if @site_filters
-        @site_filters[:excluded_sites].each do |site_filter|
+      if site_filters
+        site_filters[:excluded_sites].each do |site_filter|
           filter_excluded_sites(json, site_filter)
         end
       end
@@ -75,15 +79,15 @@ class DocumentQuery
 
   def musts(json)
     json.must do
-      filter_on_language(json) if @options[:language].present?
-      filter_on_sites(json) if @site_filters.present?
+      filter_on_language(json) if language.present?
+      filter_on_sites(json) if site_filters.present?
       filter_on_tags(json, @options[:tags], :and) if @options[:tags].present?
       filter_on_time(json) if timestamp_filters_present?
     end
   end
 
   def filter_on_language(json)
-    child_term_filter(json, :language, @options[:language])
+    child_term_filter(json, :language, language)
   end
 
   def filter_on_time(json)
@@ -110,7 +114,7 @@ class DocumentQuery
     json.child! do
       json.bool do
         json.set! :should do
-          json.array!(@site_filters[:included_sites]) do |site_filter|
+          json.array!(site_filters[:included_sites]) do |site_filter|
             filter_on_site(json, site_filter)
           end
         end
@@ -150,13 +154,13 @@ class DocumentQuery
   end
 
   def prefer_bigram_matches(json)
-    child_match(json, :bigrams, @options[:query])
+    child_match(json, :bigrams, query)
   end
 
   def prefer_word_form_matches(json)
     json.child! do
       json.multi_match do
-        json.query @options[:query]
+        json.query query
         json.fields FULLTEXT_FIELDS
       end
     end
@@ -181,17 +185,17 @@ class DocumentQuery
   end
 
   def basename_matches(json)
-    child_match(json, :basename, @options[:query])
+    child_match(json, :basename, query)
   end
 
   def tag_matches(json)
-    child_match(json, :tags, @options[:query].downcase)
+    child_match(json, :tags, query.downcase)
   end
 
   def common_terms(json, field)
     json.common do
-      json.set! [field, @options[:language]].compact.join('_') do
-        json.query @options[:query]
+      json.set! [field, language].compact.join('_') do
+        json.query query
         json.cutoff_frequency 0.05
         json.minimum_should_match do
           json.low_freq "3<90%"
@@ -211,16 +215,16 @@ class DocumentQuery
 
   def highlight_fields(json)
     json.fields do
-      json.set! ['title',@options[:language]].compact.join('_'), { number_of_fragments: 0 }
-      json.set! ['description',@options[:language]].compact.join('_'), { fragment_size: 75, number_of_fragments: 2 }
-      json.set! ['content',@options[:language]].compact.join('_'), { fragment_size: 75, number_of_fragments: 2 }
+      json.set! ['title',language].compact.join('_'), { number_of_fragments: 0 }
+      json.set! ['description',language].compact.join('_'), { fragment_size: 75, number_of_fragments: 2 }
+      json.set! ['content',language].compact.join('_'), { fragment_size: 75, number_of_fragments: 2 }
 
     end
   end
 
   def suggest(json)
     json.suggest do
-      json.text @options[:query]
+      json.text query
       json.suggestion do
         phrase_suggestion(json)
       end
@@ -249,7 +253,7 @@ class DocumentQuery
         json.multi_match do
           json.query "{{suggestion}}"
           json.type "phrase"
-          json.fields "*_#{@options[:language]}"
+          json.fields "*_#{language}"
         end
       end
     end
