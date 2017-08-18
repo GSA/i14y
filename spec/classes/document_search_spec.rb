@@ -220,6 +220,7 @@ describe DocumentSearch do
       Document.create(language: 'en', title: 'historical document 1 is historical', description: 'historical description 1 is historical', created: 1.month.ago, path: 'http://www.agency.gov/dir1/page1.html')
       Document.create(language: 'en', title: 'historical document 2 is historical', description: 'historical description 2', created: 1.week.ago, path: 'http://www.agency.gov/dir1/page2.html')
       Document.create(language: 'en', title: 'document 3', description: 'historical description 3', created: DateTime.now, path: 'http://www.agency.gov/dir1/page3.html')
+      Document.create(language: 'en', title: 'document 4', description: 'historical description 4', created: nil, path: 'http://www.agency.gov/dir1/page4.html')
       Document.refresh_index!
     end
 
@@ -229,6 +230,7 @@ describe DocumentSearch do
       expect(document_search_results.results[0]['path']).to eq('http://www.agency.gov/dir1/page3.html')
       expect(document_search_results.results[1]['path']).to eq('http://www.agency.gov/dir1/page2.html')
       expect(document_search_results.results[2]['path']).to eq('http://www.agency.gov/dir1/page1.html')
+      expect(document_search_results.results[3]['path']).to eq('http://www.agency.gov/dir1/page4.html')
     end
   end
 
@@ -297,6 +299,7 @@ describe DocumentSearch do
       Document.create(language: 'en', title: 'historical document 1', description: 'historical description 1', created: 1.month.ago, path: 'http://www.agency.gov/dir1/page1.html')
       Document.create(language: 'en', title: 'historical document 2', description: 'historical description 2', created: 1.week.ago, path: 'http://www.agency.gov/dir1/page2.html')
       Document.create(language: 'en', title: 'historical document 3', description: 'historical description 3', created: DateTime.now, path: 'http://www.agency.gov/dir1/page3.html')
+      Document.create(language: 'en', title: 'historical document 4', description: 'historical description 4', created: nil, path: 'http://www.agency.gov/dir1/page4.html')
       Document.refresh_index!
     end
 

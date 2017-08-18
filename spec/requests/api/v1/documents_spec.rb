@@ -3,6 +3,13 @@ require 'uri'
 
 describe API::V1::Documents do
   let(:id) { "some really/weird@id.name" }
+  let(:valid_params) do
+    {
+     "document_id" => id, "title" => "my title", "path" => "http://www.gov.gov/goo.html",
+     "description" => "my desc", "promote" => true,
+     "language" => 'hy', "content" => "my content", "tags" => "Foo, Bar blat",
+    }
+  end
 
   before(:all) do
     yaml = YAML.load_file("#{Rails.root}/config/secrets.yml")
@@ -23,9 +30,6 @@ describe API::V1::Documents do
     context 'success case' do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
-        valid_params = { "document_id" => id, "title" => "my title", "path" => "http://www.gov.gov/goo.html",
-                         "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true,
-                         "language" => 'hy', "content" => "my content", "tags" => "Foo, Bar blat" }
         post "/api/v1/documents", params: valid_params, headers: valid_session
       end
 
@@ -114,13 +118,13 @@ describe API::V1::Documents do
 
     context 'a required parameter is empty/blank' do
       before do
-        invalid_params = { "document_id" => "a1234", "title" => "   ", "description" => "title is blank", "path" => "http://www.gov.gov/goo.html", "created" => "" }
+        invalid_params = valid_params.merge({ 'title' => ' ' })
         post "/api/v1/documents", params: invalid_params, headers: valid_session
       end
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, "developer_message" => "title is empty, created is empty"))
+        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, "developer_message" => "title is empty"))
       end
     end
 

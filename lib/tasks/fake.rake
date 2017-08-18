@@ -16,7 +16,7 @@ namespace :fake do
     { _id: Time.now.to_f.to_s,
       title: Faker::TwinPeaks.character,
       path: fake_url,
-      created: Faker::Time.between(3.years.ago, Date.today).to_json,
+      created: [Faker::Time.between(3.years.ago, Date.today).to_json, nil].sample,
       description:  [nil, Faker::TwinPeaks.location].sample,
       content: Faker::TwinPeaks.quote,
       promote: [true,false].sample,

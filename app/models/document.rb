@@ -9,7 +9,6 @@ class Document
   attribute :language, String
   validates :language, presence: true
   attribute :created, DateTime
-  validates :created, presence: true
 
   attribute :title, String
   attribute :description, String
