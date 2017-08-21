@@ -5,9 +5,14 @@ describe API::V1::Documents do
   let(:id) { "some really/weird@id.name" }
   let(:valid_params) do
     {
-     "document_id" => id, "title" => "my title", "path" => "http://www.gov.gov/goo.html",
-     "description" => "my desc", "promote" => true,
-     "language" => 'hy', "content" => "my content", "tags" => "Foo, Bar blat",
+      "document_id" => id,
+      "title" => "my title",
+      "path" => "http://www.gov.gov/goo.html",
+      "description" => "my desc",
+      "promote" => true,
+      "language" => 'hy',
+      "content" => "my content",
+      "tags" => "Foo, Bar blat",
     }
   end
 
