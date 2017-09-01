@@ -1,4 +1,4 @@
-require File.expand_path('../boot', __FILE__)
+require_relative 'boot'
 
 # require "rails"
 # Pick the frameworks you want:
@@ -18,10 +18,14 @@ Bundler.require(*Rails.groups)
 module I14y
   APP_NAME = 'i14y'
   class Application < Rails::Application
+
+    # Initialize configuration defaults for originally generated Rails version.
+    config.load_defaults 5.1
+
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
-    config.autoload_paths += Dir[config.root.join('lib', '**/')]
+    config.eager_load_paths += Dir[config.root.join('lib', '**/')]
     require 'ext/string'
 
     # config.paths.add File.join('app', 'api'), glob: File.join('**', '*.rb')
@@ -35,7 +39,9 @@ module I14y
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de
 
-    # Disable the asset pipeline.
-    config.assets.enabled = false
+    # Only loads a smaller set of middleware suitable for API only apps.
+    # Middleware like session, flash, cookies can be added back manually.
+    # Skip views, helpers and assets when generating a new resource.
+    config.api_only = true
   end
 end

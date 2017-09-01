@@ -10,7 +10,7 @@ describe API::V1::Documents do
     credentials = ActionController::HttpAuthentication::Basic.encode_credentials env_secrets['admin_user'], env_secrets['admin_password']
     valid_collection_session = { 'HTTP_AUTHORIZATION' => credentials }
     valid_collection_params = { "handle" => "test_index", "token" => "test_key" }
-    post "/api/v1/collections", valid_collection_params, valid_collection_session
+    post "/api/v1/collections", params: valid_collection_params, headers: valid_collection_session
     Document.index_name = Document.index_namespace('test_index')
   end
 
@@ -26,7 +26,7 @@ describe API::V1::Documents do
         valid_params = { "document_id" => id, "title" => "my title", "path" => "http://www.gov.gov/goo.html",
                          "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true,
                          "language" => 'hy', "content" => "my content", "tags" => "Foo, Bar blat" }
-        post "/api/v1/documents", valid_params, valid_session
+        post "/api/v1/documents", params: valid_params, headers: valid_session
       end
 
       it 'returns success message as JSON' do
@@ -56,7 +56,7 @@ describe API::V1::Documents do
         dupe_params = { "document_id" => 'its_a_dupe', "title" => "my title", "path" => "http://www.gov.gov/goo.html",
                          "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true,
                          "language" => 'hy', "content" => "my content", "tags" => "Foo, Bar blat" }
-        post "/api/v1/documents", dupe_params, valid_session
+        post "/api/v1/documents", params: dupe_params, headers: valid_session
       end
 
       it 'returns failure message as JSON' do
@@ -68,7 +68,7 @@ describe API::V1::Documents do
     context 'invalid language param' do
       before do
         valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true, "language" => 'qq' }
-        post "/api/v1/documents", valid_params, valid_session
+        post "/api/v1/documents", params: valid_params, headers: valid_session
       end
 
       it 'returns failure message as JSON' do
@@ -80,7 +80,7 @@ describe API::V1::Documents do
     context 'leading slash in id' do
       before do
         valid_params = { "document_id" => "/a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true, "language" => 'en' }
-        post "/api/v1/documents", valid_params, valid_session
+        post "/api/v1/documents", params: valid_params, headers: valid_session
       end
 
       it 'returns failure message as JSON' do
@@ -92,7 +92,7 @@ describe API::V1::Documents do
     context 'missing language param' do
       before do
         valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc" }
-        post "/api/v1/documents", valid_params, valid_session
+        post "/api/v1/documents", params: valid_params, headers: valid_session
       end
 
       it 'uses English (en) as default' do
@@ -103,7 +103,7 @@ describe API::V1::Documents do
     context 'missing at least one of two required parameters' do
       before do
         invalid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z" }
-        post "/api/v1/documents", invalid_params, valid_session
+        post "/api/v1/documents", params: invalid_params, headers: valid_session
       end
 
       it 'returns failure message as JSON' do
@@ -115,7 +115,7 @@ describe API::V1::Documents do
     context 'a required parameter is empty/blank' do
       before do
         invalid_params = { "document_id" => "a1234", "title" => "   ", "description" => "title is blank", "path" => "http://www.gov.gov/goo.html", "created" => "" }
-        post "/api/v1/documents", invalid_params, valid_session
+        post "/api/v1/documents", params: invalid_params, headers: valid_session
       end
 
       it 'returns failure message as JSON' do
@@ -127,7 +127,7 @@ describe API::V1::Documents do
     context 'path URL is poorly formatted' do
       before do
         invalid_params = { "document_id" => "a1234", "title" => "weird URL with blank", "description" => "some description", "path" => "http://www.gov.gov/ goo.html", "created" => "2013-02-27T10:00:00Z" }
-        post "/api/v1/documents", invalid_params, valid_session
+        post "/api/v1/documents", params: invalid_params, headers: valid_session
       end
 
       it 'returns failure message as JSON' do
@@ -142,7 +142,7 @@ describe API::V1::Documents do
         bad_credentials = ActionController::HttpAuthentication::Basic.encode_credentials "nope", "wrong"
 
         valid_session = { 'HTTP_AUTHORIZATION' => bad_credentials }
-        post "/api/v1/documents", valid_params, valid_session
+        post "/api/v1/documents", params: valid_params, headers: valid_session
       end
 
       it 'returns error message as JSON' do
@@ -155,7 +155,7 @@ describe API::V1::Documents do
       before do
         allow(Collection).to receive(:find).and_raise(Elasticsearch::Transport::Transport::Errors::BadRequest)
         valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true }
-        post "/api/v1/documents", valid_params, valid_session
+        post "/api/v1/documents", params: valid_params, headers: valid_session
       end
 
       it 'returns error message as JSON' do
@@ -168,7 +168,7 @@ describe API::V1::Documents do
       before do
         allow(Document).to receive(:new) { raise_error(Exception) }
         valid_params = { "document_id" => "a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true }
-        post "/api/v1/documents", valid_params, valid_session
+        post "/api/v1/documents", params: valid_params, headers: valid_session
       end
 
       it 'returns failure message as JSON' do
@@ -195,7 +195,7 @@ describe API::V1::Documents do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
         Document.create(_id: id, language: 'en', title: "hi there 4", description: 'bigger desc 4', content: "huge content 4", created: 2.hours.ago, updated: Time.now, promote: true, path: "http://www.gov.gov/url4.html")
-        put "/api/v1/documents/#{URI.encode(id)}", update_params, valid_session
+        put "/api/v1/documents/#{URI.encode(id)}", params: update_params, headers: valid_session
       end
 
       it 'returns success message as JSON' do
@@ -222,7 +222,7 @@ describe API::V1::Documents do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
         Document.create(_id: id, language: 'en', title: "hi there 4", description: 'bigger desc 4', content: "huge content 4", created: 2.hours.ago, updated: Time.now, promote: true, path: "http://www.gov.gov/url4.html")
-        delete "/api/v1/documents/#{URI.encode(id)}", nil, valid_session
+        delete "/api/v1/documents/#{URI.encode(id)}", headers: valid_session
       end
 
       it 'returns success message as JSON' do
@@ -238,7 +238,7 @@ describe API::V1::Documents do
 
     context 'deleting a non-existent document' do
       before do
-        delete "/api/v1/documents/non_existent_document_id", nil, valid_session
+        delete "/api/v1/documents/non_existent_document_id", headers: valid_session
       end
 
       it 'returns error message as JSON' do

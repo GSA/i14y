@@ -13,7 +13,7 @@ describe API::V1::Collections do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*'
         valid_params = { "handle" => "agency_blogs", "token" => "secret" }
-        post "/api/v1/collections", valid_params, valid_session
+        post "/api/v1/collections", params: valid_params, headers: valid_session
       end
 
       it 'returns success message as JSON' do
@@ -34,7 +34,7 @@ describe API::V1::Collections do
     context 'a required parameter is empty/blank' do
       before do
         invalid_params = {}
-        post "/api/v1/collections", invalid_params, valid_session
+        post "/api/v1/collections", params: invalid_params, headers: valid_session
       end
 
       it 'returns failure message as JSON' do
@@ -46,7 +46,7 @@ describe API::V1::Collections do
     context 'handle uses illegal characters' do
       before do
         invalid_params = { "handle" => "agency-blogs", "token" => "secret" }
-        post "/api/v1/collections", invalid_params, valid_session
+        post "/api/v1/collections", params: invalid_params, headers: valid_session
       end
 
       it 'returns failure message as JSON' do
@@ -61,7 +61,7 @@ describe API::V1::Collections do
         bad_credentials = ActionController::HttpAuthentication::Basic.encode_credentials "nope", "wrong"
 
         valid_session = { 'HTTP_AUTHORIZATION' => bad_credentials }
-        post "/api/v1/collections", valid_params, valid_session
+        post "/api/v1/collections", params: valid_params, headers: valid_session
       end
 
       it 'returns error message as JSON' do
@@ -74,7 +74,7 @@ describe API::V1::Collections do
       before do
         allow(Collection).to receive(:create) { raise_error(Exception) }
         valid_params = { "handle" => "agency_blogs", "token" => "secret" }
-        post "/api/v1/collections", valid_params, valid_session
+        post "/api/v1/collections", params: valid_params, headers: valid_session
       end
 
       it 'returns failure message as JSON' do
@@ -90,7 +90,7 @@ describe API::V1::Collections do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*'
         Collection.create(_id: "agency_blogs", token: "secret")
-        delete "/api/v1/collections/agency_blogs", nil, valid_session
+        delete "/api/v1/collections/agency_blogs", headers: valid_session
       end
 
       it 'returns success message as JSON' do
@@ -110,7 +110,7 @@ describe API::V1::Collections do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*'
         valid_params = { "handle" => "agency_blogs", "token" => "secret" }
-        post "/api/v1/collections", valid_params, valid_session
+        post "/api/v1/collections", params: valid_params, headers: valid_session
         Document.index_name = Document.index_namespace('agency_blogs')
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
       end
@@ -123,7 +123,7 @@ describe API::V1::Collections do
         Document.create(hash1)
         Document.create(hash2)
         Document.refresh_index!
-        get "/api/v1/collections/agency_blogs", nil, valid_session
+        get "/api/v1/collections/agency_blogs", headers: valid_session
         expect(response.status).to eq(200)
         expect(JSON.parse(response.body)).to match(hash_including('status' => 200, "developer_message" => "OK", "collection" => { "document_total" => 2, "last_document_sent" => an_instance_of(String), "token" => "secret", "id" => "agency_blogs", "created_at" => an_instance_of(String), "updated_at" => an_instance_of(String) }))
       end
@@ -136,7 +136,7 @@ describe API::V1::Collections do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*'
         valid_params = { "handle" => "agency_blogs", "token" => "secret" }
-        post "/api/v1/collections", valid_params, valid_session
+        post "/api/v1/collections", params: valid_params, headers: valid_session
         Document.index_name = Document.index_namespace('agency_blogs')
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
       end
@@ -166,7 +166,7 @@ describe API::V1::Collections do
         Document.create(hash2)
         Document.refresh_index!
         valid_params = { 'language' => 'en', 'query' => 'common contentx', 'handles' => 'agency_blogs' }
-        get "/api/v1/collections/search", valid_params, valid_session
+        get "/api/v1/collections/search", params: valid_params, headers: valid_session
         expect(response.status).to eq(200)
         metadata_hash = { 'total' => 2, 'offset' => 0, "suggestion" => { "text" => "common content", "highlighted" => "common content" } }
         result1 = { "language" => "en", "created" => datetime.to_s, "path" => 'http://www.agency.gov/page1.html', "promote" => false, "updated" => datetime.to_s, "title" => 'title 1 common content', "description" => 'description 1 common content', "content" => 'content 1 common content', "tags" => nil,"changed" => nil, "updated_at" => datetime.to_s }
@@ -194,7 +194,7 @@ describe API::V1::Collections do
                                            'include' => ['title', 'description']
         )
         expect(DocumentSearch).to receive(:new).with(expected_params)
-        get "/api/v1/collections/search", valid_params, valid_session
+        get "/api/v1/collections/search", params: valid_params, headers: valid_session
       end
     end
 
@@ -202,14 +202,14 @@ describe API::V1::Collections do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*'
         valid_params = { "handle" => "agency_blogs", "token" => "secret" }
-        post "/api/v1/collections", valid_params, valid_session
+        post "/api/v1/collections", params: valid_params, headers: valid_session
         Document.index_name = Document.index_namespace('agency_blogs')
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
       end
 
       it 'returns JSON no hits results' do
         valid_params = { 'language' => 'en', 'query' => 'no hits', 'handles' => 'agency_blogs' }
-        get "/api/v1/collections/search", valid_params, valid_session
+        get "/api/v1/collections/search", params: valid_params, headers: valid_session
         expect(response.status).to eq(200)
         metadata_hash = { 'total' => 0, 'offset' => 0, 'suggestion' => nil }
         results_array = []
@@ -221,7 +221,7 @@ describe API::V1::Collections do
     context 'missing required params' do
       before do
         invalid_params = {}
-        get "/api/v1/collections/search", invalid_params, valid_session
+        get "/api/v1/collections/search", params: invalid_params, headers: valid_session
       end
 
       it 'returns error message as JSON' do
@@ -235,7 +235,7 @@ describe API::V1::Collections do
         Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*'
         Collection.create(_id: "agency_blogs", token: "secret")
         bad_handle_params = { 'language' => 'en', 'query' => 'foo', 'handles' => 'agency_blogs,missing' }
-        get "/api/v1/collections/search", bad_handle_params, valid_session
+        get "/api/v1/collections/search", params: bad_handle_params, headers: valid_session
       end
 
       it 'returns error message as JSON' do
