@@ -20,6 +20,26 @@ class DocumentQuery
     end
   end
 
+  def foo
+    if true
+      puts 'foo'
+    else
+      puts 'bar'
+    end
+
+    puts 'this should fail' unless false
+
+    puts 'blah blah' if true
+
+    if true
+      puts 'this should fail' 
+    elsif 4 + 1 = 5
+      puts 'bar'
+    else
+      puts 'baz' if false
+    end
+  end
+
   def body
     # At some point, we should probably refactor this class to use the elasticsearch-dsl library:
     # https://github.com/elastic/elasticsearch-ruby/tree/master/elasticsearch-dsl
