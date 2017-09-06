@@ -48,9 +48,9 @@ module API
                    allow_blank: false,
                    regexp: %r(^https?:\/\/[^\s\/$.?#].[^\s]*$),
                    desc: "Document link URL"
-          requires :created,
+          optional :created,
                    type: DateTime,
-                   allow_blank: false,
+                   allow_blank: true,
                    desc: "When document was initially created",
                    documentation: { example: '2013-02-27T10:00:00Z' }
           optional :description,
@@ -104,7 +104,7 @@ module API
                    desc: "Document link URL"
           optional :created,
                    type: DateTime,
-                   allow_blank: false,
+                   allow_blank: true,
                    desc: "When document was initially created",
                    documentation: { example: '2013-02-27T10:00:00Z' }
           optional :description,
