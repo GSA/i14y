@@ -40,9 +40,11 @@ class DocumentQuery
         size: 1,
         highlight: suggestion_highlight,
         collate: { query: { multi_match: { query: "{{suggestion}}",
-                                           type: "phrase",
-                                           fields: "*_#{language}" } }
-      } } }
+                                             type:   "phrase",
+                                             fields: "*_#{language}" } }
+        }
+      }
+    }
   end
 
   def full_text_fields
@@ -54,7 +56,7 @@ class DocumentQuery
       query: query,
       cutoff_frequency: 0.05,
       minimum_should_match: { low_freq: '3<90%', high_freq: '2<90%' },
-     }
+    }
   end
 
   def source_fields
@@ -93,42 +95,44 @@ class DocumentQuery
   end
 
   def suggestion_highlight
-    { pre_tag: HIGHLIGHT_OPTIONS[:pre_tags].first,
-      post_tag: HIGHLIGHT_OPTIONS[:post_tags].first }
+    {
+      pre_tag: HIGHLIGHT_OPTIONS[:pre_tags].first,
+      post_tag: HIGHLIGHT_OPTIONS[:post_tags].first,
+    }
   end
 
   def build_search_query
     #DSL reference: https://github.com/elastic/elasticsearch-ruby/tree/master/elasticsearch-dsl
     doc_query = self
     search.query do
-        filtered do
-          if doc_query.query.present?
-            query do
-              bool do
-                must do #broadest match
-                  bool do
-                    doc_query.full_text_fields.each do |field|
-                      should { common({ field => doc_query.common_terms_hash }) }
-                    end
-
-                    should { match basename: { operator: 'and', query: doc_query.query } }
-                    should { match tags:     { operator: 'and', query: doc_query.query.downcase } }
+      filtered do
+        if doc_query.query.present?
+          query do
+            bool do
+              must do #broadest match
+                bool do
+                  doc_query.full_text_fields.each do |field|
+                    should { common({ field => doc_query.common_terms_hash }) }
                   end
+
+                  should { match basename: { operator: 'and', query: doc_query.query } }
+                  should { match tags:     { operator: 'and', query: doc_query.query.downcase } }
                 end
+              end
 
-                #prefer bigram matches
-                should { match bigrams: { operator: 'and', query: doc_query.query } }
+              #prefer bigram matches
+              should { match bigrams: { operator: 'and', query: doc_query.query } }
 
-                ##prefer_word_form_matches
-                should do
-                  multi_match do
-                    query doc_query.query
-                    fields FULLTEXT_FIELDS
-                  end
+              ##prefer_word_form_matches
+              should do
+                multi_match do
+                  query doc_query.query
+                  fields FULLTEXT_FIELDS
                 end
               end
             end
           end
+        end
 
         filter do
           bool do
