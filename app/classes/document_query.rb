@@ -18,17 +18,18 @@ class DocumentQuery
     @tags = options[:tags]
     @ignore_tags = options[:ignore_tags]
     @date_range = { gte: @options[:min_timestamp], lt: @options[:max_timestamp] }
-    @source_fields = (@options[:include] || INCLUDED_SOURCE_FIELDS)
     @search = Search.new
     @included_sites, @excluded_sites = [], []
     parse_query(options[:query]) if options[:query]
   end
 
   def body
-    set_highlight_options
     search.source source_fields
     search.sort { by :created, order: 'desc' } if @options[:sort_by_date]
-    search.suggest(:suggestion, suggestion_hash) if query.present?
+    if query.present?
+      set_highlight_options
+      search.suggest(:suggestion, suggestion_hash)
+    end
     build_search_query
     search
   end
@@ -40,8 +41,8 @@ class DocumentQuery
         size: 1,
         highlight: suggestion_highlight,
         collate: { query: { multi_match: { query: "{{suggestion}}",
-                                             type:   "phrase",
-                                             fields: "*_#{language}" } }
+                                           type:   "phrase",
+                                           fields: "*_#{language}" } }
         }
       }
     }
