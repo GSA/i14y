@@ -18,7 +18,7 @@ class DocumentQuery
     @tags = options[:tags]
     @ignore_tags = options[:ignore_tags]
     @date_range = { gte: @options[:min_timestamp], lt: @options[:max_timestamp] }
-    @source_fields =  (@options[:include] || INCLUDED_SOURCE_FIELDS)
+    @source_fields = (@options[:include] || INCLUDED_SOURCE_FIELDS)
     @search = Search.new
     @included_sites, @excluded_sites = [], []
     parse_query(options[:query]) if options[:query]
@@ -28,7 +28,7 @@ class DocumentQuery
     set_highlight_options
     search.source source_fields
     search.sort { by :created, order: 'desc' } if @options[:sort_by_date]
-    search.suggest(:suggestion, suggestion_hash ) if query.present?
+    search.suggest(:suggestion, suggestion_hash) if query.present?
     build_search_query
     search
   end
@@ -48,7 +48,7 @@ class DocumentQuery
   end
 
   def full_text_fields
-    FULLTEXT_FIELDS.map{|field| [field, language].compact.join('_').to_sym }
+    FULLTEXT_FIELDS.map{ |field| [field, language].compact.join('_').to_sym }
   end
 
   def common_terms_hash
