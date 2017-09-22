@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.3.4'
+ruby '2.3.5'
 gem 'rails', '5.1.2'
 
 gem 'rack-cors', '~> 0.4.1'
