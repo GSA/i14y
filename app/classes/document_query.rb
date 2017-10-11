@@ -1,4 +1,5 @@
 class DocumentQuery
+  include Elasticsearch::DSL
   INCLUDED_SOURCE_FIELDS = %w(title description content path created updated promote language tags changed updated_at)
   FULLTEXT_FIELDS = %w(title description content)
 
@@ -7,256 +8,60 @@ class DocumentQuery
     post_tags: ["\ue001"]
   }
 
-  attr_reader :language, :site_filters
-  attr_accessor :query
+  attr_reader :language, :site_filters, :tags, :ignore_tags, :date_range,
+              :included_sites, :excluded_sites
+  attr_accessor :query, :search
 
   def initialize(options)
     @options = options
     @language = options[:language]
-    if options[:query]
-      site_params_parser = QueryParser.new(options[:query])
-      @site_filters = site_params_parser.site_filters
-      @query = site_params_parser.stripped_query
-    end
+    @tags = options[:tags]
+    @ignore_tags = options[:ignore_tags]
+    @date_range = { gte: @options[:min_timestamp], lt: @options[:max_timestamp] }
+    @search = Search.new
+    @included_sites, @excluded_sites = [], []
+    parse_query(options[:query]) if options[:query]
   end
 
   def body
-    # At some point, we should probably refactor this class to use the elasticsearch-dsl library:
-    # https://github.com/elastic/elasticsearch-ruby/tree/master/elasticsearch-dsl
-    Jbuilder.encode do |json|
-      source_fields(json)
-      sort_by_date(json) if @options[:sort_by_date]
-      filtered_query(json)
-      if query.present?
-        highlight(json)
-        suggest(json)
-      end
+    search.source source_fields
+    search.sort { by :created, order: 'desc' } if @options[:sort_by_date]
+    if query.present?
+      set_highlight_options
+      search.suggest(:suggestion, suggestion_hash)
     end
+    build_search_query
+    search
   end
 
-  def sort_by_date(json)
-    json.sort do
-      json.created do
-        json.order :desc
-      end
-    end
+  def suggestion_hash
+    { text: query,
+      phrase: {
+        field: 'bigrams',
+        size: 1,
+        highlight: suggestion_highlight,
+        collate: { query: { multi_match: { query: "{{suggestion}}",
+                                           type:   "phrase",
+                                           fields: "*_#{language}" } }
+        }
+      }
+    }
   end
 
-  def source_fields(json)
-    json._source do
-      json.include @options[:include] || INCLUDED_SOURCE_FIELDS
-    end
+  def full_text_fields
+    FULLTEXT_FIELDS.map{ |field| [field, language].compact.join('_').to_sym }
   end
 
-  def filtered_query(json)
-    json.query do
-      json.filtered do
-        filtered_query_query(json) if query.present?
-        filtered_query_filter(json)
-      end
-    end
+  def common_terms_hash
+    {
+      query: query,
+      cutoff_frequency: 0.05,
+      minimum_should_match: { low_freq: '3<90%', high_freq: '2<90%' },
+    }
   end
 
-  def filtered_query_filter(json)
-    json.filter do
-      json.bool do
-        musts(json)
-        must_nots(json)
-      end
-    end
-  end
-
-  def must_nots(json)
-    json.must_not do
-      filter_on_tags(json, @options[:ignore_tags]) if @options[:ignore_tags].present?
-      if site_filters
-        site_filters[:excluded_sites].each do |site_filter|
-          filter_excluded_sites(json, site_filter)
-        end
-      end
-    end
-  end
-
-  def musts(json)
-    json.must do
-      filter_on_language(json) if language.present?
-      filter_on_sites(json) if site_filters.present?
-      filter_on_tags(json, @options[:tags], :and) if @options[:tags].present?
-      filter_on_time(json) if timestamp_filters_present?
-    end
-  end
-
-  def filter_on_language(json)
-    child_term_filter(json, :language, language)
-  end
-
-  def filter_on_time(json)
-    json.child! do
-      json.range do
-        json.set! "created" do
-          json.gte @options[:min_timestamp] if @options[:min_timestamp].present?
-          json.lt @options[:max_timestamp] if @options[:max_timestamp].present?
-        end
-      end
-    end
-  end
-
-  def filter_on_tags(json, tags, execution = :plain)
-    json.child! do
-      json.terms do
-        json.tags tags
-        json.execution execution
-      end
-    end
-  end
-
-  def filter_on_sites(json)
-    json.child! do
-      json.bool do
-        json.set! :should do
-          json.array!(site_filters[:included_sites]) do |site_filter|
-            filter_on_site(json, site_filter)
-          end
-        end
-      end
-    end
-  end
-
-  def filter_excluded_sites(json, site_filter)
-    if site_filter.url_path.present?
-      child_regexp_filter(json, :path, "https?:\/\/#{site_filter.domain_name}#{site_filter.url_path}/.*" )
-    else
-      child_term_filter(json, :domain_name, site_filter.domain_name)
-    end
-  end
-
-  def filter_on_site(json, site_filter)
-    json.bool do
-      json.must do
-        child_term_filter(json, :domain_name, site_filter.domain_name)
-        child_term_filter(json, :url_path, site_filter.url_path) if site_filter.url_path.present?
-      end
-    end
-  end
-
-  def filtered_query_query(json)
-    json.query do
-      json.bool do
-        json.must do
-          broadest_match(json)
-        end
-        json.set! :should do
-          prefer_bigram_matches(json)
-          prefer_word_form_matches(json)
-        end
-      end
-    end
-  end
-
-  def prefer_bigram_matches(json)
-    child_match(json, :bigrams, query)
-  end
-
-  def prefer_word_form_matches(json)
-    json.child! do
-      json.multi_match do
-        json.query query
-        json.fields FULLTEXT_FIELDS
-      end
-    end
-  end
-
-  def broadest_match(json)
-    json.bool do
-      json.set! :should do
-        common_terms_matches(json)
-        basename_matches(json)
-        tag_matches(json)
-      end
-    end
-  end
-
-  def common_terms_matches(json)
-    FULLTEXT_FIELDS.each do |field|
-      json.child! do
-        common_terms(json, field)
-      end
-    end
-  end
-
-  def basename_matches(json)
-    child_match(json, :basename, query)
-  end
-
-  def tag_matches(json)
-    child_match(json, :tags, query.downcase)
-  end
-
-  def common_terms(json, field)
-    json.common do
-      json.set! [field, language].compact.join('_') do
-        json.query query
-        json.cutoff_frequency 0.05
-        json.minimum_should_match do
-          json.low_freq "3<90%"
-          json.high_freq "2<90%"
-        end
-      end
-    end
-  end
-
-  def highlight(json)
-    json.highlight do
-      json.pre_tags HIGHLIGHT_OPTIONS[:pre_tags]
-      json.post_tags HIGHLIGHT_OPTIONS[:post_tags]
-      highlight_fields(json)
-    end
-  end
-
-  def highlight_fields(json)
-    json.fields do
-      json.set! ['title',language].compact.join('_'), { number_of_fragments: 0 }
-      json.set! ['description',language].compact.join('_'), { fragment_size: 75, number_of_fragments: 2 }
-      json.set! ['content',language].compact.join('_'), { fragment_size: 75, number_of_fragments: 2 }
-
-    end
-  end
-
-  def suggest(json)
-    json.suggest do
-      json.text query
-      json.suggestion do
-        phrase_suggestion(json)
-      end
-    end
-  end
-
-  def phrase_suggestion(json)
-    json.phrase do
-      json.field "bigrams"
-      json.size 1
-      suggestion_highlight(json)
-      collate(json)
-    end
-  end
-
-  def suggestion_highlight(json)
-    json.highlight do
-      json.pre_tag HIGHLIGHT_OPTIONS[:pre_tags].first
-      json.post_tag HIGHLIGHT_OPTIONS[:post_tags].first
-    end
-  end
-
-  def collate(json)
-    json.collate do
-      json.query do
-        json.multi_match do
-          json.query "{{suggestion}}"
-          json.type "phrase"
-          json.fields "*_#{language}"
-        end
-      end
-    end
+  def source_fields
+    @options[:include] || INCLUDED_SOURCE_FIELDS
   end
 
   def timestamp_filters_present?
@@ -265,31 +70,101 @@ class DocumentQuery
 
   private
 
-  def child_match(json, field, query, operator = :and)
-    json.child! do
-      json.match do
-        json.set! field do
-          json.operator operator
-          json.query query
-        end
-      end
-    end if query
+  def parse_query(query)
+    site_params_parser = QueryParser.new(query)
+    @site_filters = site_params_parser.site_filters
+    @included_sites = @site_filters[:included_sites]
+    @excluded_sites = @site_filters[:excluded_sites]
+    @query = site_params_parser.stripped_query
   end
 
-  def child_term_filter(json, field, value)
-    json.child! do
-      json.term do
-        json.set! field, value
-      end
+  def set_highlight_options
+    highlight_fields = highlight_fields_hash
+    search.highlight do
+      pre_tags HIGHLIGHT_OPTIONS[:pre_tags]
+      post_tags HIGHLIGHT_OPTIONS[:post_tags]
+      fields highlight_fields
     end
   end
 
-  def child_regexp_filter(json, field, value)
-    json.child! do
-      json.query do
-        json.regexp do
-          json.set! field do
-            json.set! 'value', value
+  def highlight_fields_hash
+    {
+      ['title',language].compact.join('_') => { number_of_fragments: 0 },
+      ['description',language].compact.join('_') => { fragment_size: 75, number_of_fragments: 2 },
+      ['content',language].compact.join('_') => { fragment_size: 75, number_of_fragments: 2 },
+    }
+  end
+
+  def suggestion_highlight
+    {
+      pre_tag: HIGHLIGHT_OPTIONS[:pre_tags].first,
+      post_tag: HIGHLIGHT_OPTIONS[:post_tags].first,
+    }
+  end
+
+  def build_search_query
+    #DSL reference: https://github.com/elastic/elasticsearch-ruby/tree/master/elasticsearch-dsl
+    doc_query = self
+    search.query do
+      filtered do
+        if doc_query.query.present?
+          query do
+            bool do
+              must do #broadest match
+                bool do
+                  doc_query.full_text_fields.each do |field|
+                    should { common({ field => doc_query.common_terms_hash }) }
+                  end
+
+                  should { match basename: { operator: 'and', query: doc_query.query } }
+                  should { match tags:     { operator: 'and', query: doc_query.query.downcase } }
+                end
+              end
+
+              #prefer bigram matches
+              should { match bigrams: { operator: 'and', query: doc_query.query } }
+
+              ##prefer_word_form_matches
+              should do
+                multi_match do
+                  query doc_query.query
+                  fields FULLTEXT_FIELDS
+                end
+              end
+            end
+          end
+        end
+
+        filter do
+          bool do
+            must { term language: doc_query.language } if doc_query.language.present?
+
+            doc_query.included_sites.each do |site_filter|
+              should do
+                bool do
+                  must { term domain_name: site_filter.domain_name }
+                  must { term url_path: site_filter.url_path } if site_filter.url_path.present?
+                end
+              end
+            end
+
+            must do
+              terms tags: doc_query.tags, execution: 'and' if doc_query.tags.present?
+            end
+
+            must { range created: doc_query.date_range } if doc_query.timestamp_filters_present?
+
+            must_not do
+              terms tags: doc_query.ignore_tags, execution: 'plain' if doc_query.ignore_tags.present?
+            end
+
+            doc_query.excluded_sites.each do |site_filter|
+              if site_filter.url_path.present?
+                must_not { query { regexp path: { value: "https?:\/\/#{site_filter.domain_name}#{site_filter.url_path}/.*" } } }
+              else
+                must_not { term domain_name: site_filter.domain_name }
+              end
+            end
           end
         end
       end
