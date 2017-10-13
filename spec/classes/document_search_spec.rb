@@ -1,10 +1,21 @@
 require 'rails_helper'
 
 describe DocumentSearch do
+  let(:query) { "common" }
+  let(:handles) { %w(agency_blogs) }
+  let(:search_options) do
+    { handles: handles, language: :en, query: query, size: 10, offset: 0 }
+  end
+  let(:common_params) { { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html' } }
+  let(:document_search) { DocumentSearch.new(search_options) }
+  let(:document_search_results) { document_search.search }
 
   before do
     Elasticsearch::Persistence.client.indices.delete(index: [Document.index_namespace('agency_blogs'), '*'].join('-'))
     es_documents_index_name = [Document.index_namespace('agency_blogs'), 'v1'].join('-')
+    #Using a single shard prevents intermittent relevancy issues in tests
+    #https://www.elastic.co/guide/en/elasticsearch/guide/current/relevance-is-broken.html
+    Document.settings(index: { number_of_shards: 1 })
     Document.create_index!(index: es_documents_index_name)
     Elasticsearch::Persistence.client.indices.put_alias index: es_documents_index_name,
                                                         name: Document.index_namespace('agency_blogs')
@@ -12,9 +23,6 @@ describe DocumentSearch do
   end
 
   context 'searching across a single index collection' do
-    let(:search_options) do
-      { handles: %w(agency_blogs), language: :en, query: "common", size: 10, offset: 0 }
-    end
     context 'matching documents exist' do
       before do
         Document.create(language: 'en', title: 'title 1 common content', description: 'description 1 common content', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
@@ -73,9 +81,9 @@ describe DocumentSearch do
 
   context 'paginating' do
     before do
-      Document.create(language: 'en', title: "most relevant title common content title common content", description: "description common content description common content", created: DateTime.now, path: "http://www.agency.gov/page0.html")
+      Document.create(common_params.merge(title: "most relevant title common content", description: "other content"))
       10.times do |x|
-        Document.create(language: 'en', title: "title common content #{x}", description: "description common content #{x}", created: DateTime.now, path: "http://www.agency.gov/page#{x}.html")
+        Document.create(common_params.merge(title: "title #{x}", description: "common content #{x}"))
       end
       Document.refresh_index!
     end
@@ -164,8 +172,6 @@ describe DocumentSearch do
   describe "overall relevancy" do
     context 'exact phrase matches' do
       before do
-        common_params = { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html',
-                          description: 'description' }
         Document.create(common_params.merge(title: 'jefferson township Petitions and Memorials'))
         Document.create(common_params.merge(title: 'jefferson Memorial and township Petitions'))
         Document.refresh_index!
@@ -175,6 +181,22 @@ describe DocumentSearch do
         document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "jefferson Memorial", size: 10, offset: 0)
         document_search_results = document_search.search
         expect(document_search_results.results.first['title']).to match(/jefferson Memorial/)
+      end
+    end
+
+    context 'when a search term appears in varying fields' do
+      let(:query) { 'rutabaga' }
+      before do
+         Document.create(common_params.merge( title: 'other', description: 'other', content: 'Rutabagas'))
+         Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other'))
+         Document.create(common_params.merge( title: 'Rutabagas', description: 'other', content: 'other'))
+         Document.refresh_index!
+      end
+
+      it 'prioritizes matches in the title, then description, then content' do
+        expect(document_search_results.results.first['title']).to match(/Rutabagas/)
+        expect(document_search_results.results[1]['description']).to match(/Rutabagas/)
+        expect(document_search_results.results[2]['content']).to match(/Rutabagas/)
       end
     end
 

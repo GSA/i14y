@@ -31,6 +31,7 @@ class DocumentQuery
       search.suggest(:suggestion, suggestion_hash)
     end
     build_search_query
+    search.explain true if Rails.logger.debug? #scoring details
     search
   end
 
@@ -66,6 +67,18 @@ class DocumentQuery
 
   def timestamp_filters_present?
     @options[:min_timestamp].present? or @options[:max_timestamp].present?
+  end
+
+  def boosted_fields
+    full_text_fields.map do |field|
+      if /title/ === field
+        "#{field}^2"
+      elsif /description/ === field
+        "#{field}^1.5"
+      else
+        field.to_s
+      end
+    end
   end
 
   private
@@ -128,11 +141,12 @@ class DocumentQuery
               should do
                 multi_match do
                   query doc_query.query
-                  fields FULLTEXT_FIELDS
+                  fields doc_query.boosted_fields
                 end
               end
             end
           end
+
         end
 
         filter do

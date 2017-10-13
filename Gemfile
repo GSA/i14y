@@ -1,7 +1,6 @@
 source 'https://rubygems.org'
-
 ruby '2.3.5'
-gem 'rails', '5.1.3'
+gem 'rails', '5.1.4'
 
 gem 'rack-cors', '~> 0.4.1'
 gem 'grape', '~> 1.0.0'
@@ -22,7 +21,7 @@ gem 'elasticsearch-dsl', '~> 0.1.5'
 gem 'newrelic_rpm', '~> 4.2'
 gem 'airbrake', '~> 6.1'
 
-gem 'patron', '~> 0.9.1'
+gem 'patron', '~> 0.10.0'
 
 group :development, :test do
   gem 'rspec-rails', '~> 3.6.0'
