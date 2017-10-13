@@ -1,6 +1,6 @@
 class DocumentQuery
   include Elasticsearch::DSL
-  INCLUDED_SOURCE_FIELDS = %w(title description content path created updated promote language tags changed updated_at)
+  INCLUDED_SOURCE_FIELDS = %w(title path created language changed)
   FULLTEXT_FIELDS = %w(title description content)
 
   HIGHLIGHT_OPTIONS = {

@@ -18,7 +18,7 @@ namespace :fake do
       path: fake_url,
       created: [Faker::Time.between(3.years.ago, Date.today).to_json, nil].sample,
       description:  [nil, Faker::TwinPeaks.location].sample,
-      content: Faker::TwinPeaks.quote,
+      content: quotes,
       promote: [true,false].sample,
       language: 'en',
       tags: %w(trees coffee pie).sample([1,2,3].sample).join(',')
@@ -32,5 +32,11 @@ namespace :fake do
     filetype = %w(html doc pdf).sample
     protocol = %w(http https).sample
     "#{protocol}://#{domain}/#{directories}/#{file}.#{filetype}"
+  end
+
+  def quotes
+    quotes = ''
+    10.times { quotes << Faker::TwinPeaks.quote + ' ' }
+    quotes
   end
 end

@@ -6,7 +6,16 @@ describe DocumentSearch do
   let(:search_options) do
     { handles: handles, language: :en, query: query, size: 10, offset: 0 }
   end
-  let(:common_params) { { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html' } }
+  let(:common_params) do
+    { 
+      language: 'en',
+      created: DateTime.now,
+      path: 'http://www.agency.gov/page1.html',
+      title: 'title',
+      description: 'description',
+      content: 'content',
+    }
+  end
   let(:document_search) { DocumentSearch.new(search_options) }
   let(:document_search_results) { document_search.search }
 
@@ -218,6 +227,9 @@ describe DocumentSearch do
     end
 
     context 'exact match on a document tag' do
+      let(:document_search) do
+        DocumentSearch.new(search_options.merge(query: "Stats", include: 'tags'))
+      end
       before do
         common_params = { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html',
                           title: "This mentions stats in the title",
@@ -229,8 +241,6 @@ describe DocumentSearch do
       end
 
       it 'ranks those higher' do
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "Stats", size: 10, offset: 0)
-        document_search_results = document_search.search
         expect(document_search_results.total).to eq(3)
         expect(document_search_results.results.first['tags']).to match_array(['stats'])
       end
@@ -272,11 +282,14 @@ describe DocumentSearch do
   end
 
   describe "filtering on tags" do
+    let(:search_options) do
+      { handles: handles, language: :en, query: query, size: 10, offset: 0, include: 'tags' }
+    end
     before do
-      Document.create(language: 'en', title: 'title 1', description: 'description 1', created: DateTime.now, path: 'http://www.agency.gov/page1.html', tags: 'usa')
-      Document.create(language: 'en', title: 'title 2', description: 'description 2', created: DateTime.now, path: 'http://www.agency.gov/page2.html', tags: 'york, usa')
-      Document.create(language: 'en', title: 'title 3', description: 'description 3', created: DateTime.now, path: 'http://www.agency.gov/page3.html', tags: 'new york, usa')
-      Document.create(language: 'en', title: 'title 4', description: 'description 3', created: DateTime.now, path: 'http://www.agency.gov/page4.html', tags: 'random tag')
+      Document.create(common_params.merge(tags: 'usa'))
+      Document.create(common_params.merge(tags: 'york, usa'))
+      Document.create(common_params.merge(tags: 'new york, usa'))
+      Document.create(common_params.merge(tags: 'random tag'))
       Document.refresh_index!
     end
 

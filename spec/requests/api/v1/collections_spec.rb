@@ -169,8 +169,8 @@ describe API::V1::Collections do
         get "/api/v1/collections/search", params: valid_params, headers: valid_session
         expect(response.status).to eq(200)
         metadata_hash = { 'total' => 2, 'offset' => 0, "suggestion" => { "text" => "common content", "highlighted" => "common content" } }
-        result1 = { "language" => "en", "created" => datetime.to_s, "path" => 'http://www.agency.gov/page1.html', "promote" => false, "updated" => datetime.to_s, "title" => 'title 1 common content', "description" => 'description 1 common content', "content" => 'content 1 common content', "tags" => nil,"changed" => nil, "updated_at" => datetime.to_s }
-        result2 = { "language" => "en", "created" => datetime.to_s, "path" => 'http://www.agency.gov/page2.html', "promote" => true, "title" => 'title 2 common content', "description" => 'description 2 common content', "content" => 'other unrelated stuff', "tags" => %w(tag1 tag2), "changed" => nil, "updated_at" => datetime.to_s, "updated" => nil }
+        result1 = { "language" => "en", "created" => datetime.to_s, "path" => 'http://www.agency.gov/page1.html', "title" => 'title 1 common content', "description" => 'description 1 common content', "content" => 'content 1 common content', "changed" => nil }
+        result2 = { "language" => "en", "created" => datetime.to_s, "path" => 'http://www.agency.gov/page2.html', "title" => 'title 2 common content', "description" => 'description 2 common content',  "changed" => nil }
         results_array = [result1, result2]
         expect(JSON.parse(response.body)).to match(
           hash_including('status' => 200, "developer_message" => "OK", "metadata" => metadata_hash, 'results' => results_array))
