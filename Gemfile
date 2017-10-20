@@ -19,14 +19,14 @@ gem 'elasticsearch-model', '~>0.1.0'
 gem 'elasticsearch-dsl', '~> 0.1.5'
 
 gem 'newrelic_rpm', '~> 4.2'
-gem 'airbrake', '~> 6.1'
+gem 'airbrake', '~> 7.1'
 
 gem 'patron', '~> 0.10.0'
 
 group :development, :test do
-  gem 'rspec-rails', '~> 3.6.0'
+  gem 'rspec-rails', '~> 3.7'
   gem 'pry-byebug', '~> 3.4'
-  gem 'pry-rails', '~> 0.3.6'
+  gem 'pry-rails', '~> 0.3'
   gem 'faker', '~> 1.7'
   gem 'awesome_print', '~> 1.8' #To enable in Pry: https://github.com/awesome-print/awesome_print#pry-integration
 end

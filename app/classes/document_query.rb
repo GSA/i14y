@@ -123,30 +123,37 @@ class DocumentQuery
         if doc_query.query.present?
           query do
             bool do
-              must do #broadest match
+              #prefer bigram matches
+              should { match bigrams: { operator: 'and', query: doc_query.query } }
+
+              #prefer_word_form_matches
+              must do
                 bool do
-                  doc_query.full_text_fields.each do |field|
-                    should { common({ field => doc_query.common_terms_hash }) }
+                  should do
+                    bool do
+                      must do
+                        simple_query_string do
+                          query doc_query.query
+                          fields doc_query.boosted_fields
+                        end
+                      end
+
+                      must do
+                        bool do
+                          doc_query.full_text_fields.each do |field|
+                            should { common({ field => doc_query.common_terms_hash }) }
+                          end
+                        end
+                      end
+                    end
                   end
 
                   should { match basename: { operator: 'and', query: doc_query.query } }
                   should { match tags:     { operator: 'and', query: doc_query.query.downcase } }
                 end
               end
-
-              #prefer bigram matches
-              should { match bigrams: { operator: 'and', query: doc_query.query } }
-
-              ##prefer_word_form_matches
-              should do
-                multi_match do
-                  query doc_query.query
-                  fields doc_query.boosted_fields
-                end
-              end
             end
           end
-
         end
 
         filter do
