@@ -281,25 +281,39 @@ describe DocumentSearch do
     end
 
     context 'inclusive filtering' do
-      it 'returns results with all of those exact tags' do
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "title", size: 10, offset: 0, tags: %w(york))
-        document_search_results = document_search.search
-        expect(document_search_results.total).to eq(1)
-        expect(document_search_results.results.first['tags']).to match_array(%w(york usa))
+      context 'searching by one tag' do
+        let(:document_search) { DocumentSearch.new(search_options.merge(query: "title", tags: %w(york))) }
 
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "title", size: 10, offset: 0, tags: %w(york usa))
-        document_search_results = document_search.search
-        expect(document_search_results.total).to eq(1)
-        expect(document_search_results.results.first['tags']).to match_array(%w(york usa))
+        it 'returns results matching the exact tag' do
+          expect(document_search_results.total).to eq(1)
+          expect(document_search_results.results.first['tags']).to match_array(%w(york usa))
+        end
+      end
 
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "random tag", size: 10, offset: 0)
-        document_search_results = document_search.search
-        expect(document_search_results.total).to eq(1)
-        expect(document_search_results.results.first['tags']).to match_array(['random tag'])
+      context 'searching by multiple tags' do
+        let(:document_search) { DocumentSearch.new(search_options.merge(query: "title", tags: %w(york usa))) }
 
-        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "random", size: 10, offset: 0)
-        document_search_results = document_search.search
-        expect(document_search_results.total).to eq(0)
+        it 'returns results matching all of those exact tags' do
+          expect(document_search_results.total).to eq(1)
+          expect(document_search_results.results.first['tags']).to match_array(%w(york usa))
+        end
+      end
+
+      context 'when the query matches a tag' do
+        let(:document_search) { DocumentSearch.new(search_options.merge(query: "random tag")) }
+
+        it 'returns results matching that tag' do
+          expect(document_search_results.total).to eq(1)
+          expect(document_search_results.results.first['tags']).to match_array(['random tag'])
+        end
+      end
+
+      context 'searching by a tag with a partial match' do
+        let(:document_search) { DocumentSearch.new(search_options.merge(query: "random")) }
+
+        it 'does not return partially matching results' do
+          expect(document_search_results.total).to eq(0)
+        end
       end
     end
 
@@ -461,4 +475,17 @@ describe DocumentSearch do
     end
   end
 
+  describe "searching by exact phrase" do
+    before do
+      Document.create(common_params.merge(content: 'amazing spiderman'))
+      Document.create(common_params.merge(content: 'spiderman is amazing'))
+      Document.refresh_index!
+    end
+    let(:document_search) { DocumentSearch.new(search_options.merge(query: "\"amazing spiderman\"")) }
+
+    it 'should return exact matches only' do
+      expect(document_search_results.total).to eq 1
+      expect(document_search_results.results.first['content']).to eq "amazing spiderman"
+    end
+  end
 end
