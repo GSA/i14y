@@ -119,9 +119,9 @@ class DocumentQuery
     #DSL reference: https://github.com/elastic/elasticsearch-ruby/tree/master/elasticsearch-dsl
     doc_query = self
     search.query do
-      filtered do
+      bool do
         if doc_query.query.present?
-          query do
+          must do
             bool do
               #prefer bigram matches
               should { match bigrams: { operator: 'and', query: doc_query.query } }
