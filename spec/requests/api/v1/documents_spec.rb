@@ -31,6 +31,11 @@ describe API::V1::Documents do
     { 'HTTP_AUTHORIZATION' => credentials }
   end
 
+  let(:allow_updates) { true }
+  before do
+    I14y::Application.config.updates_allowed = allow_updates
+  end
+
   describe "POST /api/v1/documents" do
     context 'success case' do
       before do
@@ -55,6 +60,10 @@ describe API::V1::Documents do
         expect(document.description).to eq('my desc')
         expect(document.content).to eq('my content')
         expect(document.tags).to match_array(['bar blat', 'foo'])
+      end
+
+      context 'but i14y is in read-only mode' do
+        include_context 'read-only mode'
       end
     end
 
@@ -223,6 +232,9 @@ describe API::V1::Documents do
         expect(document.changed).to eq('2016-01-01T10:00:01Z')
       end
 
+      context 'but i14y is in read-only mode' do
+        include_context 'read-only mode'
+      end
     end
   end
 
@@ -243,6 +255,9 @@ describe API::V1::Documents do
         expect(Document.exists?(id)).to be_falsey
       end
 
+      context 'but i14y is in read-only mode' do
+        include_context 'read-only mode'
+      end
     end
 
     context 'deleting a non-existent document' do

@@ -8,6 +8,11 @@ describe API::V1::Collections do
     { 'HTTP_AUTHORIZATION' => credentials }
   end
 
+  let(:allow_updates) { true }
+  before do
+    I14y::Application.config.updates_allowed = allow_updates
+  end
+
   describe "POST /api/v1/collections" do
     context 'success case' do
       before do
@@ -28,6 +33,10 @@ describe API::V1::Collections do
       it 'stores the appropriate fields in the Elasticsearch collection' do
         collection = Collection.find("agency_blogs")
         expect(collection.token).to eq("secret")
+      end
+
+      context 'but i14y is in read-only mode' do
+        include_context 'read-only mode'
       end
     end
 
@@ -102,6 +111,9 @@ describe API::V1::Collections do
         expect(Collection.exists?("agency_blogs")).to be_falsey
       end
 
+      context 'but i14y is in read-only mode' do
+        include_context 'read-only mode'
+      end
     end
   end
 
