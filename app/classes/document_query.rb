@@ -125,6 +125,7 @@ class DocumentQuery
             bool do
               #prefer bigram matches
               should { match bigrams: { operator: 'and', query: doc_query.query } }
+              should { term  promote: true }
 
               #prefer_word_form_matches
               must do

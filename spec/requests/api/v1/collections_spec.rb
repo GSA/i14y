@@ -149,7 +149,7 @@ describe API::V1::Collections do
                       content: 'content 1 common content',
                       created: datetime.to_s,
                       path: 'http://www.agency.gov/page1.html',
-                      promote: false, updated: datetime.to_s,
+                      promote: true, updated: datetime.to_s,
                       updated_at: datetime.to_s } }
       let(:hash2) { { _id: 'a2',
                       language: 'en',
@@ -158,7 +158,7 @@ describe API::V1::Collections do
                       content: 'other unrelated stuff',
                       created: datetime.to_s,
                       path: 'http://www.agency.gov/page2.html',
-                      promote: true, tags: 'tag1, tag2',
+                      promote: false, tags: 'tag1, tag2',
                       updated_at: datetime.to_s } }
 
       it 'returns highlighted JSON search results' do
