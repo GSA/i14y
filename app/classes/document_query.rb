@@ -41,9 +41,9 @@ class DocumentQuery
         field: 'bigrams',
         size: 1,
         highlight: suggestion_highlight,
-        collate: { query: { multi_match: { query: "{{suggestion}}",
-                                           type:   "phrase",
-                                           fields: "*_#{language}" } }
+        collate: { query: { source: { multi_match: { query: "{{suggestion}}",
+                                                     type:   "phrase",
+                                                     fields: "*_#{language}" } } }
         }
       }
     }
