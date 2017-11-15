@@ -2,7 +2,7 @@ require 'rails_helper'
 require 'uri'
 
 describe API::V1::Documents do
-  let(:id) { "some really/weird@id.name" }
+  let(:id) { "some really!weird@id.name" }
   let(:valid_params) do
     {
       "document_id" => id,
@@ -86,15 +86,29 @@ describe API::V1::Documents do
       end
     end
 
-    context 'leading slash in id' do
+    context 'slash in id' do
       before do
-        valid_params = { "document_id" => "/a1234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true, "language" => 'en' }
+        valid_params = { "document_id" => "a1/234", "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true, "language" => 'en' }
         post "/api/v1/documents", params: valid_params, headers: valid_session
       end
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, "developer_message" => "document_id is invalid"))
+        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, "developer_message" => "document_id cannot contain any of the following characters: ['/']"))
+      end
+    end
+
+    context 'id larger than 512 bytes' do
+      before do
+        two_byte_character = "\u00b5"
+        string_with_513_bytes_but_only_257_characters = 'x' + two_byte_character * 256
+        valid_params = { "document_id" => string_with_513_bytes_but_only_257_characters, "title" => "my title", "path" => "http://www.gov.gov/goo.html", "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true, "language" => 'en' }
+        post "/api/v1/documents", params: valid_params, headers: valid_session
+      end
+
+      it 'returns failure message as JSON' do
+        expect(response.status).to eq(400)
+        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, "developer_message" => "document_id cannot be more than 512 bytes long"))
       end
     end
 
