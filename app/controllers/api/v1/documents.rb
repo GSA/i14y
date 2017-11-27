@@ -37,8 +37,8 @@ module API
           requires :document_id,
                    allow_blank: false,
                    type: String,
+                   regexp: { value: %r(^[^\/]+$), message: "cannot contain any of the following characters: ['/']" },
                    max_bytes: 512,
-                   disallowed_characters: %w[/],
                    desc: "User-assigned document ID"
           requires :title,
                    type: String,
