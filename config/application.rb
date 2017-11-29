@@ -27,6 +27,7 @@ module I14y
     # -- all .rb files in that directory are automatically loaded.
     config.eager_load_paths += Dir[config.root.join('lib', '**/')]
     require 'ext/string'
+    Dir["#{Rails.root}/lib/validations/*.rb"].each { |filename| require filename }
 
     # config.paths.add File.join('app', 'api'), glob: File.join('**', '*.rb')
     # config.autoload_paths += Dir[Rails.root.join('app', 'api', '*')]

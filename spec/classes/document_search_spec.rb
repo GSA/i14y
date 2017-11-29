@@ -7,7 +7,7 @@ describe DocumentSearch do
     { handles: handles, language: :en, query: query, size: 10, offset: 0 }
   end
   let(:common_params) do
-    { 
+    {
       language: 'en',
       created: DateTime.now,
       path: 'http://www.agency.gov/page1.html',
