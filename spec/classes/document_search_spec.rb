@@ -505,8 +505,8 @@ describe DocumentSearch do
   context 'when a document has been promoted' do
     before do
       Document.create(common_params.merge(title: 'no', promote: false))
-      Document.create(common_params.merge(title: 'yes',promote: true))
-      Document.create(common_params.merge(title: 'no',promote: false))
+      Document.create(common_params.merge(title: 'yes', promote: true))
+      Document.create(common_params.merge(title: 'no', promote: false))
       Document.refresh_index!
     end
 
