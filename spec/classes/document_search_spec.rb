@@ -13,7 +13,7 @@ describe DocumentSearch do
       path: 'http://www.agency.gov/page1.html',
       title: 'title',
       description: 'description',
-      content: 'content',
+      content: 'common content',
     }
   end
   let(:document_search) { DocumentSearch.new(search_options) }
@@ -499,6 +499,20 @@ describe DocumentSearch do
     it 'should return exact matches only' do
       expect(document_search_results.total).to eq 1
       expect(document_search_results.results.first['content']).to eq "amazing spiderman"
+    end
+  end
+
+  context 'when a document has been promoted' do
+    before do
+      Document.create(common_params.merge(title: 'no', promote: false))
+      Document.create(common_params.merge(title: 'yes', promote: true))
+      Document.create(common_params.merge(title: 'no', promote: false))
+      Document.refresh_index!
+    end
+
+    it 'prioritizes promoted documents' do
+      expect(document_search_results.total).to eq 3
+      expect(document_search_results.results.first['title']).to eq 'yes'
     end
   end
 end
