@@ -170,14 +170,14 @@ class DocumentQuery
               end
             end
 
-            must do
-              terms tags: doc_query.tags, execution: 'and' if doc_query.tags.present?
-            end
+            doc_query.tags.each { |tag| must { term tags: tag } } if doc_query.tags.present?
 
             must { range created: doc_query.date_range } if doc_query.timestamp_filters_present?
 
-            must_not do
-              terms tags: doc_query.ignore_tags, execution: 'plain' if doc_query.ignore_tags.present?
+            if doc_query.ignore_tags.present?
+              must_not do
+                terms tags: doc_query.ignore_tags
+              end
             end
 
             doc_query.excluded_sites.each do |site_filter|
