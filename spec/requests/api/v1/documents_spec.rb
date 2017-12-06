@@ -44,7 +44,7 @@ describe API::V1::Documents do
   describe "POST /api/v1/documents" do
     context 'success case' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
+        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
         post "/api/v1/documents", params: valid_params, headers: valid_session
       end
 
@@ -72,7 +72,7 @@ describe API::V1::Documents do
 
     context 'trying to create an existing document' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
+        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
         Document.create(_id: 'its_a_dupe', language: 'en', title: "hi there 4", description: 'bigger desc 4', content: "huge content 4", created: 2.hours.ago, updated: Time.now, promote: true, path: "http://www.gov.gov/url4.html")
         dupe_params = { "document_id" => 'its_a_dupe', "title" => "my title", "path" => "http://www.gov.gov/goo.html",
                          "created" => "2013-02-27T10:00:00Z", "description" => "my desc", "promote" => true,
@@ -228,7 +228,7 @@ describe API::V1::Documents do
 
     context 'success case' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
+        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
         Document.create(_id: id, language: 'en', title: "hi there 4", description: 'bigger desc 4', content: "huge content 4", created: 2.hours.ago, updated: Time.now, promote: true, path: "http://www.gov.gov/url4.html")
         put "/api/v1/documents/#{URI.encode(id)}", params: update_params, headers: valid_session
       end
@@ -256,7 +256,7 @@ describe API::V1::Documents do
   describe "DELETE /api/v1/documents/{document_id}" do
     context 'success case' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*'
+        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
         Document.create(_id: id, language: 'en', title: "hi there 4", description: 'bigger desc 4', content: "huge content 4", created: 2.hours.ago, updated: Time.now, promote: true, path: "http://www.gov.gov/url4.html")
         delete "/api/v1/documents/#{URI.encode(id)}", headers: valid_session
       end
