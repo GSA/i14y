@@ -182,7 +182,7 @@ class DocumentQuery
 
             doc_query.excluded_sites.each do |site_filter|
               if site_filter.url_path.present?
-                must_not { query { regexp path: { value: "https?:\/\/#{site_filter.domain_name}#{site_filter.url_path}/.*" } } }
+                must_not { regexp path: { value: "https?:\/\/#{site_filter.domain_name}#{site_filter.url_path}/.*" } }
               else
                 must_not { term domain_name: site_filter.domain_name }
               end
