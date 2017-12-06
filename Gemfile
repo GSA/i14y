@@ -13,9 +13,9 @@ gem 'capistrano-rails', '~> 1.3'
 gem 'capistrano-bundler', '~> 1.2'
 gem 'capistrano-passenger', '~> 0.2.0'
 
-gem "elasticsearch-persistence", '0.1.7', require: 'elasticsearch/persistence/model'
-gem 'elasticsearch', '1.1.2'
-gem 'elasticsearch-model', '~>0.1.0'
+gem "elasticsearch-persistence", '5.0.2', require: 'elasticsearch/persistence/model'
+gem 'elasticsearch', '5.0.4'
+gem 'elasticsearch-model', '~> 5.0.2'
 gem 'elasticsearch-dsl', '~> 0.1.5'
 
 gem 'newrelic_rpm', '~> 4.2'
