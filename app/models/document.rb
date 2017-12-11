@@ -2,6 +2,8 @@ class Document
   include Elasticsearch::Persistence::Model
   extend NamespacedIndex
 
+  settings index: { number_of_shards: 1 }
+
   index_name index_namespace
 
   attribute :path, String, mapping: { type: 'keyword' }
