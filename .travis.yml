@@ -6,11 +6,11 @@ addons:
   code_climate:
     repo_token: 09d5a7d453407f367679c8f86c4c582ec3583bed3c7a06286d61d16e89290bd1
 before_install:
-  - curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.7.2.deb && sudo dpkg -i elasticsearch-1.7.2.deb && true
-  - 'echo ''index.number_of_shards: 1'' | sudo tee --append /etc/elasticsearch/elasticsearch.yml'
-  - sudo /usr/share/elasticsearch/bin/plugin install elasticsearch/elasticsearch-analysis-icu/2.7.0
-  - sudo /usr/share/elasticsearch/bin/plugin install elasticsearch/elasticsearch-analysis-kuromoji/2.7.0
-  - sudo /usr/share/elasticsearch/bin/plugin install elasticsearch/elasticsearch-analysis-smartcn/2.7.0
+  - sudo dpkg --purge elasticsearch
+  - curl -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.6.4.deb && sudo dpkg -i elasticsearch-5.6.4.deb
+  - sudo /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-icu
+  - sudo /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-kuromoji
+  - sudo /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-smartcn
   - sudo service elasticsearch start
 before_script:
   - cp -p config/secrets_example.yml config/secrets.yml
