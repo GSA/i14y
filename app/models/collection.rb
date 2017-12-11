@@ -3,7 +3,7 @@ class Collection
   extend NamespacedIndex
 
   index_name index_namespace
-  attribute :token, String
+  attribute :token, String, mapping: { type: 'keyword' }
   validates :token, presence: true
 
   def document_total

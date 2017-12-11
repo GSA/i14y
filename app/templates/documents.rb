@@ -190,14 +190,14 @@ class Documents
 
   def domain_name(json)
     json.domain_name do
-      json.type "string"
+      json.type "text"
       json.analyzer "domain_name_analyzer"
     end
   end
 
   def url_path(json)
     json.url_path do
-      json.type "string"
+      json.type "text"
       json.analyzer "url_path_analyzer"
     end
   end
@@ -205,7 +205,7 @@ class Documents
   def dynamic_templates(json)
     json.dynamic_templates do
       language_templates(json)
-      string_fields_template(json, "default")
+      string_fields_template(json, "text")
     end
   end
 
@@ -242,7 +242,7 @@ class Documents
           json.match_mapping_type "string"
           json.mapping do
             json.analyzer "#{locale}_analyzer"
-            json.type "string"
+            json.type "text"
             json.copy_to 'bigrams'
           end
         end

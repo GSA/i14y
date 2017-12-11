@@ -7,17 +7,17 @@ module Templatable
 
   def keyword(json, field)
     json.set! field do
-      json.type "string"
-      json.index "not_analyzed"
+      json.type "keyword"
+      json.index true
     end
   end
 
-  def string_fields_template(json, analyzer)
+  def string_fields_template(json, type)
     json.child! do
       json.string_fields do
         json.mapping do
-          json.analyzer analyzer
-          json.type "string"
+          json.type type
+          json.index true
         end
         json.match_mapping_type "string"
         json.match "*"
