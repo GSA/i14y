@@ -35,9 +35,7 @@ describe API::V1::Collections do
         expect(collection.token).to eq("secret")
       end
 
-      context 'but i14y is in read-only mode' do
-        include_context 'read-only mode'
-      end
+      it_behaves_like 'a data modifying request made during read-only mode'
     end
 
     context 'a required parameter is empty/blank' do
@@ -111,9 +109,7 @@ describe API::V1::Collections do
         expect(Collection.exists?("agency_blogs")).to be_falsey
       end
 
-      context 'but i14y is in read-only mode' do
-        include_context 'read-only mode'
-      end
+      it_behaves_like 'a data modifying request made during read-only mode'
     end
   end
 

@@ -1,4 +1,4 @@
-shared_context 'read-only mode' do
+shared_examples 'a data modifying request made during read-only mode' do
   let(:allow_updates) { false }
 
   it 'returns a read-only-mode-releated failure message as JSON' do

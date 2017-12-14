@@ -62,9 +62,7 @@ describe API::V1::Documents do
         expect(document.tags).to match_array(['bar blat', 'foo'])
       end
 
-      context 'but i14y is in read-only mode' do
-        include_context 'read-only mode'
-      end
+      it_behaves_like 'a data modifying request made during read-only mode'
     end
 
     context 'trying to create an existing document' do
@@ -232,9 +230,7 @@ describe API::V1::Documents do
         expect(document.changed).to eq('2016-01-01T10:00:01Z')
       end
 
-      context 'but i14y is in read-only mode' do
-        include_context 'read-only mode'
-      end
+      it_behaves_like 'a data modifying request made during read-only mode'
     end
   end
 
@@ -255,9 +251,7 @@ describe API::V1::Documents do
         expect(Document.exists?(id)).to be_falsey
       end
 
-      context 'but i14y is in read-only mode' do
-        include_context 'read-only mode'
-      end
+      it_behaves_like 'a data modifying request made during read-only mode'
     end
 
     context 'deleting a non-existent document' do
