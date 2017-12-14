@@ -1,2 +1,2 @@
-yaml = YAML.load_file("#{Rails.root}/config/access_control.yml") rescue { }
-I14y::Application.config.updates_allowed = !!yaml['updates_allowed']
+config = Rails.application.config_for(:access_control)
+I14y::Application.config.updates_allowed = !!config['updates_allowed']

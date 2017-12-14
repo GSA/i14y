@@ -1,1 +1,11 @@
-updates_allowed: true
+default: &DEFAULT
+  updates_allowed: true
+
+development:
+  <<: *DEFAULT
+
+test:
+  <<: *DEFAULT
+
+production:
+  <<: *DEFAULT
