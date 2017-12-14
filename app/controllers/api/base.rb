@@ -1,7 +1,9 @@
 module API
   class Base < Grape::API
     rescue_from ReadOnlyAccessControl::DisallowedUpdate do
-      rack_response({ developer_message: "The i14y API is currently in read-only mode.", status: 503 }.to_json, 503)
+      message = 'The i14y API is currently in read-only mode.'
+      message += ' ' + I14y::Application.config.maintenance_message if I14y::Application.config.maintenance_message
+      rack_response({ developer_message: message, status: 503 }.to_json, 503)
     end
 
     rescue_from Elasticsearch::Persistence::Repository::DocumentNotFound do |e|

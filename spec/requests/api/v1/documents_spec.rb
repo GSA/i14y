@@ -32,8 +32,10 @@ describe API::V1::Documents do
   end
 
   let(:allow_updates) { true }
+  let(:maintenance_message) { nil }
   before do
     I14y::Application.config.updates_allowed = allow_updates
+    I14y::Application.config.maintenance_message = maintenance_message
   end
 
   describe "POST /api/v1/documents" do

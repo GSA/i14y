@@ -8,4 +8,15 @@ shared_examples 'a data modifying request made during read-only mode' do
       'developer_message' => 'The i14y API is currently in read-only mode.'
     }))
   end
+
+  context 'when a specific maintenance message is configured' do
+    let(:maintenance_message) { 'Sorry about that!' }
+
+    it 'additionally includes the specific maintanance message' do
+      expect(JSON.parse(response.body)).to match(hash_including({
+        'status' => 503,
+        'developer_message' => 'The i14y API is currently in read-only mode. Sorry about that!'
+      }))
+    end
+  end
 end
