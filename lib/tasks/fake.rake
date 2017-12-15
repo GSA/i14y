@@ -3,7 +3,7 @@ namespace :fake do
   # Sample usage, to create 10 documents for the collection with handle 'my_drawer':
   # rake fake:documents[my_drawer,10]
 
-  task :documents, [:index_name, :document_count] => [:environment] do |t, args|
+  task :documents, [:index_name, :document_count] => [:environment] do |_t, args|
     Document.index_name = Document.index_namespace(args[:index_name])
     count = args[:document_count].to_i
 
@@ -26,7 +26,7 @@ namespace :fake do
   end
 
   def fake_url
-    domain = [ [nil,'www','coffee','pie'].sample, 'twinpeaks.gov'].compact.join('.')
+    domain = [[nil,'www','coffee','pie'].sample, 'twinpeaks.gov'].compact.join('.')
     directories = [%w(plastic fish mill).sample, %w(gum whittling fire).sample].join('/')
     file = Faker::TwinPeaks.location.parameterize
     filetype = %w(html doc pdf).sample

@@ -16,7 +16,7 @@ namespace :i14y do
   end
 
   desc "Copies data from one version of the i14y index to the next (e.g., collections, documents) and updates the alias"
-  task :reindex, [:entity_name] => [:environment] do |t, args|
+  task :reindex, [:entity_name] => [:environment] do |_t, args|
     entity_name = args.entity_name
     persistence_model_klass = entity_name.singularize.camelize.constantize
     klass = entity_name.camelize.constantize
