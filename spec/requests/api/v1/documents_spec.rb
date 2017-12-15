@@ -31,6 +31,13 @@ describe API::V1::Documents do
     { 'HTTP_AUTHORIZATION' => credentials }
   end
 
+  let(:allow_updates) { true }
+  let(:maintenance_message) { nil }
+  before do
+    I14y::Application.config.updates_allowed = allow_updates
+    I14y::Application.config.maintenance_message = maintenance_message
+  end
+
   describe "POST /api/v1/documents" do
     context 'success case' do
       before do
@@ -56,6 +63,8 @@ describe API::V1::Documents do
         expect(document.content).to eq('my content')
         expect(document.tags).to match_array(['bar blat', 'foo'])
       end
+
+      it_behaves_like 'a data modifying request made during read-only mode'
     end
 
     context 'trying to create an existing document' do
@@ -237,6 +246,7 @@ describe API::V1::Documents do
         expect(document.changed).to eq('2016-01-01T10:00:01Z')
       end
 
+      it_behaves_like 'a data modifying request made during read-only mode'
     end
   end
 
@@ -257,6 +267,7 @@ describe API::V1::Documents do
         expect(Document.exists?(id)).to be_falsey
       end
 
+      it_behaves_like 'a data modifying request made during read-only mode'
     end
 
     context 'deleting a non-existent document' do

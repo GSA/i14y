@@ -8,6 +8,13 @@ describe API::V1::Collections do
     { 'HTTP_AUTHORIZATION' => credentials }
   end
 
+  let(:allow_updates) { true }
+  let(:maintenance_message) { nil }
+  before do
+    I14y::Application.config.updates_allowed = allow_updates
+    I14y::Application.config.maintenance_message = maintenance_message
+  end
+
   describe "POST /api/v1/collections" do
     context 'success case' do
       before do
@@ -29,6 +36,8 @@ describe API::V1::Collections do
         collection = Collection.find("agency_blogs")
         expect(collection.token).to eq("secret")
       end
+
+      it_behaves_like 'a data modifying request made during read-only mode'
     end
 
     context 'a required parameter is empty/blank' do
@@ -102,6 +111,7 @@ describe API::V1::Collections do
         expect(Collection.exists?("agency_blogs")).to be_falsey
       end
 
+      it_behaves_like 'a data modifying request made during read-only mode'
     end
   end
 

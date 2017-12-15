@@ -15,6 +15,8 @@ module API
         true
       end
 
+      helpers ReadOnlyAccessControl
+
       helpers do
         def ok(user_message)
           { status: 200, developer_message: "OK", user_message: user_message }
@@ -41,6 +43,7 @@ module API
                    desc: "Token to be used when authenticating Document API calls"
         end
         post do
+          check_updates_allowed
           handle = params[:handle]
           collection = Collection.create(_id: handle, token: params[:token])
           error!(collection.errors.messages, 400) unless collection.valid?
@@ -53,6 +56,7 @@ module API
 
         desc "Delete a collection"
         delete ':handle' do
+          check_updates_allowed
           handle = params.delete(:handle)
           collection = Collection.find(handle)
           error!(collection.errors.messages, 400) unless collection.destroy

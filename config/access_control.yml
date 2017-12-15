@@ -1,0 +1,12 @@
+default: &DEFAULT
+  updates_allowed: true
+  maintenance_message: Please try again in one hour.
+
+development:
+  <<: *DEFAULT
+
+test:
+  <<: *DEFAULT
+
+production:
+  <<: *DEFAULT

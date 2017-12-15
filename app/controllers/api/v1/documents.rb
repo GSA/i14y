@@ -19,6 +19,8 @@ module API
         true
       end
 
+      helpers ReadOnlyAccessControl
+
       helpers do
         def ok(user_message)
           { status: 200, developer_message: "OK", user_message: user_message }
@@ -29,6 +31,10 @@ module API
         rescue Elasticsearch::Persistence::Repository::DocumentNotFound, Elasticsearch::Transport::Transport::Errors::BadRequest
           false
         end
+      end
+
+      before do
+        check_updates_allowed
       end
 
       resource :documents do
