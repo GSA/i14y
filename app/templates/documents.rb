@@ -168,10 +168,17 @@ class Documents
     json.properties do
       %w(updated created).each { |field| date(json, field) }
       %w(document_id language path tags).each { |field| keyword(json, field) }
+      basename(json)
       url_path(json)
       domain_name(json)
       promote(json)
       bigrams(json)
+    end
+  end
+
+  def basename(json)
+    json.basename do
+      json.type "text"
     end
   end
 
