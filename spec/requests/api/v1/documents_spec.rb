@@ -37,6 +37,9 @@ describe API::V1::Documents do
     I14y::Application.config.updates_allowed = allow_updates
     I14y::Application.config.maintenance_message = maintenance_message
   end
+  after do
+    I14y::Application.config.updates_allowed = true
+  end
 
   describe "POST /api/v1/documents" do
     context 'success case' do
