@@ -1,7 +1,7 @@
 class Documents
   include Templatable
-  MINIMAL_STEMMERS = { de: "german", en: "english", fr: "french", pt: "portuguese" }
-  LIGHT_STEMMERS = { es: "spanish", fi: "finnish", hu: "hungarian", it: "italian", ru: "russian", sv: "swedish" }
+  LIGHT_STEMMERS = { fr: "french", de: "german", es: "spanish", it: "italian", pt: "portuguese"}
+  STANDARD_STEMMERS = { en: "english", fi: "finnish", hu: "hungarian", ru: "russian", sv: "swedish" }
 
   def initialize
     @synonym_filter_locales = Set.new
@@ -217,8 +217,8 @@ class Documents
   end
 
   def language_stemmers(json)
-    minimal_stemmers(json)
     light_stemmers(json)
+    standard_stemmers(json)
     japanese_position_filter(json)
   end
 
@@ -235,9 +235,9 @@ class Documents
     end
   end
 
-  def minimal_stemmers(json)
-    MINIMAL_STEMMERS.each do |locale, language|
-      generic_stemmer(json, locale, language, "minimal")
+  def standard_stemmers(json)
+    STANDARD_STEMMERS.each do |locale, language|
+      generic_stemmer(json, locale, language, "standard")
     end
   end
 
