@@ -1,6 +1,6 @@
 class Documents
   include Templatable
-  LIGHT_STEMMERS = { fr: "french", de: "german", es: "spanish", it: "italian", pt: "portuguese"}
+  LIGHT_STEMMERS = { fr: "french", de: "german", es: "spanish", it: "italian", pt: "portuguese" }
   STANDARD_STEMMERS = { en: "english", fi: "finnish", hu: "hungarian", ru: "russian", sv: "swedish" }
 
   def initialize

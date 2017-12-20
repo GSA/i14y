@@ -50,8 +50,7 @@ module Templatable
   def generic_stemmer(json, locale, language, degree)
     json.set! "#{locale}_stem_filter" do
       json.type "stemmer"
-      stemmer_name =
-        degree == "standard" ? '' : "#{degree}_"
+      stemmer_name = degree == "standard" ? '' : "#{degree}_"
       json.name "#{stemmer_name}#{language}"
     end
   end
