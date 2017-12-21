@@ -1,2 +1,4 @@
 hosts:
   - localhost
+user: elastic
+password: changeme

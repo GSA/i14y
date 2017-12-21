@@ -2,11 +2,13 @@ class Document
   include Elasticsearch::Persistence::Model
   extend NamespacedIndex
 
+  settings index: { number_of_shards: 1 }
+
   index_name index_namespace
 
-  attribute :path, String
+  attribute :path, String, mapping: { type: 'keyword' }
   validates :path, presence: true
-  attribute :language, String
+  attribute :language, String, mapping: { type: 'keyword' }
   validates :language, presence: true
   attribute :created, DateTime
 
@@ -17,7 +19,7 @@ class Document
   attribute :updated, DateTime
   attribute :changed, DateTime
   attribute :promote, Boolean
-  attribute :tags, String
+  attribute :tags, String, mapping: { type: 'keyword' }
 
   LANGUAGE_FIELDS = [:title, :description, :content]
 

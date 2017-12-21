@@ -1,7 +1,7 @@
 class Documents
   include Templatable
-  MINIMAL_STEMMERS = { de: "german", en: "english", fr: "french", pt: "portuguese" }
-  LIGHT_STEMMERS = { es: "spanish", fi: "finnish", hu: "hungarian", it: "italian", ru: "russian", sv: "swedish" }
+  LIGHT_STEMMERS = { fr: "french", de: "german", es: "spanish", it: "italian", pt: "portuguese" }
+  STANDARD_STEMMERS = { en: "english", fi: "finnish", hu: "hungarian", ru: "russian", sv: "swedish" }
 
   def initialize
     @synonym_filter_locales = Set.new
@@ -168,10 +168,17 @@ class Documents
     json.properties do
       %w(updated created).each { |field| date(json, field) }
       %w(document_id language path tags).each { |field| keyword(json, field) }
+      basename(json)
       url_path(json)
       domain_name(json)
       promote(json)
       bigrams(json)
+    end
+  end
+
+  def basename(json)
+    json.basename do
+      json.type "text"
     end
   end
 
@@ -190,14 +197,14 @@ class Documents
 
   def domain_name(json)
     json.domain_name do
-      json.type "string"
+      json.type "text"
       json.analyzer "domain_name_analyzer"
     end
   end
 
   def url_path(json)
     json.url_path do
-      json.type "string"
+      json.type "text"
       json.analyzer "url_path_analyzer"
     end
   end
@@ -205,13 +212,13 @@ class Documents
   def dynamic_templates(json)
     json.dynamic_templates do
       language_templates(json)
-      string_fields_template(json, "default")
+      string_fields_template(json, "text")
     end
   end
 
   def language_stemmers(json)
-    minimal_stemmers(json)
     light_stemmers(json)
+    standard_stemmers(json)
     japanese_position_filter(json)
   end
 
@@ -228,9 +235,9 @@ class Documents
     end
   end
 
-  def minimal_stemmers(json)
-    MINIMAL_STEMMERS.each do |locale, language|
-      generic_stemmer(json, locale, language, "minimal")
+  def standard_stemmers(json)
+    STANDARD_STEMMERS.each do |locale, language|
+      generic_stemmer(json, locale, language, "standard")
     end
   end
 
@@ -242,7 +249,7 @@ class Documents
           json.match_mapping_type "string"
           json.mapping do
             json.analyzer "#{locale}_analyzer"
-            json.type "string"
+            json.type "text"
             json.copy_to 'bigrams'
           end
         end

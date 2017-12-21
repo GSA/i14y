@@ -515,4 +515,20 @@ describe DocumentSearch do
       expect(document_search_results.results.first['title']).to eq 'yes'
     end
   end
+
+  context 'stemming' do
+    let(:query) { 'renew' }
+
+    before do
+      Document.create(common_params.merge(content: 'passport renewal'))
+      Document.create(common_params.merge(content: 'renew passport'))
+      Document.create(common_params.merge(content: 'something unrelated'))
+      Document.refresh_index!
+    end
+
+    it 'finds similar similar by word stem' do
+      expect(document_search_results.total).to eq 2
+      expect(document_search_results.results.first['content']).to eq "renew passport"
+    end
+  end
 end

@@ -41,9 +41,9 @@ class DocumentQuery
         field: 'bigrams',
         size: 1,
         highlight: suggestion_highlight,
-        collate: { query: { multi_match: { query: "{{suggestion}}",
-                                           type:   "phrase",
-                                           fields: "*_#{language}" } }
+        collate: { query: { source: { multi_match: { query: "{{suggestion}}",
+                                                     type:   "phrase",
+                                                     fields: "*_#{language}" } } }
         }
       }
     }
@@ -119,9 +119,9 @@ class DocumentQuery
     #DSL reference: https://github.com/elastic/elasticsearch-ruby/tree/master/elasticsearch-dsl
     doc_query = self
     search.query do
-      filtered do
+      bool do
         if doc_query.query.present?
-          query do
+          must do
             bool do
               #prefer bigram matches
               should { match bigrams: { operator: 'and', query: doc_query.query } }
@@ -170,19 +170,19 @@ class DocumentQuery
               end
             end
 
-            must do
-              terms tags: doc_query.tags, execution: 'and' if doc_query.tags.present?
-            end
+            doc_query.tags.each { |tag| must { term tags: tag } } if doc_query.tags.present?
 
             must { range created: doc_query.date_range } if doc_query.timestamp_filters_present?
 
-            must_not do
-              terms tags: doc_query.ignore_tags, execution: 'plain' if doc_query.ignore_tags.present?
+            if doc_query.ignore_tags.present?
+              must_not do
+                terms tags: doc_query.ignore_tags
+              end
             end
 
             doc_query.excluded_sites.each do |site_filter|
               if site_filter.url_path.present?
-                must_not { query { regexp path: { value: "https?:\/\/#{site_filter.domain_name}#{site_filter.url_path}/.*" } } }
+                must_not { regexp path: { value: "https?:\/\/#{site_filter.domain_name}#{site_filter.url_path}/.*" } }
               else
                 must_not { term domain_name: site_filter.domain_name }
               end
