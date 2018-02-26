@@ -250,6 +250,7 @@ class Documents
           json.mapping do
             json.analyzer "#{locale}_analyzer"
             json.type "text"
+            json.term_vector "with_positions_offsets"
             json.copy_to 'bigrams'
           end
         end
