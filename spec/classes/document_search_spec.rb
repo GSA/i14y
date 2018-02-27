@@ -498,7 +498,7 @@ describe DocumentSearch do
 
     it 'should return exact matches only' do
       expect(document_search_results.total).to eq 1
-      expect(document_search_results.results.first['content']).to eq "amazing spiderman"
+      expect(document_search_results.results.first['content']).to eq "amazing spiderman"
     end
   end
 
