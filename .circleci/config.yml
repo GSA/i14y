@@ -1,0 +1,61 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/ruby:2.3.6-node-browsers
+    working_directory: ~/app
+    environment:
+      ES_VER: 5.6.8
+    steps:
+      - checkout
+      - run: cp -p config/secrets_example.yml config/secrets.yml
+      - restore_cache:
+          key: elasticsearch-5.6.8-0
+      - run:
+          name: Installing Elasticsearch
+          command: |
+            if [ ! -d ~/elasticsearch-$ES_VER ]; then
+              curl -L -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$ES_VER.tar.gz
+              tar -xvf elasticsearch-$ES_VER.tar.gz -C ~/
+              PLUGINS=(
+                "analysis-icu"
+                "analysis-kuromoji"
+                "analysis-smartcn"
+              )
+              for plugin in ${PLUGINS[*]}; do ~/elasticsearch-$ES_VER/bin/elasticsearch-plugin install $plugin; done
+            fi
+      - save_cache:
+          key: elasticsearch-5.6.8-0
+          paths:
+            - ~/elasticsearch-5.6.8
+      - run:
+          name: Run Elasticsearch in background
+          command: ~/elasticsearch-$ES_VER/bin/elasticsearch
+          background: true
+      - restore_cache:
+           key: bundle-{{ checksum "Gemfile.lock" }}
+      - run: bundle install --path vendor/bundle
+      - save_cache:
+          key: bundle-{{ checksum "Gemfile.lock" }}
+          paths:
+            - ~/app/vendor/bundle
+      - run:
+          name: Setup Code Climate test-reporter
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+      - run:
+          name: Waiting for Elasticsearch
+          command: dockerize --wait http://localhost:9200 -timeout 1m
+      - run:
+          name: RSpec
+          environment:
+            CC_TEST_REPORTER_ID: 09d5a7d453407f367679c8f86c4c582ec3583bed3c7a06286d61d16e89290bd1
+          command: |
+            bundle exec rake i14y:setup
+            ./cc-test-reporter before-build
+            bundle exec rspec spec
+            ./cc-test-reporter after-build --exit-code $?
+      - store_artifacts:
+          path: coverage
+          destination: ~/coverage
