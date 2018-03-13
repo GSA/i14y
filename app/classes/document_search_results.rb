@@ -26,18 +26,20 @@ class DocumentSearchResults
     hits.map do |hit|
       highlight = hit['highlight']
       source = hit['_source']
-      if highlight.present?
-        source['title'] = highlight["title_#{source['language']}"].first if highlight["title_#{source['language']}"]
-        %w(description content).each do |optional_field|
-          language_field = "#{optional_field}_#{source['language']}"
-          source[optional_field] = highlight[language_field].join('...') if highlight[language_field]
-        end
-      end
-      %w(created_at created changed updated_at updated).each do |date|
+      extract_optional_field!(source, highlight) if highlight.present?
+
+      %w( created_at created changed updated_at updated ).each do |date|
         source[date] = DateTime.parse(source[date]).utc.to_s if source[date].present?
       end
       source
     end
   end
 
+  def extract_optional_field!(source, highlight)
+    source['title'] = highlight["title_#{source['language']}"].first if highlight["title_#{source['language']}"]
+    %w(description content).each do |optional_field|
+      language_field = "#{optional_field}_#{source['language']}"
+      source[optional_field] = highlight[language_field].join('...') if highlight[language_field]
+    end
+  end
 end

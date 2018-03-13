@@ -13,10 +13,7 @@ class DocumentSearch
   def search
     i14y_search_results = execute_client_search
     if i14y_search_results.total.zero? && i14y_search_results.suggestion.present?
-      suggestion = i14y_search_results.suggestion
-      doc_query.query = suggestion['text']
-      i14y_search_results = execute_client_search
-      i14y_search_results.override_suggestion(suggestion) if i14y_search_results.total > 0
+      i14y_search_results = search_with_suggestion(i14y_search_results.suggestion)
     end
     i14y_search_results
   rescue StandardError => e
@@ -26,6 +23,13 @@ class DocumentSearch
   end
 
   private
+
+  def search_with_suggestion(suggestion)
+    doc_query.query = suggestion['text']
+    i14y_search_results = execute_client_search
+    i14y_search_results.override_suggestion(suggestion) if i14y_search_results.total > 0
+    i14y_search_results
+  end
 
   def execute_client_search
     params = { index: indices, body: doc_query.body, from: offset, size: size }
