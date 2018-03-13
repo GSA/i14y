@@ -18,7 +18,7 @@ class DocumentSearchResults
     suggestion = suggestions.first['options'].first
     suggestion.delete('score')
     suggestion
-  rescue NoMethodError => e
+  rescue NoMethodError
     nil
   end
 

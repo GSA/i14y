@@ -154,6 +154,7 @@ describe DocumentSearch do
       before do
         Document.create(language: 'en', title: 'low frequency term', description: 'some description', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
         Document.create(language: 'en', title: 'very rare words', description: 'some other description', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
+
         80.times do |_x|
           Document.create(language: 'en', title: 'high occurrence tokens', description: 'these are like stopwords', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
           Document.create(language: 'en', title: 'showing up everywhere', description: 'these are like stopwords', created: DateTime.now, path: 'http://www.agency.gov/page1.html')

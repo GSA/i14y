@@ -115,6 +115,7 @@ class DocumentQuery
     }
   end
 
+  # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
   def build_search_query
     #DSL reference: https://github.com/elastic/elasticsearch-ruby/tree/master/elasticsearch-dsl
     doc_query = self
@@ -192,4 +193,5 @@ class DocumentQuery
       end
     end
   end
+  # rubocop:enable Metrics/CyclomaticComplexity, Metrics/MethodLength
 end
