@@ -1,5 +1,5 @@
 module TestServices
-  extend self
+  module_function
 
   def create_es_indexes
     es_collections_index_name = [Rails.env, I14y::APP_NAME, 'collections', 'v1'].join('-')

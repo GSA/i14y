@@ -8,7 +8,7 @@ module API
       rescue_from Grape::Exceptions::ValidationErrors do |e|
         rack_response({ developer_message: e.message, status: 400 }.to_json, 400)
       end
-      rescue_from Elasticsearch::Transport::Transport::Errors::Conflict do |e|
+      rescue_from Elasticsearch::Transport::Transport::Errors::Conflict do |_e|
         rack_response({ developer_message: 'Document already exists with that ID', status: 422 }.to_json, 422)
       end
 

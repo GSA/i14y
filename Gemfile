@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '~> 2.3.6'
+ruby '2.3.6'
 gem 'rails', '5.1.4'
 
 gem 'rack-cors', '~> 0.4.1'
@@ -29,6 +29,12 @@ group :development, :test do
   gem 'pry-rails', '~> 0.3'
   gem 'faker', '~> 1.7'
   gem 'awesome_print', '~> 1.8' #To enable in Pry: https://github.com/awesome-print/awesome_print#pry-integration
+  # Updating rubocop? Update & run mry to ensure rubocop.yml is updated:
+  # https://github.com/pocke/mry#usage (include the target version to add new cops)
+  # Also bump the rubocop channel in .codeclimate.yml:
+  # https://docs.codeclimate.com/v1.0/docs/rubocop#section-using-rubocop-s-newer-versions
+  gem 'rubocop', '0.52.1'
+  gem 'mry', '~> 0.52.0'
 end
 
 group :test do
