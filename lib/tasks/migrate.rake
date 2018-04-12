@@ -1,6 +1,6 @@
 require 'csv'
 
-Migration = Struct.new(:collection_name, :primary_shards, :replica_shards, :reindex_with_task) do
+Migration = Struct.new(:collection_name, :primary_shards, :replica_shards, :reindex_with_task, :ingest_pipeline) do
   def create_index
     puts "creating index '#{next_version_index_name}' with primary shard count #{primary_shards}"
     Collection.create_index!({
@@ -26,12 +26,13 @@ Migration = Struct.new(:collection_name, :primary_shards, :replica_shards, :rein
   end
 
   def reindex
+    dest_pipeline = ingest_pipeline.blank? ? { } : { pipeline: ingest_pipeline }
     wait_for_completion = reindex_with_task == 'n'
     puts "reindexing #{current_version_index_name} into #{next_version_index_name}"
     response = Elasticsearch::Persistence.client.reindex({
       body: {
         source: { index: current_version_index_name },
-        dest: { index: next_version_index_name },
+        dest: { index: next_version_index_name }.merge(dest_pipeline),
       },
       wait_for_completion: wait_for_completion,
     })
