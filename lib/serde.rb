@@ -15,7 +15,7 @@ module Serde
 
   def self.deserialize_hash(hash, language, language_field_keys)
     derivative_language_fields = language_field_keys.collect { |key| "#{key}_#{language}" }
-    misc_fields = %w(basename url_path domain_name bigrams)
+    misc_fields = %w(basename extension url_path domain_name bigrams)
     hash.except(*(derivative_language_fields + misc_fields))
   end
 
@@ -25,6 +25,7 @@ module Serde
     hash = {}
     uri = URI.parse(path)
     hash[:basename] = File.basename(uri.path, '.*')
+    hash[:extension] = File.extname(uri.path).sub(%r{^.}, '').downcase
     hash[:url_path] = uri.path
     hash[:domain_name] = uri.host
     hash
