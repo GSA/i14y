@@ -118,73 +118,80 @@ class DocumentQuery
   def build_search_query
     #DSL reference: https://github.com/elastic/elasticsearch-ruby/tree/master/elasticsearch-dsl
     doc_query = self
-    search.query do
-      bool do
-        if doc_query.query.present?
-          must do
-            bool do
-              #prefer bigram matches
-              should { match bigrams: { operator: 'and', query: doc_query.query } }
-              should { term  promote: true }
 
-              #prefer_word_form_matches
+    search.query do
+      function_score do
+        functions [{ gauss: { created: { origin: 'now', scale: '1825d', offset: '30d' } } }]
+
+        query do
+          bool do
+            if doc_query.query.present?
               must do
                 bool do
-                  should do
-                    bool do
-                      must do
-                        simple_query_string do
-                          query doc_query.query
-                          fields doc_query.boosted_fields
-                        end
-                      end
+                  #prefer bigram matches
+                  should { match bigrams: { operator: 'and', query: doc_query.query } }
+                  should { term  promote: true }
 
-                      must do
+                  #prefer_word_form_matches
+                  must do
+                    bool do
+                      should do
                         bool do
-                          doc_query.full_text_fields.each do |field|
-                            should { common({ field => doc_query.common_terms_hash }) }
+                          must do
+                            simple_query_string do
+                              query doc_query.query
+                              fields doc_query.boosted_fields
+                            end
+                          end
+
+                          must do
+                            bool do
+                              doc_query.full_text_fields.each do |field|
+                                should { common({ field => doc_query.common_terms_hash }) }
+                              end
+                            end
                           end
                         end
                       end
+
+                      should { match basename: { operator: 'and', query: doc_query.query } }
+                      should { match tags:     { operator: 'and', query: doc_query.query.downcase } }
                     end
                   end
-
-                  should { match basename: { operator: 'and', query: doc_query.query } }
-                  should { match tags:     { operator: 'and', query: doc_query.query.downcase } }
-                end
-              end
-            end
-          end
-        end
-
-        filter do
-          bool do
-            must { term language: doc_query.language } if doc_query.language.present?
-
-            doc_query.included_sites.each do |site_filter|
-              should do
-                bool do
-                  must { term domain_name: site_filter.domain_name }
-                  must { term url_path: site_filter.url_path } if site_filter.url_path.present?
                 end
               end
             end
 
-            doc_query.tags.each { |tag| must { term tags: tag } } if doc_query.tags.present?
+            filter do
+              bool do
+                must { term language: doc_query.language } if doc_query.language.present?
 
-            must { range created: doc_query.date_range } if doc_query.timestamp_filters_present?
+                doc_query.included_sites.each do |site_filter|
+                  should do
+                    bool do
+                      must { term domain_name: site_filter.domain_name }
+                      must { term url_path: site_filter.url_path } if site_filter.url_path.present?
+                    end
+                  end
+                end
 
-            if doc_query.ignore_tags.present?
-              must_not do
-                terms tags: doc_query.ignore_tags
-              end
-            end
+                doc_query.tags.each { |tag| must { term tags: tag } } if doc_query.tags.present?
 
-            doc_query.excluded_sites.each do |site_filter|
-              if site_filter.url_path.present?
-                must_not { regexp path: { value: "https?:\/\/#{site_filter.domain_name}#{site_filter.url_path}/.*" } }
-              else
-                must_not { term domain_name: site_filter.domain_name }
+                must { range created: doc_query.date_range } if doc_query.timestamp_filters_present?
+
+                if doc_query.ignore_tags.present?
+                  must_not do
+                    terms tags: doc_query.ignore_tags
+                  end
+                end
+
+                doc_query.excluded_sites.each do |site_filter|
+                  if site_filter.url_path.present?
+                    must_not { regexp path: { value: "https?:\/\/#{site_filter.domain_name}#{site_filter.url_path}/.*" } }
+                  else
+                    must_not { term domain_name: site_filter.domain_name }
+                  end
+                end
               end
             end
           end
