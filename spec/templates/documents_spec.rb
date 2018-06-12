@@ -22,27 +22,55 @@ describe 'documents template' do
   end
 
   describe 'domain_minus_ext analyzer' do
+    subject(:search_results) do
+      Elasticsearch::Persistence.client.search({
+        index: INDEX_NAME,
+        type: TYPE_NAME,
+        body: {
+          query: search_query
+        }
+      })['hits']['hits']
+    end
+
     LANGUAGE_ANALYZER_LOCALES.each do |locale|
+      let(:body) { { "analyzed_field_#{locale}" => indexed_field } }
+      let(:search_query) { { 'term' => { "analyzed_field_#{locale}.domain_minus_ext" => search_term } } }
+
       context "when analyzing a field with locale #{locale}" do
-        let(:body) do
-          {
-            "analyzed_field_#{locale}" => 'Did you know that amazon.com sells more than just books?'
-          }
+        context "when encountering a mention of a domain ending in the .com TLD" do
+          let(:indexed_field) { 'Did you know that amazon.com sells more than just books?' }
+          let(:search_term) { 'amazon' }
+
+          it "allows a document to be searched by a domain mentioned in analyzed_field_#{locale} without its TLD" do
+            expect(search_results).to_not be_empty
+          end
         end
 
-        it "allows a document to be searched by a domain mentioned in analyzed_field_#{locale} without its TLD" do
-          search_results = Elasticsearch::Persistence.client.search({
-            index: INDEX_NAME,
-            type: TYPE_NAME,
-            body: {
-              query: {
-                'term' => {
-                  "analyzed_field_#{locale}.domain_minus_ext" => 'amazon',
-                }
-              }
-            }
-          })['hits']['hits']
-          expect(search_results).to_not be_empty
+        context "when encountering a mention of a subdomain with a .com TLD" do
+          let(:indexed_field) { 'Did you know that smile.amazon.com sells more than just books?' }
+          let(:search_term) { 'smile.amazon' }
+
+          it "allows a document to be searched by a subdomain mentioned in analyzed_field_#{locale} without its TLD" do
+            expect(search_results).to_not be_empty
+          end
+        end
+
+        context "when the target value is mixed case" do
+          let(:indexed_field) { 'Did you know that AmAzOn.com sells more than just books?' }
+          let(:search_term) { 'amazon' }
+
+          it "returns a downcased domain mentioned in analyzed_field_#{locale} without its TLD" do
+            expect(search_results).to_not be_empty
+          end
+        end
+
+        context "when the TLD is not .com" do
+          let(:indexed_field) { 'Did you know that amazon.org sells more than just books?' }
+          let(:search_term) { 'amazon' }
+
+          it "fails to return a domain mentioned in analyzed_field_#{locale}" do
+            expect(search_results).to be_empty
+          end
         end
       end
     end

@@ -91,6 +91,7 @@ class Documents
 
   def domain_minus_ext_analyzer(json)
     json.domain_minus_ext_analyzer do
+      json.filter "lowercase"
       json.tokenizer "domain_minus_ext_tokenizer"
     end
   end
