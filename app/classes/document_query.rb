@@ -81,6 +81,12 @@ class DocumentQuery
     end
   end
 
+  def functions
+    [
+      { gauss: { created: { origin: 'now', scale: '1825d', offset: '30d', decay: 0.3 } } }
+    ]
+  end
+
   private
 
   def parse_query(query)
@@ -121,7 +127,7 @@ class DocumentQuery
 
     search.query do
       function_score do
-        functions [{ gauss: { created: { origin: 'now', scale: '1825d', offset: '30d' } } }]
+        functions doc_query.functions
 
         query do
           bool do
