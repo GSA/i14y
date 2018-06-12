@@ -249,20 +249,46 @@ describe DocumentSearch do
 
   describe "sorting by date" do
     before do
-      Document.create(language: 'en', title: 'historical document 1 is historical', description: 'historical description 1 is historical', created: 1.month.ago, path: 'http://www.agency.gov/dir1/page1.html')
-      Document.create(language: 'en', title: 'historical document 2 is historical', description: 'historical description 2', created: 1.week.ago, path: 'http://www.agency.gov/dir1/page2.html')
-      Document.create(language: 'en', title: 'document 3', description: 'historical description 3', created: DateTime.now, path: 'http://www.agency.gov/dir1/page3.html')
-      Document.create(language: 'en', title: 'document 4', description: 'historical description 4', created: nil, path: 'http://www.agency.gov/dir1/page4.html')
+      Document.create(common_params.merge(created: 2.month.ago, path: 'http://www.agency.gov/2months.html'))
+      Document.create(common_params.merge(created: nil, path: 'http://www.agency.gov/nodate.html'))
+      Document.create(common_params.merge(created: 6.months.ago, path: 'http://www.agency.gov/6months.html'))
+      Document.create(common_params.merge(created: 1.minute.ago, path: 'http://www.agency.gov/1minute.html'))
+      Document.create(common_params.merge(created: 3.years.ago, path: 'http://www.agency.gov/3years.html'))
       Document.refresh_index!
     end
 
-    it 'returns results in reverse chronological order based on created timestamp' do
-      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "historical", size: 10, offset: 0, sort_by_date: true)
-      document_search_results = document_search.search
-      expect(document_search_results.results[0]['path']).to eq('http://www.agency.gov/dir1/page3.html')
-      expect(document_search_results.results[1]['path']).to eq('http://www.agency.gov/dir1/page2.html')
-      expect(document_search_results.results[2]['path']).to eq('http://www.agency.gov/dir1/page1.html')
-      expect(document_search_results.results[3]['path']).to eq('http://www.agency.gov/dir1/page4.html')
+    context 'by default' do
+      let(:document_search) { DocumentSearch.new(search_options.merge(sort_by_date: false)) }
+
+      it 'returns results in reverse chronological order based on created timestamp' do
+        expect(document_search_results.results.map{ |r| r['path'] }).
+          to eq (
+            %w[
+                http://www.agency.gov/nodate.html
+                http://www.agency.gov/1minute.html
+                http://www.agency.gov/2months.html
+                http://www.agency.gov/6months.html
+                http://www.agency.gov/3years.html
+              ]
+          )
+      end
+    end
+
+    context 'when sorting by date' do
+      let(:document_search) { DocumentSearch.new(search_options.merge(sort_by_date: true)) }
+
+      it 'returns results in reverse chronological order based on created timestamp' do
+        expect(document_search_results.results.map{ |r| r['path'] }).
+          to eq (
+            %w[
+                http://www.agency.gov/1minute.html
+                http://www.agency.gov/2months.html
+                http://www.agency.gov/6months.html
+                http://www.agency.gov/3years.html
+                http://www.agency.gov/nodate.html
+              ]
+          )
+      end
     end
   end
 
