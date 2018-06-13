@@ -162,7 +162,7 @@ class Documents
       end
       json.domain_minus_ext_tokenizer do
         json.type "pattern"
-        json.pattern "\\b(?:www.)*(\\S+)\\.(?:com|org|edu|gov|mil|net)\\b"
+        json.pattern "\\b(?:https?:\/\/)?(?:www.)?(\\S+)\\.(?:com|org|edu|gov|mil|net)\\b"
         json.flags "CASE_INSENSITIVE"
         json.group 1
       end

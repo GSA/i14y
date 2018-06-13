@@ -55,6 +55,34 @@ describe 'documents template' do
           end
         end
 
+        context "when encountering a mention of a domain ending in a popular TLD that starts with http://www." do
+          let(:indexed_field) { 'Did you know that http://www.code.org is good for kids?' }
+          let(:search_term) { 'code' }
+
+          it "allows a document to be searched by a domain mentioned in analyzed_field_#{locale} without www and its TLD" do
+            expect(search_results).to_not be_empty
+          end
+        end
+
+
+        context "when encountering a mention of a domain ending in a popular TLD that starts with http:// without www" do
+          let(:indexed_field) { 'Did you know that http://www.code.org is good for kids?' }
+          let(:search_term) { 'code' }
+
+          it "allows a document to be searched by a domain mentioned in analyzed_field_#{locale} without www and its TLD" do
+            expect(search_results).to_not be_empty
+          end
+        end
+
+        context "when encountering a mention of a domain ending in a popular TLD that starts with https://www." do
+          let(:indexed_field) { 'Did you know that http://www.code.org is good for kids?' }
+          let(:search_term) { 'code' }
+
+          it "allows a document to be searched by a domain mentioned in analyzed_field_#{locale} without www and its TLD" do
+            expect(search_results).to_not be_empty
+          end
+        end
+
         context "when encountering a mention of a subdomain with a popular TLD" do
           let(:indexed_field) { 'Did you know that smile.amazon.com sells more than just books?' }
           let(:search_term) { 'smile.amazon' }
