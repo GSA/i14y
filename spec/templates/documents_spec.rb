@@ -37,16 +37,25 @@ describe 'documents template' do
       let(:search_query) { { 'term' => { "analyzed_field_#{locale}.domain_minus_ext" => search_term } } }
 
       context "when analyzing a field with locale #{locale}" do
-        context "when encountering a mention of a domain ending in the .com TLD" do
+        context "when encountering a mention of a domain ending in a popular TLD" do
           let(:indexed_field) { 'Did you know that amazon.com sells more than just books?' }
           let(:search_term) { 'amazon' }
 
-          it "allows a document to be searched by a domain mentioned in analyzed_field_#{locale} without its TLD" do
+          it "allows a document to be searched by the domain mentioned in analyzed_field_#{locale} without its TLD" do
             expect(search_results).to_not be_empty
           end
         end
 
-        context "when encountering a mention of a subdomain with a .com TLD" do
+        context "when encountering a mention of a domain ending in a popular TLD that starts with www." do
+          let(:indexed_field) { 'Did you know that www.code.org is good for kids?' }
+          let(:search_term) { 'code' }
+
+          it "allows a document to be searched by a domain mentioned in analyzed_field_#{locale} without www and its TLD" do
+            expect(search_results).to_not be_empty
+          end
+        end
+
+        context "when encountering a mention of a subdomain with a popular TLD" do
           let(:indexed_field) { 'Did you know that smile.amazon.com sells more than just books?' }
           let(:search_term) { 'smile.amazon' }
 
@@ -56,19 +65,28 @@ describe 'documents template' do
         end
 
         context "when the target value is mixed case" do
-          let(:indexed_field) { 'Did you know that AmAzOn.com sells more than just books?' }
-          let(:search_term) { 'amazon' }
+          let(:indexed_field) { 'The new SeArCh.gOV site is the best' }
+          let(:search_term) { 'search' }
 
           it "returns a downcased domain mentioned in analyzed_field_#{locale} without its TLD" do
             expect(search_results).to_not be_empty
           end
         end
 
-        context "when the TLD is not .com" do
-          let(:indexed_field) { 'Did you know that amazon.org sells more than just books?' }
+        context "when the TLD is not supported" do
+          let(:indexed_field) { 'Did you know that amazon.biz sells more than just books?' }
           let(:search_term) { 'amazon' }
 
           it "fails to return a domain mentioned in analyzed_field_#{locale}" do
+            expect(search_results).to be_empty
+          end
+        end
+
+        context "when the target value is sentence final" do
+          let(:indexed_field) { 'Check out the .org URL from amazon. com is their most popular URL but org is better' }
+          let(:search_term) { 'amazon' }
+
+          it "does not return a domain mentioned a domain mentioned in analyzed_field_#{locale} without its TLD" do
             expect(search_results).to be_empty
           end
         end
