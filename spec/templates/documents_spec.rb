@@ -37,8 +37,8 @@ describe 'documents template' do
       let(:search_query) { { 'term' => { "analyzed_field_#{locale}.domain_minus_ext" => search_term } } }
 
       context "when analyzing a field with locale #{locale}" do
-        tlds = ['com', 'org', 'edu', 'gov', 'mil', 'net']
-          tlds.each do |tld|
+
+          %w[com org edu gov mil net].each do |tld|
             context "when encountering a mention of a domain ending in .#{tld}" do
             let(:indexed_field) { "Did you know that amazon.#{tld} sells more than just books?" }
             let(:search_term) { 'amazon' }
