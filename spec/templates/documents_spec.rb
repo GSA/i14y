@@ -37,12 +37,15 @@ describe 'documents template' do
       let(:search_query) { { 'term' => { "analyzed_field_#{locale}.domain_minus_ext" => search_term } } }
 
       context "when analyzing a field with locale #{locale}" do
-        context "when encountering a mention of a domain ending in a popular TLD" do
-          let(:indexed_field) { 'Did you know that amazon.com sells more than just books?' }
-          let(:search_term) { 'amazon' }
+        tlds = ['com', 'org', 'edu', 'gov', 'mil', 'net']
+          tlds.each do |tld|
+            context "when encountering a mention of a domain ending in .#{tld}" do
+            let(:indexed_field) { "Did you know that amazon.#{tld} sells more than just books?" }
+            let(:search_term) { 'amazon' }
 
-          it "allows a document to be searched by the domain mentioned in analyzed_field_#{locale} without its TLD" do
-            expect(search_results).to_not be_empty
+            it "allows a document to be searched by the domain mentioned in analyzed_field_#{locale} without its TLD" do
+              expect(search_results).to_not be_empty
+            end
           end
         end
 
