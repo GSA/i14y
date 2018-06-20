@@ -59,6 +59,7 @@ class Documents
       bigrams_analyzer(json)
       url_path_analyzer(json)
       domain_name_analyzer(json)
+      domain_minus_ext_analyzer(json)
       default_analyzer(json)
     end
   end
@@ -85,6 +86,13 @@ class Documents
       json.type "custom"
       json.filter "lowercase"
       json.tokenizer "url_path_tokenizer"
+    end
+  end
+
+  def domain_minus_ext_analyzer(json)
+    json.domain_minus_ext_analyzer do
+      json.filter "lowercase"
+      json.tokenizer "domain_minus_ext_tokenizer"
     end
   end
 
@@ -152,6 +160,12 @@ class Documents
         json.delimiter "."
         json.reverse true
       end
+      json.domain_minus_ext_tokenizer do
+        json.type "pattern"
+        json.pattern "\\b(?:https?:\/\/)?(?:www.)?(\\S+)\\.(?:com|org|edu|gov|mil|net)\\b"
+        json.flags "CASE_INSENSITIVE"
+        json.group 1
+      end
     end
   end
 
@@ -171,6 +185,7 @@ class Documents
       basename(json)
       url_path(json)
       domain_name(json)
+      domain_minus_ext(json)
       promote(json)
       bigrams(json)
     end
@@ -206,6 +221,13 @@ class Documents
     json.url_path do
       json.type "text"
       json.analyzer "url_path_analyzer"
+    end
+  end
+
+  def domain_minus_ext(json)
+    json.domain_minus_ext do
+      json.type "text"
+      json.analyzer "domain_minus_ext_analyzer"
     end
   end
 
@@ -252,6 +274,12 @@ class Documents
             json.type "text"
             json.term_vector "with_positions_offsets"
             json.copy_to 'bigrams'
+            json.fields do
+              json.set! 'domain_minus_ext' do
+                json.type 'text'
+                json.analyzer 'domain_minus_ext_analyzer'
+              end
+            end
           end
         end
       end
@@ -275,5 +303,5 @@ class Documents
     @protected_filter_locales.add locale
     linguistic_filter(json, locale, lines, "protected_filter", "keywords", "keyword_marker")
   end
-
 end
+
