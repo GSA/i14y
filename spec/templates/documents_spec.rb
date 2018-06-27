@@ -143,7 +143,7 @@ describe 'documents template' do
             end
           end
 
-          context "when a target value omits an intra-word delimiter and contains mixed words and numbers" do
+          context "when a target value omits an intra-word delimiter (slash) and contains mixed letters and numbers" do
             let(:indexed_field) { 'Form 27B/6 must be filled out before any Central Service technician can do work on the ducts.' }
             let(:search_term) { '27b6' }
 
@@ -152,9 +152,36 @@ describe 'documents template' do
             end
           end
 
-          context "when a target value omits an intra-word delimiter and contains mixed words and numbers that are part of the whole word" do
+          context "when a target value omits a different intra-word delimiter (dash) and contains mixed letters and numbers" do
+            let(:indexed_field) { 'Form MCS-150 must be filled out before any Central Service technician can do work on the ducts.' }
+            let(:search_term) { 'mcs150' }
+
+            it "returns the document" do
+              expect(search_results).to_not be_empty
+            end
+          end
+
+          context "when a target value omits an intra-word delimiter regardless of placement and contains mixed letters and numbers" do
+            let(:indexed_field) { 'Form W-4V must be filled out before any Central Service technician can do work on the ducts.' }
+            let(:search_term) { 'w4v' }
+
+            it "returns the document" do
+              expect(search_results).to_not be_empty
+            end
+          end
+
+          context "when a target value omits an intra-word delimiter and contains mixed letters and numbers that are part of the whole word" do
             let(:indexed_field) { 'Form 27B/6 must be filled out before any Central Service technician can do work on the ducts.' }
             let(:search_term) { '27b' }
+
+            it "returns the document" do
+              expect(search_results).to_not be_empty
+            end
+          end
+
+          context "when a target value contains just part of a string preceding multiple intra-word delimiters" do
+            let(:indexed_field) { 'Ministry of Public Works form 8570.01-M must also be filled out.' }
+            let(:search_term) { '8570' }
 
             it "returns the document" do
               expect(search_results).to_not be_empty
