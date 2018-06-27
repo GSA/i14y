@@ -3,7 +3,6 @@ require 'rails_helper'
 describe 'documents template' do
   INDEX_NAME = Document.index_namespace('template_test')
   TYPE_NAME = 'document'
-  NON_CJK_LOCALES = LANGUAGE_ANALYZER_LOCALES - %i(ko ja zh)
 
   before :all do
     Elasticsearch::Persistence.client.indices.create(index: INDEX_NAME)
@@ -122,11 +121,11 @@ describe 'documents template' do
           end
         end
 
-        context "when a target value contains a word delimiter" do
+        context "when a target value contains a word delimiter (any non alpha-numeric character)" do
           let(:body) { { "analyzed_field_#{locale}" => indexed_field } }
           let(:search_query) { { 'term' => { "analyzed_field_#{locale}.word_delimiter" => search_term } } }
 
-          context "when a target value omits a word delimiter (any non alpha-numeric character) between words" do
+          context "when a target value omits a word delimiter between words" do
             let(:indexed_field) { 'The Wi-Fi can only be fixed after you fill out the form.' }
             let(:search_term) { 'wifi' }
 
@@ -171,9 +170,9 @@ describe 'documents template' do
             end
           end
 
-          context "when a target value contains the full string containing multiple word delimiters" do
+          context "when a target value contains the full string without multiple word delimiters" do
             let(:indexed_field) { 'Ministry of Public Works form 8570.01-M must also be filled out.' }
-            let(:search_term) { '857001' }
+            let(:search_term) { '857001m' }
 
             it "returns a document mentioned in analyzed_field_#{locale} containing the full string" do
               expect(search_results).to_not be_empty
