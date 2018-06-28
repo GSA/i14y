@@ -67,7 +67,6 @@ describe 'documents template' do
           end
         end
 
-
         context "when encountering a mention of a domain ending in a popular TLD that starts with http:// without www" do
           let(:indexed_field) { 'Did you know that http://www.code.org is good for kids?' }
           let(:search_term) { 'code' }
@@ -117,8 +116,121 @@ describe 'documents template' do
           let(:indexed_field) { 'Check out the .org URL from amazon. com is their most popular URL but org is better' }
           let(:search_term) { 'amazon' }
 
-          it "does not return a domain mentioned a domain mentioned in analyzed_field_#{locale} without its TLD" do
+          it "does not return a domain mentioned in analyzed_field_#{locale} without its TLD" do
             expect(search_results).to be_empty
+          end
+        end
+
+        context "when a target value contains a word delimiter (any non alpha-numeric character)" do
+          let(:body) { { "analyzed_field_#{locale}" => indexed_field } }
+          let(:search_query) { { 'term' => { "analyzed_field_#{locale}.intra_word_delimiter" => search_term } } }
+
+          context "when a target value omits an intra-word delimiter" do
+            let(:indexed_field) { 'The Wi-Fi can only be fixed after you fill out the form.' }
+            let(:search_term) { 'wifi' }
+
+            it "returns the document" do
+              expect(search_results).to_not be_empty
+            end
+          end
+
+          context "when a target value omits an intra-word delimiter between numbers" do
+            let(:indexed_field) { 'Model number 123.04 is the most recent.' }
+            let(:search_term) { '12304' }
+
+            it "returns the document" do
+              expect(search_results).to_not be_empty
+            end
+          end
+
+          context "when a target value omits an intra-word delimiter (slash) and contains mixed letters and numbers" do
+            let(:indexed_field) { 'Form 27B/6 must be filled out before any Central Service technician can do work on the ducts.' }
+            let(:search_term) { '27b6' }
+
+            it "returns the document" do
+              expect(search_results).to_not be_empty
+            end
+          end
+
+          context "when a target value omits a different intra-word delimiter (dash) and contains mixed letters and numbers" do
+            let(:indexed_field) { 'Form MCS-150 must be filled out before any Central Service technician can do work on the ducts.' }
+            let(:search_term) { 'mcs150' }
+
+            it "returns the document" do
+              expect(search_results).to_not be_empty
+            end
+          end
+
+          context "when a target value omits an intra-word delimiter regardless of placement and contains mixed letters and numbers" do
+            let(:indexed_field) { 'Form W-4V must be filled out before any Central Service technician can do work on the ducts.' }
+            let(:search_term) { 'w4v' }
+
+            it "returns the document" do
+              expect(search_results).to_not be_empty
+            end
+          end
+
+          context "when a target value omits an intra-word delimiter and contains mixed letters and numbers that are part of the whole word" do
+            let(:indexed_field) { 'Form 27B/6 must be filled out before any Central Service technician can do work on the ducts.' }
+            let(:search_term) { '27b' }
+
+            it "returns the document" do
+              expect(search_results).to_not be_empty
+            end
+          end
+
+          context "when a target value contains just part of a string preceding multiple intra-word delimiters" do
+            let(:indexed_field) { 'Ministry of Public Works form 8570.01-M must also be filled out.' }
+            let(:search_term) { '8570' }
+
+            it "returns the document" do
+              expect(search_results).to_not be_empty
+            end
+          end
+
+          context "when a target value contains concatenated parts of a string preceding multiple intra-word delimiters" do
+            let(:indexed_field) { 'Ministry of Public Works form 8570.01-M must also be filled out.' }
+            let(:search_term) { '857001' }
+
+            it "returns the document" do
+              expect(search_results).to_not be_empty
+            end
+          end
+
+          context "when a target value contains the full string without multiple intra-word delimiters" do
+            let(:indexed_field) { 'Ministry of Public Works form 8570.01-M must also be filled out.' }
+            let(:search_term) { '857001m' }
+
+            it "returns the document" do
+              expect(search_results).to_not be_empty
+            end
+          end
+
+          context "when the target value is surrounded by intra-word delimiters" do
+            let(:indexed_field) { 'Ministry of Public Works form -5uRR0und3d- must also be filled out.' }
+            let(:search_term) { '5urr0und3d' }
+
+            it "returns the document" do
+              expect(search_results).to_not be_empty
+            end
+          end
+
+          context "when the target value is surrounded by intra-word delimiters at the beginning of a string" do
+            let(:indexed_field) { 'Ministry of Public Works form .5uRR0und3d.8570 must also be filled out.' }
+            let(:search_term) { '5urr0und3d' }
+
+            it "returns the document" do
+              expect(search_results).to_not be_empty
+            end
+          end
+
+          context "when the target value is surrounded by intra-word delimiters string internally" do
+            let(:indexed_field) { 'Ministry of Public Works form 8570.5uRR0und3d- must also be filled out.' }
+            let(:search_term) { '5urr0und3d' }
+
+            it "returns the document" do
+              expect(search_results).to_not be_empty
+            end
           end
         end
       end

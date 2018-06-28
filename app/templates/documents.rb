@@ -43,6 +43,13 @@ class Documents
       json.bigrams_filter do
         json.type "shingle"
       end
+      json.intra_word_delimiter_filter do
+        json.type "word_delimiter"
+        json.catenate_words true
+        json.catenate_numbers true
+        json.catenate_all true
+        json.split_on_numerics false
+      end
       language_synonyms(json)
       language_protwords(json)
       language_stemmers(json)
@@ -60,6 +67,7 @@ class Documents
       url_path_analyzer(json)
       domain_name_analyzer(json)
       domain_minus_ext_analyzer(json)
+      intra_word_delimiter_analyzer(json)
       default_analyzer(json)
     end
   end
@@ -93,6 +101,13 @@ class Documents
     json.domain_minus_ext_analyzer do
       json.filter "lowercase"
       json.tokenizer "domain_minus_ext_tokenizer"
+    end
+  end
+
+  def intra_word_delimiter_analyzer(json)
+    json.intra_word_delimiter_analyzer do
+      json.filter ["lowercase", "intra_word_delimiter_filter"]
+      json.tokenizer "whitespace"
     end
   end
 
@@ -186,6 +201,7 @@ class Documents
       url_path(json)
       domain_name(json)
       domain_minus_ext(json)
+      intra_word_delimiter(json)
       promote(json)
       bigrams(json)
     end
@@ -228,6 +244,13 @@ class Documents
     json.domain_minus_ext do
       json.type "text"
       json.analyzer "domain_minus_ext_analyzer"
+    end
+  end
+
+  def intra_word_delimiter(json)
+    json.intra_word_delimiter do
+      json.type "text"
+      json.analyzer "intra_word_delimiter_analyzer"
     end
   end
 
@@ -278,6 +301,10 @@ class Documents
               json.set! 'domain_minus_ext' do
                 json.type 'text'
                 json.analyzer 'domain_minus_ext_analyzer'
+              end
+              json.set! 'intra_word_delimiter' do
+                json.type 'text'
+                json.analyzer 'intra_word_delimiter_analyzer'
               end
             end
           end
