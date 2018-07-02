@@ -219,9 +219,9 @@ describe DocumentSearch do
       end
 
       it 'prioritizes html docs over docs with no extensions over other types of docs' do
-        expect(document_search_results.results.first['extension']).to match(/html/)
-        expect(document_search_results.results[1]['extension']).to match(//)
-        expect(document_search_results.results[2]['extension']).to match(/pdf/)
+        expect(document_search_results.results.first['path']).to eq('http://www.agency.gov/dir1/page1.html')
+        expect(document_search_results.results[1]['path']).to eq('http://www.agency.gov/dir1/page1')
+        expect(document_search_results.results[2]['path']).to eq('http://www.agency.gov/dir1/page1.pdf')
       end
     end
 
