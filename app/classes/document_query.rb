@@ -1,6 +1,6 @@
 class DocumentQuery
   include Elasticsearch::DSL
-  INCLUDED_SOURCE_FIELDS = %w(title path created language changed)
+  INCLUDED_SOURCE_FIELDS = %w(title path created language changed extension)
   FULLTEXT_FIELDS = %w(title description content)
 
   HIGHLIGHT_OPTIONS = {
@@ -83,7 +83,19 @@ class DocumentQuery
 
   def functions
     [
-      { gauss: { created: { origin: 'now', scale: '1825d', offset: '30d', decay: 0.3 } } }
+      { gauss: { created: { origin: 'now', scale: '1825d', offset: '30d', decay: 0.3 } } },
+      { filter: {
+          term: {
+            extension: 'html'
+          } },
+        weight: 3
+      },
+      { filter: {
+        term: {
+          extension: ''
+        } },
+        weight: 2
+      }
     ]
   end
 

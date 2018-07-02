@@ -209,6 +209,22 @@ describe DocumentSearch do
       end
     end
 
+    context 'when the results of of different file types' do
+      let(:query) { 'rutabaga' }
+      before do
+        Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other', path: 'http://www.agency.gov/dir1/page1.pdf'))
+        Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other', path: 'http://www.agency.gov/dir1/page1.html'))
+        Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other', path: 'http://www.agency.gov/dir1/page1'))
+        Document.refresh_index!
+      end
+
+      it 'prioritizes html docs over docs with no extensions over other types of docs' do
+        expect(document_search_results.results.first['extension']).to match(/html/)
+        expect(document_search_results.results[1]['extension']).to match(//)
+        expect(document_search_results.results[2]['extension']).to match(/pdf/)
+      end
+    end
+
     context 'exact word form matches' do
       before do
         common_params = { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html',
