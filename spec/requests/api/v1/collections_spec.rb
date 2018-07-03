@@ -258,4 +258,3 @@ describe API::V1::Collections do
     end
   end
 end
-
