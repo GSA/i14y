@@ -85,38 +85,8 @@ class DocumentQuery
     [
       { gauss: { created: { origin: 'now', scale: '1825d', offset: '30d', decay: 0.3 } } },
       { filter: {
-          term: {
-            extension: 'doc'
-          } },
-        weight: -3
-      },
-      { filter: {
-          term: {
-            extension: 'docx'
-          } },
-        weight: -3
-      },
-      { filter: {
-          term: {
-            extension: 'pdf'
-          } },
-        weight: -3
-      },
-      { filter: {
-          term: {
-            extension: 'ppt'
-          } },
-        weight: -3
-      },
-      { filter: {
-          term: {
-            extension: 'xls'
-          } },
-        weight: -3
-      },
-      { filter: {
-          term: {
-            extension: 'xlsx'
+          terms: {
+            extension: %w(doc docx pdf ppt xls xlsx )
           } },
         weight: -3
       }

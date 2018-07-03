@@ -209,7 +209,7 @@ describe DocumentSearch do
       end
     end
 
-    context 'when the results contain demoted and nono-demoted file types' do
+    context 'when the results contain demoted and non-demoted file types' do
       let(:query) { 'rutabaga' }
       before do
         Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other', path: 'http://www.agency.gov/dir1/page1.pdf'))
