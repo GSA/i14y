@@ -212,12 +212,11 @@ describe DocumentSearch do
 
     %w[doc docx pdf ppt pptx xls xlsx].each do |ext|
       context 'when the results contain demoted and non-demoted file types' do
-        let(:query) { 'rutabaga' }
         before do
-          Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other', path: "http://www.agency.gov/dir1/page1.#{ext}"))
-          Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other', path: 'http://www.agency.gov/dir1/page1.html'))
-          Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other', path: 'http://www.agency.gov/dir1/page1'))
-          Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other', path: 'http://www.agency.gov/dir1/page1.txt'))
+          Document.create(common_params.merge( path: "http://www.agency.gov/dir1/page1.#{ext}"))
+          Document.create(common_params.merge( path: 'http://www.agency.gov/dir1/page1.html'))
+          Document.create(common_params.merge( path: 'http://www.agency.gov/dir1/page1'))
+          Document.create(common_params.merge( path: 'http://www.agency.gov/dir1/page1.txt'))
           Document.refresh_index!
         end
 
