@@ -209,19 +209,18 @@ describe DocumentSearch do
       end
     end
 
-    context 'when the results of of different file types' do
+    context 'when the results contain demoted and nono-demoted file types' do
       let(:query) { 'rutabaga' }
       before do
         Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other', path: 'http://www.agency.gov/dir1/page1.pdf'))
         Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other', path: 'http://www.agency.gov/dir1/page1.html'))
         Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other', path: 'http://www.agency.gov/dir1/page1'))
+        Document.create(common_params.merge( title: 'Rutabagas', description: 'other', content: 'other', path: 'http://www.agency.gov/dir1/page1.txt'))
         Document.refresh_index!
       end
 
-      it 'prioritizes html docs over docs with no extensions over other types of docs' do
-        expect(document_search_results.results.first['path']).to eq('http://www.agency.gov/dir1/page1.html')
-        expect(document_search_results.results[1]['path']).to eq('http://www.agency.gov/dir1/page1')
-        expect(document_search_results.results[2]['path']).to eq('http://www.agency.gov/dir1/page1.pdf')
+      it 'demoted docs appear after non-demoted docs' do
+        expect(document_search_results.results[3]['path']).to eq('http://www.agency.gov/dir1/page1.pdf')
       end
     end
 
