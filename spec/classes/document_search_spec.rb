@@ -210,7 +210,7 @@ describe DocumentSearch do
     end
 
 
-    %w[doc docx pdf ppt xls xlsx].each do |ext|
+    %w[doc docx pdf ppt pptx xls xlsx].each do |ext|
       context 'when the results contain demoted and non-demoted file types' do
         let(:query) { 'rutabaga' }
         before do

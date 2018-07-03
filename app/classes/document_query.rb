@@ -86,7 +86,7 @@ class DocumentQuery
       { gauss: { created: { origin: 'now', scale: '1825d', offset: '30d', decay: 0.3 } } },
       { filter: {
           terms: {
-            extension: %w(doc docx pdf ppt xls xlsx)
+            extension: %w(doc docx pdf ppt pptx xls xlsx)
           } },
         weight: -3
       }
