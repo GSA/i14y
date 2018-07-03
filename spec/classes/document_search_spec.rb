@@ -217,7 +217,7 @@ describe DocumentSearch do
           Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other', path: "http://www.agency.gov/dir1/page1.#{ext}"))
           Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other', path: 'http://www.agency.gov/dir1/page1.html'))
           Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other', path: 'http://www.agency.gov/dir1/page1'))
-          Document.create(common_params.merge( title: 'Rutabagas', description: 'other', content: 'other', path: 'http://www.agency.gov/dir1/page1.txt'))
+          Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other', path: 'http://www.agency.gov/dir1/page1.txt'))
           Document.refresh_index!
         end
 
