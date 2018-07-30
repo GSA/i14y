@@ -64,4 +64,13 @@ module Templatable
     end
   end
 
+  def generic_search_analyzer(json, locale)
+    json.set! "#{locale}_search_analyzer" do
+      json.type "custom"
+      json.filter filter_array(locale, false)
+      json.tokenizer "icu_tokenizer"
+      json.char_filter ["html_strip", "quotes"]
+    end
+  end
+
 end

@@ -123,6 +123,7 @@ class Documents
   def generic_analyzers(json)
     GENERIC_ANALYZER_LOCALES.each do |locale|
       generic_analyzer(json, locale)
+      generic_search_analyzer(json, locale)
     end
   end
 
@@ -184,11 +185,11 @@ class Documents
     end
   end
 
-  def filter_array(locale)
+  def filter_array(locale, include_synonyms = true)
     array = ["icu_normalizer"]
     array << "#{locale}_protected_filter" if @protected_filter_locales.include? locale
     array << "#{locale}_stem_filter"
-    array << "#{locale}_synonym" if @synonym_filter_locales.include? locale
+    array << "#{locale}_synonym" if include_synonyms && @synonym_filter_locales.include?(locale)
     array << "icu_folding"
     array
   end
@@ -294,6 +295,7 @@ class Documents
           json.match_mapping_type "string"
           json.mapping do
             json.analyzer "#{locale}_analyzer"
+            json.search_analyzer "#{locale}_search_analyzer"
             json.type "text"
             json.term_vector "with_positions_offsets"
             json.copy_to 'bigrams'
