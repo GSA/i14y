@@ -8,11 +8,12 @@ i14y
 Search engine for agencies' published content
 
 ## Dependencies/Prerequisistes
+- Elasticsearch 5.6+
 
-You'll need Java 7 to run the included `stream2es` utility that handles copying data from one index version to the next.
+- You'll need Java 7 to run the included `stream2es` utility that handles copying data from one index version to the next.
 Run `java -version` to make sure.
 
-Your Elasticsearch cluster needs the [ICU analysis plugin](https://github.com/elastic/elasticsearch-analysis-icu) and
+- Your Elasticsearch cluster needs the [ICU analysis plugin](https://github.com/elastic/elasticsearch-analysis-icu) and
 the [Kuromoji analysis plugin](https://github.com/elastic/elasticsearch-analysis-kuromoji/blob/master/README.md) and
 the [Smart Chinese Analysis Plugin](https://github.com/elastic/elasticsearch-analysis-smartcn) installed.
 
