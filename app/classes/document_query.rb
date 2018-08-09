@@ -1,7 +1,5 @@
 class DocumentQuery
   include Elasticsearch::DSL
-  INCLUDED_SOURCE_FIELDS = %w(title path created language changed)
-  FULLTEXT_FIELDS = %w(title description content)
 
   HIGHLIGHT_OPTIONS = {
     pre_tags: ["\ue000"],
@@ -14,7 +12,7 @@ class DocumentQuery
 
   def initialize(options)
     @options = options
-    @language = options[:language]
+    @language = options[:language] || 'en'
     @tags = options[:tags]
     @ignore_tags = options[:ignore_tags]
     @date_range = { gte: @options[:min_timestamp], lt: @options[:max_timestamp] }
@@ -50,7 +48,9 @@ class DocumentQuery
   end
 
   def full_text_fields
-    FULLTEXT_FIELDS.map{ |field| [field, language].compact.join('_').to_sym }
+    @full_text_fields ||= begin
+      Hash[%w(title description content).map{ |field| [field, suffixed(field)] }]
+    end
   end
 
   def common_terms_hash
@@ -62,7 +62,9 @@ class DocumentQuery
   end
 
   def source_fields
-    @options[:include] || INCLUDED_SOURCE_FIELDS
+    default_fields = %w[title path created changed]
+    fields = (@options[:include]&.split(',') || default_fields).push('language')
+    fields.map{|field| full_text_fields[field] || field }
   end
 
   def timestamp_filters_present?
@@ -70,7 +72,7 @@ class DocumentQuery
   end
 
   def boosted_fields
-    full_text_fields.map do |field|
+    full_text_fields.values.map do |field|
       if /title/ === field
         "#{field}^2"
       elsif /description/ === field
@@ -88,6 +90,10 @@ class DocumentQuery
   end
 
   private
+
+  def suffixed(field)
+    [field,language].compact.join('_')
+  end
 
   def parse_query(query)
     site_params_parser = QueryParser.new(query)
@@ -108,9 +114,9 @@ class DocumentQuery
 
   def highlight_fields_hash
     {
-      ['title',language].compact.join('_') => { number_of_fragments: 0 },
-      ['description',language].compact.join('_') => { fragment_size: 75, number_of_fragments: 2 },
-      ['content',language].compact.join('_') => { fragment_size: 75, number_of_fragments: 2 },
+      full_text_fields['title'] => { number_of_fragments: 0 },
+      full_text_fields['description'] => { fragment_size: 75, number_of_fragments: 2 },
+      full_text_fields['content'] => { fragment_size: 75, number_of_fragments: 2 },
     }
   end
 
@@ -152,7 +158,7 @@ class DocumentQuery
 
                           must do
                             bool do
-                              doc_query.full_text_fields.each do |field|
+                              doc_query.full_text_fields.values.each do |field|
                                 should { common({ field => doc_query.common_terms_hash }) }
                               end
                             end
