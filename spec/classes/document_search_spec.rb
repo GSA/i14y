@@ -75,7 +75,7 @@ describe DocumentSearch do
         end
 
         context 'when specifying included fields' do
-          let(:document_search) { DocumentSearch.new(search_options.merge(include: 'promote')) }
+          let(:document_search) { DocumentSearch.new(search_options.merge(include: ['promote'])) }
 
           it 'returns the specified fields' do
             result = document_search.search.results.first
@@ -244,7 +244,7 @@ describe DocumentSearch do
 
     context 'exact match on a document tag' do
       let(:document_search) do
-        DocumentSearch.new(search_options.merge(query: "Stats", include: 'tags'))
+        DocumentSearch.new(search_options.merge(query: "Stats", include: ['tags']))
       end
       before do
         common_params = { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html',
@@ -325,7 +325,7 @@ describe DocumentSearch do
 
   describe "filtering on tags" do
     let(:search_options) do
-      { handles: handles, language: :en, query: query, size: 10, offset: 0, include: 'tags' }
+      { handles: handles, language: :en, query: query, size: 10, offset: 0, include: ['tags'] }
     end
     before do
       Document.create(common_params.merge(tags: 'usa'))
