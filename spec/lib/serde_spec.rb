@@ -14,7 +14,7 @@ describe Serde do
           "content" => "my content",
           "path" => "http://www.foo.gov/bar.html",
           "promote" => false,
-          "tags" => "this that", #fixme
+          "tags" => "this that",
           "created" => "2018-01-01T12:00:00Z",
           "changed" => "2018-02-01T12:00:00Z" }
       )
