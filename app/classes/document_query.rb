@@ -64,7 +64,7 @@ class DocumentQuery
   def source_fields
     default_fields = %w[title path created changed]
     fields = (@options[:include]&.split(',') || default_fields).push('language')
-    fields.map{|field| full_text_fields[field] || field }
+    fields.map{ |field| full_text_fields[field] || field }
   end
 
   def timestamp_filters_present?
