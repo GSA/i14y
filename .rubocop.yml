@@ -1176,7 +1176,7 @@ Bundler/InsecureProtocolSource:
 # Supports --auto-correct
 Bundler/OrderedGems:
   Description: Gems within groups in the Gemfile should be alphabetically sorted.
-  Enabled: true
+  Enabled: false
   Include:
   - "**/Gemfile"
   - "**/gems.rb"
