@@ -5,7 +5,7 @@ module Serde
       if value.present?
         sanitized_value = Loofah.fragment(value).text(encode_special_chars: false).squish
         hash.store("#{key}_#{language}", sanitized_value)
-        hash[key] = sanitized_value
+        hash.delete(key)
       end
     end
     hash.merge!(uri_params_hash(hash[:path])) if hash[:path].present?
@@ -15,8 +15,11 @@ module Serde
 
   def self.deserialize_hash(hash, language, language_field_keys)
     derivative_language_fields = language_field_keys.collect { |key| "#{key}_#{language}" }
+    (derivative_language_fields & hash.keys).each do |field|
+      hash[field.chomp("_#{language}")] = hash.delete(field)
+    end
     misc_fields = %w(basename extension url_path domain_name bigrams)
-    hash.except(*(derivative_language_fields + misc_fields))
+    hash.except(*(misc_fields))
   end
 
   private

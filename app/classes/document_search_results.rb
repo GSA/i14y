@@ -25,7 +25,7 @@ class DocumentSearchResults
   def extract_hits(hits)
     hits.map do |hit|
       highlight = hit['highlight']
-      source = hit['_source']
+      source =  deserialized(hit)
       if highlight.present?
         source['title'] = highlight["title_#{source['language']}"].first if highlight["title_#{source['language']}"]
         %w(description content).each do |optional_field|
@@ -40,4 +40,10 @@ class DocumentSearchResults
     end
   end
 
+  def deserialized(hit)
+    Serde.deserialize_hash(ActiveSupport::HashWithIndifferentAccess.new(hit['_source']),
+                           hit['_source']['language'],
+                           %i[title description content])
+
+  end
 end

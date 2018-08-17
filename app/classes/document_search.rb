@@ -16,7 +16,7 @@ class DocumentSearch
       suggestion = i14y_search_results.suggestion
       doc_query.query = suggestion['text']
       i14y_search_results = execute_client_search
-      i14y_search_results.override_suggestion(suggestion) if i14y_search_results.total > 0
+      i14y_search_results.override_suggestion(suggestion) if i14y_search_results.results.present?
     end
     i14y_search_results
   rescue StandardError => e

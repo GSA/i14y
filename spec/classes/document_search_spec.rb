@@ -53,18 +53,34 @@ describe DocumentSearch do
       end
 
       context 'searching without a language' do
+        let(:document_search) { DocumentSearch.new(search_options.except(:language)) }
+
+        it 'defaults to English' do
+          expect(document_search_results.results.first['language']).to eq 'en'
+        end
+
         it 'returns results' do
-          document_search = DocumentSearch.new(search_options.except(:language))
-          document_search_results = document_search.search
           expect(document_search_results.total).to eq(1)
         end
       end
 
-      context 'specifying included fields' do
-        it 'returns only the specified fields' do
-          document_search = DocumentSearch.new(search_options.merge(include: ['title', 'path']))
+      describe 'included source fields' do
+        # NOTE: 'path', 'created', 'changed', and 'language' all represent the corresponding value
+        # in each result's '_source' hash. 'title' and 'description' populated with the highlighted values
+        # of those fields during hit extraction; those fields in search results do NOT
+        # represent the original value stored in the document's source.
+        it 'returns the default fields' do
           result = document_search.search.results.first
-          expect(result.keys).to match_array ['title', 'path']
+          expect(result.keys).to match_array %w[title path created changed language description]
+        end
+
+        context 'when specifying included fields' do
+          let(:document_search) { DocumentSearch.new(search_options.merge(include: ['promote'])) }
+
+          it 'returns the specified fields' do
+            result = document_search.search.results.first
+            expect(result.keys).to include 'promote'
+          end
         end
       end
     end
@@ -228,7 +244,7 @@ describe DocumentSearch do
 
     context 'exact match on a document tag' do
       let(:document_search) do
-        DocumentSearch.new(search_options.merge(query: "Stats", include: 'tags'))
+        DocumentSearch.new(search_options.merge(query: "Stats", include: ['tags']))
       end
       before do
         common_params = { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html',
@@ -309,7 +325,7 @@ describe DocumentSearch do
 
   describe "filtering on tags" do
     let(:search_options) do
-      { handles: handles, language: :en, query: query, size: 10, offset: 0, include: 'tags' }
+      { handles: handles, language: :en, query: query, size: 10, offset: 0, include: ['tags'] }
     end
     before do
       Document.create(common_params.merge(tags: 'usa'))
