@@ -3,7 +3,7 @@ ruby '2.3.7'
 gem 'rails', '5.1.4'
 
 gem 'rack-cors', '~> 0.4.1'
-gem 'grape', '~> 1.0.0'
+gem 'grape', '~> 1.1.0'
 gem 'thin', '~> 1.7.1'
 
 gem 'jbuilder', '~> 2.7'
