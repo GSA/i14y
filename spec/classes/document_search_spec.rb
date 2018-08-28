@@ -225,6 +225,23 @@ describe DocumentSearch do
       end
     end
 
+
+    %w[doc docx pdf ppt pptx xls xlsx].each do |ext|
+      context 'when the results contain demoted and non-demoted file types' do
+        before do
+          Document.create(common_params.merge( path: "http://www.agency.gov/dir1/page1.#{ext}"))
+          Document.create(common_params.merge( path: 'http://www.agency.gov/dir1/page1.html'))
+          Document.create(common_params.merge( path: 'http://www.agency.gov/dir1/page1'))
+          Document.create(common_params.merge( path: 'http://www.agency.gov/dir1/page1.txt'))
+          Document.refresh_index!
+        end
+
+        it "docs ending in .#{ext} appear after non-demoted docs" do
+          expect(document_search_results.results[3]['path']).to eq("http://www.agency.gov/dir1/page1.#{ext}")
+        end
+      end
+    end
+
     context 'exact word form matches' do
       before do
         common_params = { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html',
