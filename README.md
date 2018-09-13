@@ -8,16 +8,56 @@ i14y
 Search engine for agencies' published content
 
 ## Dependencies/Prerequisistes
-- Elasticsearch 5.6+
+- Install Elasticsearch 5.6+:
+```
+$ brew search elasticsearch
+$ brew install elasticsearch@5.6
+```
+
+To allow ES 5.6 to run in parallel with another version of Elasticsearch in development and test environments, we run I14y on port 9256 instead of the default port 9200. You'll need to specify the port, cluster name, and node name for your 5.6 cluster:
+```
+$ vi /usr/local/Cellar/elasticsearch@5.6/<specific version>/libexec/config/elasticsearch.yml
+  
+  cluster.name: elasticsearch_56
+  node.name: "es56"
+  http.port: 9256
+```
 
 - You'll need Java 7 to run the included `stream2es` utility that handles copying data from one index version to the next.
 Run `java -version` to make sure.
 
 - Your Elasticsearch cluster needs the [ICU analysis plugin](https://github.com/elastic/elasticsearch-analysis-icu) and
 the [Kuromoji analysis plugin](https://github.com/elastic/elasticsearch-analysis-kuromoji/blob/master/README.md) and
-the [Smart Chinese Analysis Plugin](https://github.com/elastic/elasticsearch-analysis-smartcn) installed.
+the [Smart Chinese Analysis Plugin](https://github.com/elastic/elasticsearch-analysis-smartcn) installed:
 
-Be sure to restart Elasticsearch after you have installed the plugins.
+```
+$ /usr/local/opt/elasticsearch@5.6/libexec/bin/elasticsearch-plugin install analysis-kuromoji
+$ /usr/local/opt/elasticsearch@5.6/libexec/bin/elasticsearch-plugin install analysis-icu
+$ /usr/local/opt/elasticsearch@5.6/libexec/bin/elasticsearch-plugin install analysis-smartcn
+```
+
+Be sure to restart Elasticsearch after you have installed the plugins:
+```
+$ brew services restart elasticsearch@5.6
+```
+
+Verify that Elasticsearch 5.6.x is running on port 9256:
+```
+$ curl localhost:9256
+{
+  "name" : "es56",
+  "cluster_name" : "elasticsearch_56",
+  "cluster_uuid" : "IhVLFTNYQj6Ac6Xi4Uegmg",
+  "version" : {
+    "number" : "5.6.9",
+    "build_hash" : "877a590",
+    "build_date" : "2018-04-12T16:25:14.838Z",
+    "build_snapshot" : false,
+    "lucene_version" : "6.6.1"
+  },
+  "tagline" : "You Know, for Search"
+}
+```
 
 ## Development
 

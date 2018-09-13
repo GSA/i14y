@@ -1,4 +1,18 @@
-hosts:
-  - localhost
-user: elastic
-password: changeme
+default: &DEFAULT
+  user: elastic
+  password: changeme
+
+development:
+  <<: *DEFAULT
+  hosts:
+    - localhost:9256
+
+test:
+  <<: *DEFAULT
+  hosts:
+    - localhost:9256
+
+production:
+  <<: *DEFAULT
+  hosts:
+    - localhost
