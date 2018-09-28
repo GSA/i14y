@@ -23,7 +23,7 @@ $ vi /usr/local/Cellar/elasticsearch@5.6/<specific version>/libexec/config/elast
   http.port: 9256
 ```
 
-- You'll need Java 7 to run the included `stream2es` utility that handles copying data from one index version to the next.
+- You'll need Java 7+ to run the included `stream2es` utility that handles copying data from one index version to the next.
 Run `java -version` to make sure.
 
 - Your Elasticsearch cluster needs the [ICU analysis plugin](https://github.com/elastic/elasticsearch-analysis-icu) and
