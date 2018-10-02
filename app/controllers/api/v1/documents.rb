@@ -142,7 +142,7 @@ module API
           optional :click_count,
                    type: Integer,
                    allow_blank: false,
-                   desc: "Count of clicks per month"
+                   desc: "Count of clicks"
 
           at_least_one_of :title, :path, :created, :content, :description,
             :changed, :promote, :language, :tags, :click_count
