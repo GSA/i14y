@@ -19,9 +19,11 @@ class DocumentSearch
       i14y_search_results.override_suggestion(suggestion) if i14y_search_results.results.present?
     end
     i14y_search_results
-  rescue StandardError => e
-    Rails.logger.error "Problem in DocumentSearch#search(): #{e}
-    #{e.backtrace}"
+  rescue StandardError => error
+    Rails.logger.error "Problem in DocumentSearch#search(): #{error}
+    Query: #{doc_query.body.to_json}
+    Backtrace: #{error.backtrace}"
+    NewRelic::Agent.notice_error(error, options: { custom_params: { indices: indices }})
     DocumentSearchResults.new(NO_HITS)
   end
 
