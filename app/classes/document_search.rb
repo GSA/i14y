@@ -20,9 +20,11 @@ class DocumentSearch
     end
     i14y_search_results
   rescue StandardError => error
-    Rails.logger.error "Problem in DocumentSearch#search(): #{error}
+    Rails.logger.error <<~ERROR_DETAILS
+      Problem in DocumentSearch#search(): #{error}
       Query: #{doc_query.body.to_json}
-      Backtrace: #{error.backtrace}"
+      Backtrace: #{error.backtrace}
+    ERROR_DETAILS
     NewRelic::Agent.notice_error(error, options: { custom_params: { indices: indices }})
     DocumentSearchResults.new(NO_HITS)
   end
