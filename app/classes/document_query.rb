@@ -42,7 +42,13 @@ class DocumentQuery
         collate: { query: { source: { multi_match: { query: "{{suggestion}}",
                                                      type:   "phrase",
                                                      fields: "*_#{language}" } } }
-        }
+        },
+        direct_generator: [
+          {
+            field: 'bigrams',
+            suggest_mode: 'always'
+          }
+        ]
       }
     }
   end
