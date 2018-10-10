@@ -17,6 +17,7 @@ gem "elasticsearch-persistence", '5.0.2', require: 'elasticsearch/persistence/mo
 gem 'elasticsearch', '5.0.4'
 gem 'elasticsearch-model', '~> 5.0.2'
 gem 'elasticsearch-dsl', '~> 0.1.5'
+gem 'elasticsearch-extensions', '~> 0.0.30'
 
 gem 'newrelic_rpm', '~> 4.2'
 gem 'airbrake', '~> 7.1'

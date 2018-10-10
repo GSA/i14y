@@ -1,16 +1,18 @@
 require 'rails_helper'
 require 'uri'
+require './spec/support/document_crud'
 
-describe API::V1::Documents do
+RSpec.configure do |c|
+  c.include DocumentCrud
+end
+
+describe API::V1::Documents, elasticsearch: true  do
   let(:id) { 'some really!weird@id.name' }
-
   let(:valid_session) do
     credentials = ActionController::HttpAuthentication::Basic.encode_credentials 'test_index', 'test_key'
     { HTTP_AUTHORIZATION: credentials }
   end
-
   let(:allow_updates) { true }
-
   let(:maintenance_message) { nil }
 
   before(:all) do
@@ -33,10 +35,8 @@ describe API::V1::Documents do
   end
 
   describe 'POST /api/v1/documents' do
-    let(:post_id) { "post_#{id}" }
-
     let(:valid_params) do
-      { document_id: post_id,
+      { document_id: id,
         title:       'my title',
         path:        'http://www.gov.gov/goo.html',
         description: 'my desc',
@@ -48,21 +48,23 @@ describe API::V1::Documents do
 
     context 'success case' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
-        post '/api/v1/documents', params: valid_params, headers: valid_session
+        api_post valid_params, valid_session
       end
 
       it 'returns success message as JSON' do
         expect(response.status).to eq(201)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 200, 'developer_message' => 'OK', 'user_message' => 'Your document was successfully created.'))
+        expect(JSON.parse(response.body))
+            .to match(hash_including('status' => 200,
+                                     'developer_message' => 'OK',
+                                     'user_message' => 'Your document was successfully created.'))
       end
 
       it 'uses the collection handle and the document_id in the Elasticsearch ID' do
-        expect(Document.find(post_id)).to be_present
+        expect(Document.find(id)).to be_present
       end
 
       it 'stores the appropriate fields in the Elasticsearch document' do
-        document = Document.find(post_id)
+        document = Document.find(id)
         expect(document.path).to eq('http://www.gov.gov/goo.html')
         expect(document.promote).to be_truthy
         expect(document.title).to eq('my title')
@@ -71,13 +73,22 @@ describe API::V1::Documents do
         expect(document.tags).to match_array(['bar blat', 'foo'])
       end
 
+      #TBD move it out of success context.
       it_behaves_like 'a data modifying request made during read-only mode'
     end
 
     context 'trying to create an existing document' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
-        Document.create(_id: 'its_a_dupe', language: 'en', title: 'hi there 4', description: 'bigger desc 4', content: 'huge content 4', created: 2.hours.ago, updated: Time.now, promote: true, path: 'http://www.gov.gov/url4.html')
+        document_create(_id:         'its_a_dupe',
+                        language:    'en',
+                        title:       'hi there 4',
+                        description: 'bigger desc 4',
+                        content:     'huge content 4',
+                        created:     2.hours.ago,
+                        updated:     Time.now,
+                        promote:     true,
+                        path:        'http://www.gov.gov/url4.html')
+
         dupe_params = { document_id: 'its_a_dupe',
                         title:       'my title',
                         path:        'http://www.gov.gov/goo.html',
@@ -87,48 +98,54 @@ describe API::V1::Documents do
                         language:    'hy',
                         content:     'my content',
                         tags:        'Foo, Bar blat' }
-        post '/api/v1/documents', params: dupe_params, headers: valid_session
+        api_post dupe_params, valid_session
       end
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(422)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 422, 'developer_message' => 'Document already exists with that ID'))
+        expect(JSON.parse(response.body))
+            .to match(hash_including('status' => 422,
+                                     'developer_message' => 'Document already exists with that ID'))
       end
     end
 
     context 'invalid language param' do
       before do
-        valid_params = { document_id:  'a1234', 
-                         title:        'my title', 
-                         path:         'http://www.gov.gov/goo.html', 
-                         created:      '2013-02-27T10:00:00Z', 
-                         description:  'my desc', 
-                         promote:      true, 
+        valid_params = { document_id:  'a1234',
+                         title:        'my title',
+                         path:         'http://www.gov.gov/goo.html',
+                         created:      '2013-02-27T10:00:00Z',
+                         description:  'my desc',
+                         promote:      true,
                          language:     'qq' }
-        post '/api/v1/documents', params: valid_params, headers: valid_session
+        api_post valid_params, valid_session
       end
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, 'developer_message' => 'language does not have a valid value'))
+        expect(JSON.parse(response.body))
+            .to match(hash_including('status' => 400,
+                                     'developer_message' => 'language does not have a valid value'))
       end
     end
 
     context 'slash in id' do
       before do
-        valid_params = { document_id: 'a1/234', 
-                         title:       'my title', 
-                         path:        'http://www.gov.gov/goo.html', 
-                         created:     '2013-02-27T10:00:00Z', 
-                         description: 'my desc', 
-                         promote:     true, 
+        valid_params = { document_id: 'a1/234',
+                         title:       'my title',
+                         path:        'http://www.gov.gov/goo.html',
+                         created:     '2013-02-27T10:00:00Z',
+                         description: 'my desc',
+                         promote:     true,
                          language:    'en' }
-        post '/api/v1/documents', params: valid_params, headers: valid_session
+        api_post valid_params, valid_session
       end
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, 'developer_message' => "document_id cannot contain any of the following characters: ['/']"))
+        expect(JSON.parse(response.body))
+            .to match(hash_including('status' => 400,
+                                     'developer_message' => "document_id cannot contain any of the following characters: ['/']"))
       end
     end
 
@@ -137,29 +154,31 @@ describe API::V1::Documents do
         two_byte_character = '\u00b5'
         string_with_513_bytes_but_only_257_characters = 'x' + two_byte_character * 256
         valid_params = { document_id: string_with_513_bytes_but_only_257_characters,
-                         title:       'my title', 
-                         path:        'http://www.gov.gov/goo.html', 
-                         created:     '2013-02-27T10:00:00Z', 
-                         description: 'my desc', 
-                         promote:     true, 
+                         title:       'my title',
+                         path:        'http://www.gov.gov/goo.html',
+                         created:     '2013-02-27T10:00:00Z',
+                         description: 'my desc',
+                         promote:     true,
                          language:    'en' }
-        post '/api/v1/documents', params: valid_params, headers: valid_session
+        api_post valid_params, valid_session
       end
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, 'developer_message' => 'document_id cannot be more than 512 bytes long'))
+        expect(JSON.parse(response.body))
+            .to match(hash_including('status' => 400,
+                                     'developer_message' => 'document_id cannot be more than 512 bytes long'))
       end
     end
 
     context 'missing language param' do
       before do
-        valid_params = { document_id: 'a1234', 
-                         title:       'my title', 
-                         path:        'http://www.gov.gov/goo.html', 
-                         created:     '2013-02-27T10:00:00Z', 
+        valid_params = { document_id: 'a1234',
+                         title:       'my title',
+                         path:        'http://www.gov.gov/goo.html',
+                         created:     '2013-02-27T10:00:00Z',
                          description: 'my desc' }
-        post '/api/v1/documents', params: valid_params, headers: valid_session
+        api_post valid_params, valid_session
       end
 
       it 'uses English (en) as default' do
@@ -169,64 +188,72 @@ describe API::V1::Documents do
 
     context 'missing at least one of two required parameters' do
       before do
-        invalid_params = { document_id: 'a1234', 
-                           title:       'my title', 
-                           path:        'http://www.gov.gov/goo.html', 
+        invalid_params = { document_id: 'a1234',
+                           title:       'my title',
+                           path:        'http://www.gov.gov/goo.html',
                           created:      '2013-02-27T10:00:00Z' }
-        post '/api/v1/documents', params: invalid_params, headers: valid_session
+        api_post invalid_params, valid_session
       end
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, 'developer_message' => 'content, description are missing, at least one parameter must be provided'))
+        expect(JSON.parse(response.body))
+            .to match(hash_including('status' => 400,
+                                     'developer_message' => 'content, description are missing, at least one parameter must be provided'))
       end
     end
 
     context 'a required parameter is empty/blank' do
       before do
         invalid_params = valid_params.merge({ 'title' => ' ' })
-        post '/api/v1/documents', params: invalid_params, headers: valid_session
+        api_post invalid_params, valid_session
       end
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, 'developer_message' => 'title is empty'))
+        expect(JSON.parse(response.body))
+            .to match(hash_including('status' => 400,
+                                     'developer_message' => 'title is empty'))
       end
     end
 
     context 'path URL is poorly formatted' do
       before do
-        invalid_params = { document_id: 'a1234', 
-                           title:       'weird URL with blank', 
-                           description: 'some description', 
-                           path:        'http://www.gov.gov/ goo.html', 
+        invalid_params = { document_id: 'a1234',
+                           title:       'weird URL with blank',
+                           description: 'some description',
+                           path:        'http://www.gov.gov/ goo.html',
                            created:     '2013-02-27T10:00:00Z' }
-        post '/api/v1/documents', params: invalid_params, headers: valid_session
+        api_post invalid_params, valid_session
       end
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, 'developer_message' => 'path is invalid'))
+        expect(JSON.parse(response.body))
+            .to match(hash_including('status' => 400,
+                                     'developer_message' => 'path is invalid'))
       end
     end
 
     context 'failed authentication/authorization' do
       before do
-        valid_params = { document_id: 'a1234', 
-                         title:       'my title', 
-                         path:        'http://www.gov.gov/goo.html', 
-                         created:     '2013-02-27T10:00:00Z', 
-                         description: 'my desc', 
+        valid_params = { document_id: 'a1234',
+                         title:       'my title',
+                         path:        'http://www.gov.gov/goo.html',
+                         created:     '2013-02-27T10:00:00Z',
+                         description: 'my desc',
                          promote:     true }
         bad_credentials = ActionController::HttpAuthentication::Basic.encode_credentials 'nope', 'wrong'
 
         valid_session = { HTTP_AUTHORIZATION:  bad_credentials }
-        post '/api/v1/documents', params: valid_params, headers: valid_session
+        api_post valid_params, valid_session
       end
 
       it 'returns error message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, 'developer_message' => 'Unauthorized'))
+        expect(JSON.parse(response.body))
+            .to match(hash_including('status' => 400,
+                                     'developer_message' => 'Unauthorized'))
       end
     end
 
@@ -234,43 +261,45 @@ describe API::V1::Documents do
       before do
         allow(Collection).to receive(:find).and_raise(Elasticsearch::Transport::Transport::Errors::BadRequest)
         valid_params = { document_id: 'a1234',
-                         title:       'my title', 
-                         path:        'http://www.gov.gov/goo.html', 
-                         created:     '2013-02-27T10:00:00Z', 
-                         description: 'my desc', 
+                         title:       'my title',
+                         path:        'http://www.gov.gov/goo.html',
+                         created:     '2013-02-27T10:00:00Z',
+                         description: 'my desc',
                          promote:    true }
-        post '/api/v1/documents', params: valid_params, headers: valid_session
+        api_post valid_params, valid_session
       end
 
       it 'returns error message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, 'developer_message' => 'Unauthorized'))
+        expect(JSON.parse(response.body))
+            .to match(hash_including('status' => 400,
+                                     'developer_message' => 'Unauthorized'))
       end
     end
 
     context 'something terrible happens creating the document' do
       before do
         allow(Document).to receive(:new) { raise_error(Exception) }
-        valid_params = { document_id: 'a1234', 
-                         title:       'my title', 
-                         path:        'http://www.gov.gov/goo.html', 
-                         created:     '2013-02-27T10:00:00Z', 
-                         description: 'my desc', 
+        valid_params = { document_id: 'a1234',
+                         title:       'my title',
+                         path:        'http://www.gov.gov/goo.html',
+                         created:     '2013-02-27T10:00:00Z',
+                         description: 'my desc',
                          promote:     true }
-        post '/api/v1/documents', params: valid_params, headers: valid_session
+        api_post valid_params, valid_session
       end
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(500)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 500, 'developer_message' => "Something unexpected happened and we've been alerted."))
+        expect(JSON.parse(response.body))
+            .to match(hash_including('status' => 500,
+                                     'developer_message' => "Something unexpected happened and we've been alerted."))
       end
     end
 
   end
 
   describe 'PUT /api/v1/documents/{document_id}' do
-    let(:put_id) { "put_#{id}" }
-
     let(:update_params) do
       { title:       'my title',
         description: 'new desc',
@@ -283,18 +312,29 @@ describe API::V1::Documents do
 
     context 'success case' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
-        Document.create(_id: put_id, language: 'en', title: 'hi there 4', description: 'bigger desc 4', content: 'huge content 4', created: 2.hours.ago, updated: Time.now, promote: true, path: 'http://www.gov.gov/url4.html')
-        put "/api/v1/documents/#{URI.encode(put_id)}", params: update_params, headers: valid_session
+        document_create(_id:           id,
+                         language:    'en',
+                         title:       'hi there 4',
+                         description: 'bigger desc 4',
+                         content:     'huge content 4',
+                         created:     2.hours.ago,
+                         updated:     Time.now,
+                         promote:     true,
+                         path:        'http://www.gov.gov/url4.html')
+
+        api_put "/api/v1/documents/#{URI.encode(id)}", update_params, valid_session
       end
 
       it 'returns success message as JSON' do
         expect(response.status).to eq(200)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 200, 'developer_message' => 'OK', 'user_message' => 'Your document was successfully updated.'))
+        expect(JSON.parse(response.body))
+            .to match(hash_including('status' => 200,
+                                     'developer_message' => 'OK',
+                                     'user_message' => 'Your document was successfully updated.'))
       end
 
       it 'updates the document' do
-        document = Document.find(put_id)
+        document = Document.find(id)
         expect(document.path).to eq('http://www.next.gov/updated.html')
         expect(document.promote).to be_falsey
         expect(document.title).to eq('my title')
@@ -309,26 +349,27 @@ describe API::V1::Documents do
   end
 
   describe 'DELETE /api/v1/documents/{document_id}' do
-    let(:delete_id) { "delete_#{id}" }
-
     context 'success case' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
-        Document.create(_id:          delete_id, 
-                         language:    'en', 
-                         title:       'hi there 4', 
-                         description: 'bigger desc 4', 
-                         content:     'huge content 4', 
-                         created:     2.hours.ago, 
-                         updated:     Time.now, 
-                         promote:     true, 
+        document_create(_id:          id,
+                         language:    'en',
+                         title:       'hi there 4',
+                         description: 'bigger desc 4',
+                         content:     'huge content 4',
+                         created:     2.hours.ago,
+                         updated:     Time.now,
+                         promote:     true,
                          path:        'http://www.gov.gov/url4.html')
-        delete "/api/v1/documents/#{URI.encode(delete_id)}", headers: valid_session
+
+        api_delete "/api/v1/documents/#{URI.encode(id)}", valid_session
       end
 
       it 'returns success message as JSON' do
         expect(response.status).to eq(200)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 200, 'developer_message' => 'OK', 'user_message' => 'Your document was successfully deleted.'))
+        expect(JSON.parse(response.body))
+            .to match(hash_including('status' => 200,
+                                     'developer_message' => 'OK',
+                                     'user_message' => 'Your document was successfully deleted.'))
       end
 
       it 'deletes the document' do
@@ -340,12 +381,14 @@ describe API::V1::Documents do
 
     context 'deleting a non-existent document' do
       before do
-        delete '/api/v1/documents/non_existent_document_id', headers: valid_session
+        api_delete '/api/v1/documents/non_existent_document_id', valid_session
       end
 
       it 'returns error message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).to match(hash_including('status' => 400, 'developer_message' => 'Resource could not be found.'))
+        expect(JSON.parse(response.body))
+            .to match(hash_including('status' => 400,
+                                     'developer_message' => 'Resource could not be found.'))
       end
     end
   end

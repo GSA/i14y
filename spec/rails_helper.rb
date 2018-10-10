@@ -39,4 +39,33 @@ RSpec.configure do |config|
     TestServices::delete_es_indexes
   end
 
+  # Start an in-memory cluster for Elasticsearch as needed
+  config.before :all, elasticsearch: true do
+    Elasticsearch::Extensions::Test::Cluster.start(port: 9258, nodes: 1, timeout: 120) unless Elasticsearch::Extensions::Test::Cluster.running?(on: 9258)
+  end
+
+  # Stop elasticsearch cluster after test run
+  config.after :suite do
+    Elasticsearch::Extensions::Test::Cluster.stop(port: 9258, nodes: 1) if Elasticsearch::Extensions::Test::Cluster.running?(on: 9258)
+  end
+
+  config.before :each, elasticsearch: true do
+    [Document,Collection].each do |model|
+      begin
+        model.create_index!
+        model.refresh_index!
+      rescue => Elasticsearch::Transport::Transport::Errors::NotFound
+        # This kills "Index does not exist" errors being written to console
+        # by this: https://github.com/elastic/elasticsearch-rails/blob/738c63efacc167b6e8faae3b01a1a0135cfc8bbb/elasticsearch-model/lib/elasticsearch/model/indexing.rb#L268
+      rescue => e
+        STDERR.puts "There was an error creating the elasticsearch index for #{model.name}: #{e.inspect}"
+      end
+    end
+  end
+
+  config.after :each, elasticsearch: true do
+    #TBD - Add this for Collection as well.
+    Elasticsearch::Persistence.client.indices.delete index: Document.index_name
+  end
+
 end
