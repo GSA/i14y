@@ -1,6 +1,6 @@
 require 'rails_helper'
 require 'uri'
-require './spec/support/document_crud'
+require 'support/document_crud'
 
 RSpec.configure do |c|
   c.include DocumentCrud

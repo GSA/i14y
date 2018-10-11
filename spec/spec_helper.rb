@@ -1,5 +1,4 @@
 require 'simplecov'
-require 'elasticsearch/extensions/test/cluster'
 
 RSpec.configure do |config|
 # The settings below are suggested to provide a good initial experience
