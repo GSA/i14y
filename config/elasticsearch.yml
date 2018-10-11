@@ -1,18 +1,6 @@
-default: &DEFAULT
-  user: elastic
-  password: changeme
-
-development:
-  <<: *DEFAULT
-  hosts:
-    - localhost:9256
-
-test:
-  <<: *DEFAULT
-  hosts:
-    - localhost:9256
-
-production:
-  <<: *DEFAULT
-  hosts:
-    - localhost
+# This file is overwritten by Chef during a deploy. Any production
+# changes should be made in the cookbooks.
+hosts:
+  - localhost:9256
+user: elastic
+password: changeme
