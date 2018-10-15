@@ -191,7 +191,7 @@ describe API::V1::Documents, elasticsearch: true  do
         invalid_params = { document_id: 'a1234',
                            title:       'my title',
                            path:        'http://www.gov.gov/goo.html',
-                          created:      '2013-02-27T10:00:00Z' }
+                           created:      '2013-02-27T10:00:00Z' }
         api_post invalid_params, valid_session
       end
 

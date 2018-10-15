@@ -3,7 +3,6 @@ ENV["RAILS_ENV"] ||= 'test'
 require 'spec_helper'
 require File.expand_path("../../config/environment", __FILE__)
 require 'rspec/rails'
-require 'elasticsearch/extensions/test/cluster'
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
@@ -38,16 +37,6 @@ RSpec.configure do |config|
 
   config.after(:suite) do
     TestServices::delete_es_indexes
-  end
-
-  # Start an in-memory cluster for Elasticsearch as needed
-  config.before :all, elasticsearch: true do
-    Elasticsearch::Extensions::Test::Cluster.start(port: 9258, nodes: 1, timeout: 120) unless Elasticsearch::Extensions::Test::Cluster.running?(on: 9258)
-  end
-
-  # Stop elasticsearch cluster after test run
-  config.after :suite do
-    Elasticsearch::Extensions::Test::Cluster.stop(port: 9258, nodes: 1) if Elasticsearch::Extensions::Test::Cluster.running?(on: 9258)
   end
 
   config.before :each, elasticsearch: true do
