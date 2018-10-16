@@ -1,10 +1,5 @@
 require 'rails_helper'
 require 'uri'
-require 'support/document_crud'
-
-RSpec.configure do |c|
-  c.include DocumentCrud
-end
 
 describe API::V1::Documents, elasticsearch: true  do
   let(:id) { 'some really!weird@id.name' }
@@ -73,22 +68,13 @@ describe API::V1::Documents, elasticsearch: true  do
         expect(document.tags).to match_array(['bar blat', 'foo'])
       end
 
-      #TBD move it out of success context.
       it_behaves_like 'a data modifying request made during read-only mode'
     end
 
     context 'trying to create an existing document' do
       before do
-        document_create(_id:         'its_a_dupe',
-                        language:    'en',
-                        title:       'hi there 4',
-                        description: 'bigger desc 4',
-                        content:     'huge content 4',
-                        created:     2.hours.ago,
-                        updated:     Time.now,
-                        promote:     true,
-                        path:        'http://www.gov.gov/url4.html')
-
+        document_create(valid_params.merge(_id: 'its_a_dupe'))
+        
         dupe_params = { document_id: 'its_a_dupe',
                         title:       'my title',
                         path:        'http://www.gov.gov/goo.html',

@@ -27,6 +27,7 @@ RSpec.configure do |config|
   #
   # The different available types are documented in the features, such as in
   # https://relishapp.com/rspec/rspec-rails/docs
+  config.include DocumentCrud
   config.infer_spec_type_from_file_location!
 
   config.before(:suite) do
@@ -40,21 +41,18 @@ RSpec.configure do |config|
   end
 
   config.before :each, elasticsearch: true do
-    [Document,Collection].each do |model|
-      begin
-        model.create_index!
-        model.refresh_index!
-      rescue => Elasticsearch::Transport::Transport::Errors::NotFound
-        # This kills "Index does not exist" errors being written to console
-        # by this: https://github.com/elastic/elasticsearch-rails/blob/738c63efacc167b6e8faae3b01a1a0135cfc8bbb/elasticsearch-model/lib/elasticsearch/model/indexing.rb#L268
-      rescue => e
-        STDERR.puts "There was an error creating the elasticsearch index for #{model.name}: #{e.inspect}"
-      end
+    begin
+      Document.create_index!
+      Document.refresh_index!
+    rescue => Elasticsearch::Transport::Transport::Errors::NotFound
+      # This kills "Index does not exist" errors being written to console
+      # by this: https://github.com/elastic/elasticsearch-rails/blob/738c63efacc167b6e8faae3b01a1a0135cfc8bbb/elasticsearch-model/lib/elasticsearch/model/indexing.rb#L268
+    rescue => e
+      STDERR.puts "There was an error creating the elasticsearch index for #{Document.name}: #{e.inspect}"
     end
   end
 
   config.after :each, elasticsearch: true do
-    #TBD - Add this for Collection as well.
     Elasticsearch::Persistence.client.indices.delete index: Document.index_name
   end
 
