@@ -39,13 +39,15 @@ describe DocumentSearch do
       end
 
       it 'returns results' do
+        document_search = DocumentSearch.new(search_options)
+        document_search_results = document_search.search
         expect(document_search_results.total).to eq(1)
       end
 
       context 'searching without a query' do
-        let(:document_search) { DocumentSearch.new(search_options.except(:query)) }
-
         it 'returns results' do
+          document_search = DocumentSearch.new(search_options.except(:query))
+          document_search_results = document_search.search
           expect(document_search_results.total).to eq(1)
         end
       end
@@ -85,31 +87,19 @@ describe DocumentSearch do
 
     context 'no matching documents exist' do
       it 'returns no results ' do
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "common", size: 10, offset: 0)
+        document_search_results = document_search.search
         expect(document_search_results.total).to eq(0)
       end
     end
 
     context 'something terrible happens during the search' do
-      let(:query) { 'uh oh' }
-      let(:error) { StandardError.new('something went wrong') }
-
-      before { allow(Elasticsearch::Persistence.client).to receive(:search).and_raise(error) }
-
       it 'returns a no results response' do
+        document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "uh oh", size: 10, offset: 0)
+        expect(Elasticsearch::Persistence).to receive(:client).and_return(nil)
+        document_search_results = document_search.search
         expect(document_search_results.total).to eq(0)
         expect(document_search_results.results).to eq([])
-      end
-
-      it 'logs details about the query' do
-        expect(Rails.logger).to receive(:error).with(%r("query":"uh oh"))
-        document_search.search
-      end
-
-      it 'sends the error to NewRelic' do
-        expect(NewRelic::Agent).to receive(:notice_error).with(
-          error, options: { custom_params: { indices: ['test-i14y-documents-agency_blogs'] }}
-        )
-        document_search.search
       end
     end
   end
