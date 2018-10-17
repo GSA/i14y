@@ -6,6 +6,12 @@ class DocumentQuery
     post_tags: ["\ue001"]
   }
 
+  DEFAULT_STOPWORDS = %w[
+    a an and are as at be but by for if in into is it
+    no not of on or such that the their then there these
+    they this to was will with
+  ]
+
   attr_reader :language, :site_filters, :tags, :ignore_tags, :date_range,
               :included_sites, :excluded_sites
   attr_accessor :query, :search
@@ -34,16 +40,24 @@ class DocumentQuery
   end
 
   def suggestion_hash
-    { text: query,
-      phrase: {
-        field: 'bigrams',
-        size: 1,
-        highlight: suggestion_highlight,
-        collate: { query: { source: { multi_match: { query: "{{suggestion}}",
-                                                     type:   "phrase",
-                                                     fields: "*_#{language}" } } }
-        }
+    phrase_hash = {
+      field: 'bigrams',
+      size: 1,
+      highlight: suggestion_highlight,
+      collate: { query: { source: { multi_match: { query: '{{suggestion}}',
+                                                   type:   'phrase',
+                                                   fields: "*_#{language}" } } }
       }
+    }
+
+    #Temporary fix for https://github.com/elastic/elasticsearch/issues/34282
+    if /\b(#{DEFAULT_STOPWORDS.join('|')})\b/ === query
+      phrase_hash.merge!(direct_generator: [{ field: 'bigrams', suggest_mode: 'always' }])
+    end
+
+    {
+      text: query,
+      phrase: phrase_hash
     }
   end
 
