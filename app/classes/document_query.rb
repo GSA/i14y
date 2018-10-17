@@ -141,9 +141,7 @@ class DocumentQuery
 
   #Temporary fix for https://github.com/elastic/elasticsearch/issues/34282
   def query_without_stopwords
-    query_without_stopwords = query
-    DEFAULT_STOPWORDS.each{|word| query_without_stopwords.remove!(/\b#{word}\b/)}
-    query_without_stopwords.squish
+    (query.downcase.split(/ +/) - DEFAULT_STOPWORDS).join(' ')
   end
 
   def build_search_query
