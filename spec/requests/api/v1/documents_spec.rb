@@ -74,7 +74,7 @@ describe API::V1::Documents, elasticsearch: true  do
     context 'trying to create an existing document' do
       before do
         document_create(valid_params.merge(_id: 'its_a_dupe'))
-        
+
         dupe_params = { document_id: 'its_a_dupe',
                         title:       'my title',
                         path:        'http://www.gov.gov/goo.html',
@@ -116,16 +116,7 @@ describe API::V1::Documents, elasticsearch: true  do
     end
 
     context 'slash in id' do
-      before do
-        valid_params = { document_id: 'a1/234',
-                         title:       'my title',
-                         path:        'http://www.gov.gov/goo.html',
-                         created:     '2013-02-27T10:00:00Z',
-                         description: 'my desc',
-                         promote:     true,
-                         language:    'en' }
-        api_post valid_params, valid_session
-      end
+      before {  api_post valid_params.merge(document_id: 'a1/234'), valid_session }
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
