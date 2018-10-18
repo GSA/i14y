@@ -116,7 +116,7 @@ describe API::V1::Documents, elasticsearch: true  do
     end
 
     context 'slash in id' do
-      before {  api_post valid_params.merge(document_id: 'a1/234'), valid_session }
+      before { api_post valid_params.merge(document_id: 'a1/234'), valid_session }
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
