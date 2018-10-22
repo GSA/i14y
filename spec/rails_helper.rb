@@ -27,6 +27,8 @@ RSpec.configure do |config|
   #
   # The different available types are documented in the features, such as in
   # https://relishapp.com/rspec/rspec-rails/docs
+  config.include DocumentCrud
+
   config.infer_spec_type_from_file_location!
 
   config.before(:suite) do
@@ -37,6 +39,22 @@ RSpec.configure do |config|
 
   config.after(:suite) do
     TestServices::delete_es_indexes
+  end
+
+  config.before :each, elasticsearch: true do
+    begin
+      Document.create_index!
+      Document.refresh_index!
+    rescue => Elasticsearch::Transport::Transport::Errors::NotFound
+      # This kills "Index does not exist" errors being written to console
+      # by this: https://github.com/elastic/elasticsearch-rails/blob/738c63efacc167b6e8faae3b01a1a0135cfc8bbb/elasticsearch-model/lib/elasticsearch/model/indexing.rb#L268
+    rescue StandardError => error
+      STDERR.puts "There was an error creating the elasticsearch index for #{Document.name}: #{error.inspect}"
+    end
+  end
+
+  config.after :each, elasticsearch: true do
+    Elasticsearch::Persistence.client.indices.delete index: Document.index_name
   end
 
 end
