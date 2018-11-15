@@ -282,8 +282,5 @@ DEPENDENCIES
   simplecov (~> 0.13.0)
   thin (~> 1.7.1)
 
-RUBY VERSION
-   ruby 2.3.7p456
-
 BUNDLED WITH
-   1.16.2
+   1.17.1
