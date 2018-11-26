@@ -162,7 +162,7 @@ GEM
       pry (~> 0.10)
     pry-rails (0.3.6)
       pry (>= 0.10.4)
-    rack (2.0.5)
+    rack (2.0.6)
     rack-accept (0.4.5)
       rack (>= 0.4)
     rack-cors (0.4.1)
