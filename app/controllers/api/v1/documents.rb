@@ -139,8 +139,13 @@ module API
                    type: String,
                    allow_blank: false,
                    desc: "Comma-separated list of category tags"
+          optional :click_count,
+                   type: Integer,
+                   allow_blank: false,
+                   desc: "Count of clicks"
 
-          at_least_one_of :title, :path, :created, :content, :description, :changed, :promote, :language, :tags
+          at_least_one_of :title, :path, :created, :content, :description,
+            :changed, :promote, :language, :tags, :click_count
         end
         put ':document_id', requirements: { document_id: /.*/ } do
           Document.index_name = Document.index_namespace(@collection_handle)
