@@ -173,6 +173,7 @@ class Documents
       domain_name(json)
       promote(json)
       bigrams(json)
+      click_count(json)
     end
   end
 
@@ -206,6 +207,12 @@ class Documents
     json.url_path do
       json.type "text"
       json.analyzer "url_path_analyzer"
+    end
+  end
+
+  def click_count(json)
+    json.click_count do
+      json.type "integer"
     end
   end
 

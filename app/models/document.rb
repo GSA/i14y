@@ -20,6 +20,7 @@ class Document
   attribute :changed, DateTime
   attribute :promote, Boolean
   attribute :tags, String, mapping: { type: 'keyword' }
+  attribute :click_count, Integer
 
   LANGUAGE_FIELDS = [:title, :description, :content]
 
