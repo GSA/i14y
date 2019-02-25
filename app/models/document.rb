@@ -1,3 +1,4 @@
+# test
 class Document
   include Elasticsearch::Persistence::Model
   extend NamespacedIndex
