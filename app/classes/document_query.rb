@@ -91,12 +91,28 @@ class DocumentQuery
 
   def functions
     [
-      { gauss: { created: { origin: 'now', scale: '1825d', offset: '30d', decay: 0.3 } } },
-      { filter: {
+      # Prefer more recent documents
+      {
+        gauss: {
+          created: { origin: 'now', scale: '1825d', offset: '30d', decay: 0.3 }
+        }
+      },
+
+      # Avoid pdfs, etc.
+      {
+        filter: {
           terms: {
             extension: %w(doc docx pdf ppt pptx xls xlsx)
-          } },
+          }
+        },
         weight: -3
+      },
+
+      # Prefer documents that have been clicked more often
+      {
+        field_value_factor: {
+          field: 'click_count', modifier: 'log1p', factor: 2, missing: 1
+        }
       }
     ]
   end

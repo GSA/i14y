@@ -288,6 +288,26 @@ describe DocumentSearch do
         expect(document_search_results.results.first['tags']).to match_array(['stats'])
       end
     end
+
+    context 'when documents include click counts' do
+      before do
+        Document.create(common_params.merge(path: 'http://agency.gov/popular'))
+        Document.create(common_params.merge(path: 'http://agency.gov/most_popular',
+                                            click_count: 10))
+        Document.create(common_params.merge(path: 'http://agency.gov/more_popular',
+                                            click_count: 5))
+        Document.refresh_index!
+      end
+
+      it 'ranks documents with higher click counts higher' do
+        paths = document_search_results.results.map { |doc| doc[:path] }
+        expect(paths).to eq (
+          %w[http://agency.gov/most_popular
+             http://agency.gov/more_popular
+             http://agency.gov/popular]
+        )
+      end
+    end
   end
 
   describe "sorting by date" do
