@@ -77,3 +77,5 @@ workflows:
           ruby_version: 2.3.8
       - build:
           ruby_version: 2.5.5
+      - build:
+          ruby_version: 2.6.2
