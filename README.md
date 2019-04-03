@@ -61,7 +61,7 @@ $ curl localhost:9256
 
 ## Development
 
-- Use `rvm` to install the version of Ruby specified in the `Gemfile`.
+- Use `rvm` to install the version of Ruby specified in `.ruby-version`.
 - `bundle install`.
 - Copy `config/secrets_example.yml` to `config/secrets.yml` and fill in your own secrets. To generate a random long secret, use `rake secret`.
 - Run `bundle exec rake i14y:setup` to create the neccessary indexes, index templates, and dynamic field templates.
