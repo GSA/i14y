@@ -31,10 +31,14 @@ describe DocumentSearch do
     Document.index_name = Document.index_namespace('agency_blogs')
   end
 
-  context 'searching across a single index collection' do
-    context 'matching documents exist' do
+  context 'when searching across a single index collection' do
+    context 'when matching documents exist' do
       before do
-        Document.create(language: 'en', title: 'title 1 common content', description: 'description 1 common content', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
+        Document.create(language: 'en',
+                        title: 'title 1 common content',
+                        description: 'description 1 common content',
+                        created: DateTime.now,
+                        path: 'http://www.agency.gov/page1.html')
         Document.refresh_index!
       end
 
@@ -312,18 +316,25 @@ describe DocumentSearch do
 
   describe "sorting by date" do
     before do
-      Document.create(common_params.merge(created: 2.month.ago, path: 'http://www.agency.gov/2months.html'))
-      Document.create(common_params.merge(created: nil, path: 'http://www.agency.gov/nodate.html'))
-      Document.create(common_params.merge(created: 6.months.ago, path: 'http://www.agency.gov/6months.html'))
-      Document.create(common_params.merge(created: 1.minute.ago, path: 'http://www.agency.gov/1minute.html'))
-      Document.create(common_params.merge(created: 3.years.ago, path: 'http://www.agency.gov/3years.html'))
+      Document.create(common_params.merge(changed: 2.month.ago,
+                                          path: 'http://www.agency.gov/2months.html'))
+      Document.create(common_params.merge(changed: nil,
+                                          path: 'http://www.agency.gov/nodate.html'))
+      Document.create(common_params.merge(changed: 6.months.ago,
+                                          path: 'http://www.agency.gov/6months.html'))
+      Document.create(common_params.merge(changed: 1.minute.ago,
+                                          path: 'http://www.agency.gov/1minute.html'))
+      Document.create(common_params.merge(changed: 3.years.ago,
+                                          path: 'http://www.agency.gov/3years.html'))
       Document.refresh_index!
     end
 
     context 'by default' do
-      let(:document_search) { DocumentSearch.new(search_options.merge(sort_by_date: false)) }
+      let(:document_search) do
+        DocumentSearch.new(search_options.merge(sort_by_date: false))
+      end
 
-      it 'returns results in reverse chronological order based on created timestamp' do
+      it 'returns results in reverse chronological order based on changed timestamp' do
         expect(document_search_results.results.map{ |r| r['path'] }).
           to eq (
             %w[
@@ -338,9 +349,11 @@ describe DocumentSearch do
     end
 
     context 'when sorting by date' do
-      let(:document_search) { DocumentSearch.new(search_options.merge(sort_by_date: true)) }
+      let(:document_search) do
+        DocumentSearch.new(search_options.merge(sort_by_date: true))
+      end
 
-      it 'returns results in reverse chronological order based on created timestamp' do
+      it 'returns results in reverse chronological order based on changed timestamp' do
         expect(document_search_results.results.map{ |r| r['path'] }).
           to eq (
             %w[
