@@ -432,20 +432,29 @@ describe DocumentSearch do
     end
   end
 
-  describe "filtering on date" do
+  describe 'filtering on date' do
+    let(:date_filtered_options) do
+      search_options.merge(min_timestamp: 2.weeks.ago,
+                           max_timestamp: 1.day.ago)
+    end
+    let(:document_search) { DocumentSearch.new(date_filtered_options) }
+
     before do
-      Document.create(language: 'en', title: 'historical document 1', description: 'historical description 1', created: 1.month.ago, path: 'http://www.agency.gov/dir1/page1.html')
-      Document.create(language: 'en', title: 'historical document 2', description: 'historical description 2', created: 1.week.ago, path: 'http://www.agency.gov/dir1/page2.html')
-      Document.create(language: 'en', title: 'historical document 3', description: 'historical description 3', created: DateTime.now, path: 'http://www.agency.gov/dir1/page3.html')
-      Document.create(language: 'en', title: 'historical document 4', description: 'historical description 4', created: nil, path: 'http://www.agency.gov/dir1/page4.html')
+      Document.create(common_params.merge(changed: 1.month.ago,
+                                          path: 'http://www.agency.gov/dir1/page1.html'))
+      Document.create(common_params.merge(changed: 1.week.ago,
+                                          path: 'http://www.agency.gov/dir1/page2.html'))
+      Document.create(common_params.merge(changed: DateTime.now,
+                                          path: 'http://www.agency.gov/dir1/page3.html'))
+      Document.create(common_params.merge(changed: nil,
+                                          path: 'http://www.agency.gov/dir1/page4.html'))
       Document.refresh_index!
     end
 
     it 'returns results from only that date range' do
-      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "historical", size: 10, offset: 0, min_timestamp: 2.weeks.ago, max_timestamp: 1.day.ago)
-      document_search_results = document_search.search
       expect(document_search_results.total).to eq(1)
-      expect(document_search_results.results.first['path']).to eq('http://www.agency.gov/dir1/page2.html')
+      expect(document_search_results.results.first['path']).
+        to eq('http://www.agency.gov/dir1/page2.html')
     end
   end
 
