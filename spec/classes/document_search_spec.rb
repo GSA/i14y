@@ -433,6 +433,12 @@ describe DocumentSearch do
   end
 
   describe 'filtering on date' do
+    let(:date_filtered_options) do
+      search_options.merge(min_timestamp: 2.weeks.ago,
+                           max_timestamp: 1.day.ago)
+    end
+    let(:document_search) { DocumentSearch.new(date_filtered_options) }
+
     before do
       Document.create(common_params.merge(changed: 1.month.ago,
                                           path: 'http://www.agency.gov/dir1/page1.html'))
@@ -446,10 +452,6 @@ describe DocumentSearch do
     end
 
     it 'returns results from only that date range' do
-      filtered_options = search_options.merge(min_timestamp: 2.weeks.ago,
-                                              max_timestamp: 1.day.ago)
-      document_search = DocumentSearch.new(filtered_options)
-      document_search_results = document_search.search
       expect(document_search_results.total).to eq(1)
       expect(document_search_results.results.first['path']).
         to eq('http://www.agency.gov/dir1/page2.html')
