@@ -8,13 +8,17 @@ describe API::V1::Collections do
     )
     { 'HTTP_AUTHORIZATION' => credentials }
   end
-
+  let(:valid_params) do
+    { handle: 'agency_blogs', token: 'secret' }
+  end
   let(:allow_updates) { true }
   let(:maintenance_message) { nil }
+
   before do
     I14y::Application.config.updates_allowed = allow_updates
     I14y::Application.config.maintenance_message = maintenance_message
   end
+
   after do
     I14y::Application.config.updates_allowed = true
   end
@@ -27,7 +31,6 @@ describe API::V1::Collections do
           q: '*:*',
           conflicts: 'proceed'
         )
-        valid_params = { handle: 'agency_blogs', token: 'secret' }
         post '/api/v1/collections', params: valid_params, headers: valid_session
       end
 
@@ -68,8 +71,11 @@ describe API::V1::Collections do
     end
 
     context 'handle uses illegal characters' do
+      let(:invalid_params) do
+        { handle: 'agency-blogs', token: 'secret' }
+      end
+
       before do
-        invalid_params = { 'handle' => 'agency-blogs', 'token' => 'secret' }
         post '/api/v1/collections', params: invalid_params, headers: valid_session
       end
 
@@ -84,7 +90,6 @@ describe API::V1::Collections do
 
     context 'failed authentication/authorization' do
       before do
-        valid_params = { 'handle' => 'agency_blogs', 'token' => 'secret' }
         bad_credentials = ActionController::HttpAuthentication::Basic.encode_credentials 'nope', 'wrong'
 
         valid_session = { 'HTTP_AUTHORIZATION' => bad_credentials }
@@ -103,7 +108,6 @@ describe API::V1::Collections do
     context 'something terrible happens' do
       before do
         allow(Collection).to receive(:create) { raise_error(Exception) }
-        valid_params = { 'handle' => 'agency_blogs', 'token' => 'secret' }
         post '/api/v1/collections', params: valid_params, headers: valid_session
       end
 
@@ -147,7 +151,6 @@ describe API::V1::Collections do
     context 'success case' do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*', conflicts: 'proceed'
-        valid_params = { 'handle' => 'agency_blogs', 'token' => 'secret' }
         post '/api/v1/collections', params: valid_params, headers: valid_session
         Document.index_name = Document.index_namespace('agency_blogs')
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
@@ -200,7 +203,6 @@ describe API::V1::Collections do
     context 'success case' do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*', conflicts: 'proceed'
-        valid_params = { 'handle' => 'agency_blogs', 'token' => 'secret' }
         post '/api/v1/collections', params: valid_params, headers: valid_session
         Document.index_name = Document.index_namespace('agency_blogs')
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
@@ -299,14 +301,13 @@ describe API::V1::Collections do
     context 'no results' do
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*', conflicts: 'proceed'
-        valid_params = { 'handle' => 'agency_blogs', 'token' => 'secret' }
         post '/api/v1/collections', params: valid_params, headers: valid_session
         Document.index_name = Document.index_namespace('agency_blogs')
         Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
       end
 
       it 'returns JSON no hits results' do
-        valid_params = { 'language' => 'en', 'query' => 'no hits', 'handles' => 'agency_blogs' }
+        valid_params = { language: 'en', query: 'no hits', handles: 'agency_blogs' }
         get '/api/v1/collections/search', params: valid_params, headers: valid_session
         expect(response.status).to eq(200)
         metadata_hash = { 'total' => 0, 'offset' => 0, 'suggestion' => nil }
@@ -337,10 +338,13 @@ describe API::V1::Collections do
     end
 
     context 'searching across one or more collection handles that do not exist' do
+      let(:bad_handle_params) do
+        { language: 'en', query: 'foo', handles: 'agency_blogs,missing' }
+      end
+
       before do
         Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*', conflicts: 'proceed'
         Collection.create(_id: 'agency_blogs', token: 'secret')
-        bad_handle_params = { 'language' => 'en', 'query' => 'foo', 'handles' => 'agency_blogs,missing' }
         get '/api/v1/collections/search', params: bad_handle_params, headers: valid_session
       end
 
