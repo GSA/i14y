@@ -222,7 +222,7 @@ class DocumentQuery
 
                 doc_query.tags.each { |tag| must { term tags: tag } } if doc_query.tags.present?
 
-                must { range created: doc_query.date_range } if doc_query.timestamp_filters_present?
+                must { range changed: doc_query.date_range } if doc_query.timestamp_filters_present?
 
                 if doc_query.ignore_tags.present?
                   must_not do
