@@ -29,7 +29,7 @@ class DocumentQuery
 
   def body
     search.source source_fields
-    search.sort { by :created, order: 'desc' } if @options[:sort_by_date]
+    search.sort { by :changed, order: 'desc' } if @options[:sort_by_date]
     if query.present?
       set_highlight_options
       search.suggest(:suggestion, suggestion_hash)
@@ -94,7 +94,7 @@ class DocumentQuery
       # Prefer more recent documents
       {
         gauss: {
-          created: { origin: 'now', scale: '1825d', offset: '30d', decay: 0.3 }
+          changed: { origin: 'now', scale: '1825d', offset: '30d', decay: 0.3 }
         }
       },
 
@@ -222,7 +222,7 @@ class DocumentQuery
 
                 doc_query.tags.each { |tag| must { term tags: tag } } if doc_query.tags.present?
 
-                must { range created: doc_query.date_range } if doc_query.timestamp_filters_present?
+                must { range changed: doc_query.date_range } if doc_query.timestamp_filters_present?
 
                 if doc_query.ignore_tags.present?
                   must_not do
