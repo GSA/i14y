@@ -189,10 +189,12 @@ class DocumentQuery
                             end
                           end
 
-                          must do
-                            bool do
-                              doc_query.full_text_fields.values.each do |field|
-                                should { common({ field => doc_query.common_terms_hash }) }
+                          if doc_query.query.remove(/".*"/).present?
+                            must do
+                              bool do
+                                doc_query.full_text_fields.values.each do |field|
+                                  should { common({ field => doc_query.common_terms_hash }) }
+                                end
                               end
                             end
                           end
