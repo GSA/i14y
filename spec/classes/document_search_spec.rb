@@ -578,16 +578,40 @@ describe DocumentSearch do
   end
 
   describe "searching by exact phrase" do
-    before do
-      Document.create(common_params.merge(content: 'amazing spiderman'))
-      Document.create(common_params.merge(content: 'spiderman is amazing'))
-      Document.refresh_index!
-    end
-    let(:document_search) { DocumentSearch.new(search_options.merge(query: "\"amazing spiderman\"")) }
+    let(:query) { '"amazing spiderman"' }
 
-    it 'should return exact matches only' do
+    before do
+      document_create(common_params.merge(content: 'amazing spiderman'))
+      document_create(common_params.merge(content: 'spiderman is amazing'))
+    end
+
+    it 'returns exact matches only' do
       expect(document_search_results.total).to eq 1
-      expect(document_search_results.results.first['content']).to eq "amazing spiderman"
+      expect(document_search_results.results.first['content']).to eq 'amazing spiderman'
+    end
+
+    context 'when a result contains both exact and inexact matches' do
+      let(:query) { '"exact phrase"' }
+
+      before do
+        document_create(common_params.merge(
+          content: 'This phrase match is not exact. This is an exact phrase match'
+        ))
+      end
+
+      it 'only highlights exact matches' do
+        expect(document_search_results.results.first['content']).
+          to eq 'match is not exact. This is an exact phrase match'
+      end
+
+      context 'when searching by exact and inexact phrases' do
+        let(:query) { 'this "exact phrase"' }
+
+        it 'only highlights exact matches' do
+          expect(document_search_results.results.first['content']).
+            to eq 'This phrase match is not exact. This is an exact phrase match'
+        end
+      end
     end
   end
 
