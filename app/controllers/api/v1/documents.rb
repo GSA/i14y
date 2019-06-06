@@ -86,9 +86,8 @@ module API
                    type: String,
                    allow_blank: false,
                    desc: "Comma-separated list of category tags"
-
-          at_least_one_of :content, :description
         end
+
         post do
           Document.index_name = Document.index_namespace(@collection_handle)
           id = params.delete(:document_id)
