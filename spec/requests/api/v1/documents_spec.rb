@@ -163,23 +163,6 @@ describe API::V1::Documents, elasticsearch: true  do
       end
     end
 
-    context 'missing at least one of two required parameters' do
-      before do
-        invalid_params = { document_id: 'a1234',
-                           title:       'my title',
-                           path:        'http://www.gov.gov/goo.html',
-                           created:      '2013-02-27T10:00:00Z' }
-        api_post invalid_params, valid_session
-      end
-
-      it 'returns failure message as JSON' do
-        expect(response.status).to eq(400)
-        expect(JSON.parse(response.body))
-            .to match(hash_including('status' => 400,
-                                     'developer_message' => 'content, description are missing, at least one parameter must be provided'))
-      end
-    end
-
     context 'a required parameter is empty/blank' do
       before do
         invalid_params = valid_params.merge({ 'title' => ' ' })
