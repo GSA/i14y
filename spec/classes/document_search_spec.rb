@@ -599,6 +599,20 @@ describe DocumentSearch do
     end
   end
 
+  context 'when a search term yields results as well as a suggestion' do
+    let(:query) { 'fsands' }
+
+    before do
+      document_create(common_params.merge(content: 'FSAND'))
+      document_create(common_params.merge(content: 'fund'))
+      document_create(common_params.merge(content: 'fraud'))
+    end
+
+    it 'does not return a suggestion' do
+      expect(document_search_results.suggestion).to be nil
+    end
+  end
+
   describe "searching by exact phrase" do
     let(:query) { '"amazing spiderman"' }
 
