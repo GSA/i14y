@@ -31,10 +31,14 @@ describe DocumentSearch do
     Document.index_name = Document.index_namespace('agency_blogs')
   end
 
-  context 'searching across a single index collection' do
-    context 'matching documents exist' do
+  context 'when searching across a single index collection' do
+    context 'when matching documents exist' do
       before do
-        Document.create(language: 'en', title: 'title 1 common content', description: 'description 1 common content', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
+        Document.create(language: 'en',
+                        title: 'title 1 common content',
+                        description: 'description 1 common content',
+                        created: DateTime.now,
+                        path: 'http://www.agency.gov/page1.html')
         Document.refresh_index!
       end
 
@@ -312,18 +316,26 @@ describe DocumentSearch do
 
   describe "sorting by date" do
     before do
-      Document.create(common_params.merge(created: 2.month.ago, path: 'http://www.agency.gov/2months.html'))
-      Document.create(common_params.merge(created: nil, path: 'http://www.agency.gov/nodate.html'))
-      Document.create(common_params.merge(created: 6.months.ago, path: 'http://www.agency.gov/6months.html'))
-      Document.create(common_params.merge(created: 1.minute.ago, path: 'http://www.agency.gov/1minute.html'))
-      Document.create(common_params.merge(created: 3.years.ago, path: 'http://www.agency.gov/3years.html'))
+      Document.create(common_params.merge(changed: 2.month.ago,
+                                          path: 'http://www.agency.gov/2months.html'))
+      Document.create(common_params.merge(changed: nil,
+                                          created: nil,
+                                          path: 'http://www.agency.gov/nodate.html'))
+      Document.create(common_params.merge(changed: 6.months.ago,
+                                          path: 'http://www.agency.gov/6months.html'))
+      Document.create(common_params.merge(changed: 1.minute.ago,
+                                          path: 'http://www.agency.gov/1minute.html'))
+      Document.create(common_params.merge(changed: 3.years.ago,
+                                          path: 'http://www.agency.gov/3years.html'))
       Document.refresh_index!
     end
 
     context 'by default' do
-      let(:document_search) { DocumentSearch.new(search_options.merge(sort_by_date: false)) }
+      let(:document_search) do
+        DocumentSearch.new(search_options.merge(sort_by_date: false))
+      end
 
-      it 'returns results in reverse chronological order based on created timestamp' do
+      it 'returns results in reverse chronological order based on changed timestamp' do
         expect(document_search_results.results.map{ |r| r['path'] }).
           to eq (
             %w[
@@ -338,9 +350,11 @@ describe DocumentSearch do
     end
 
     context 'when sorting by date' do
-      let(:document_search) { DocumentSearch.new(search_options.merge(sort_by_date: true)) }
+      let(:document_search) do
+        DocumentSearch.new(search_options.merge(sort_by_date: true))
+      end
 
-      it 'returns results in reverse chronological order based on created timestamp' do
+      it 'returns results in reverse chronological order based on changed timestamp' do
         expect(document_search_results.results.map{ |r| r['path'] }).
           to eq (
             %w[
@@ -432,20 +446,29 @@ describe DocumentSearch do
     end
   end
 
-  describe "filtering on date" do
+  describe 'filtering on date' do
+    let(:date_filtered_options) do
+      search_options.merge(min_timestamp: 2.weeks.ago,
+                           max_timestamp: 1.day.ago)
+    end
+    let(:document_search) { DocumentSearch.new(date_filtered_options) }
+
     before do
-      Document.create(language: 'en', title: 'historical document 1', description: 'historical description 1', created: 1.month.ago, path: 'http://www.agency.gov/dir1/page1.html')
-      Document.create(language: 'en', title: 'historical document 2', description: 'historical description 2', created: 1.week.ago, path: 'http://www.agency.gov/dir1/page2.html')
-      Document.create(language: 'en', title: 'historical document 3', description: 'historical description 3', created: DateTime.now, path: 'http://www.agency.gov/dir1/page3.html')
-      Document.create(language: 'en', title: 'historical document 4', description: 'historical description 4', created: nil, path: 'http://www.agency.gov/dir1/page4.html')
+      Document.create(common_params.merge(changed: 1.month.ago,
+                                          path: 'http://www.agency.gov/dir1/page1.html'))
+      Document.create(common_params.merge(changed: 1.week.ago,
+                                          path: 'http://www.agency.gov/dir1/page2.html'))
+      Document.create(common_params.merge(changed: DateTime.now,
+                                          path: 'http://www.agency.gov/dir1/page3.html'))
+      Document.create(common_params.merge(changed: nil,
+                                          path: 'http://www.agency.gov/dir1/page4.html'))
       Document.refresh_index!
     end
 
     it 'returns results from only that date range' do
-      document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "historical", size: 10, offset: 0, min_timestamp: 2.weeks.ago, max_timestamp: 1.day.ago)
-      document_search_results = document_search.search
       expect(document_search_results.total).to eq(1)
-      expect(document_search_results.results.first['path']).to eq('http://www.agency.gov/dir1/page2.html')
+      expect(document_search_results.results.first['path']).
+        to eq('http://www.agency.gov/dir1/page2.html')
     end
   end
 
@@ -578,16 +601,40 @@ describe DocumentSearch do
   end
 
   describe "searching by exact phrase" do
-    before do
-      Document.create(common_params.merge(content: 'amazing spiderman'))
-      Document.create(common_params.merge(content: 'spiderman is amazing'))
-      Document.refresh_index!
-    end
-    let(:document_search) { DocumentSearch.new(search_options.merge(query: "\"amazing spiderman\"")) }
+    let(:query) { '"amazing spiderman"' }
 
-    it 'should return exact matches only' do
+    before do
+      document_create(common_params.merge(content: 'amazing spiderman'))
+      document_create(common_params.merge(content: 'spiderman is amazing'))
+    end
+
+    it 'returns exact matches only' do
       expect(document_search_results.total).to eq 1
-      expect(document_search_results.results.first['content']).to eq "amazing spiderman"
+      expect(document_search_results.results.first['content']).to eq 'amazing spiderman'
+    end
+
+    context 'when a result contains both exact and inexact matches' do
+      let(:query) { '"exact phrase"' }
+
+      before do
+        document_create(common_params.merge(
+          content: 'This phrase match is not exact. This is an exact phrase match'
+        ))
+      end
+
+      it 'only highlights exact matches' do
+        expect(document_search_results.results.first['content']).
+          to eq 'match is not exact. This is an exact phrase match'
+      end
+
+      context 'when searching by exact and inexact phrases' do
+        let(:query) { 'this "exact phrase"' }
+
+        it 'only highlights exact matches' do
+          expect(document_search_results.results.first['content']).
+            to eq 'This phrase match is not exact. This is an exact phrase match'
+        end
+      end
     end
   end
 

@@ -22,6 +22,8 @@ class Document
   attribute :tags, String, mapping: { type: 'keyword' }
   attribute :click_count, Integer
 
+  before_save { self.changed = changed.presence || created }
+
   LANGUAGE_FIELDS = [:title, :description, :content]
 
   gateway do
