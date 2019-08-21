@@ -74,9 +74,6 @@ workflows:
   build_and_test:
     jobs:
       - build:
-          name: 'ruby 2.3.8'
-          ruby_version: 2.3.8
-      - build:
           name: 'ruby 2.5.5'
           ruby_version: 2.5.5
       - build:
