@@ -319,6 +319,7 @@ describe DocumentSearch do
       Document.create(common_params.merge(changed: 2.month.ago,
                                           path: 'http://www.agency.gov/2months.html'))
       Document.create(common_params.merge(changed: nil,
+                                          created: nil,
                                           path: 'http://www.agency.gov/nodate.html'))
       Document.create(common_params.merge(changed: 6.months.ago,
                                           path: 'http://www.agency.gov/6months.html'))
