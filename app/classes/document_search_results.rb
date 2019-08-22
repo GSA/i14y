@@ -5,7 +5,7 @@ class DocumentSearchResults
     @total = result['hits']['total']
     @offset = offset
     @results = extract_hits(result['hits']['hits'])
-    @suggestion = extract_suggestion(result['suggest']['suggestion']) if result['suggest']
+    @suggestion = extract_suggestion(result['suggest'])
   end
 
   def override_suggestion(suggestion)
@@ -14,11 +14,11 @@ class DocumentSearchResults
 
   private
 
-  def extract_suggestion(suggestions)
-    suggestion = suggestions.first['options'].first
-    suggestion.delete('score')
-    suggestion
-  rescue NoMethodError => e
+  def extract_suggestion(suggest)
+    return unless suggest && total.zero?
+
+    suggest['suggestion'].first['options'].first.except('score')
+  rescue NoMethodError
     nil
   end
 
@@ -34,7 +34,7 @@ class DocumentSearchResults
         end
       end
       %w(created_at created changed updated_at updated).each do |date|
-        source[date] = DateTime.parse(source[date]).utc.to_s if source[date].present?
+        source[date] = Time.parse(source[date]).utc.to_s if source[date].present?
       end
       source
     end

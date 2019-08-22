@@ -319,6 +319,7 @@ describe DocumentSearch do
       Document.create(common_params.merge(changed: 2.month.ago,
                                           path: 'http://www.agency.gov/2months.html'))
       Document.create(common_params.merge(changed: nil,
+                                          created: nil,
                                           path: 'http://www.agency.gov/nodate.html'))
       Document.create(common_params.merge(changed: 6.months.ago,
                                           path: 'http://www.agency.gov/6months.html'))
@@ -596,6 +597,20 @@ describe DocumentSearch do
       document_search = DocumentSearch.new(handles: %w(agency_blogs), language: :en, query: "99 problemz -site:agency.gov", size: 10, offset: 0)
       document_search_results = document_search.search
       expect(document_search_results.total).to eq(0)
+    end
+  end
+
+  context 'when a search term yields results as well as a suggestion' do
+    let(:query) { 'fsands' }
+
+    before do
+      document_create(common_params.merge(content: 'FSAND'))
+      document_create(common_params.merge(content: 'fund'))
+      document_create(common_params.merge(content: 'fraud'))
+    end
+
+    it 'does not return a suggestion' do
+      expect(document_search_results.suggestion).to be nil
     end
   end
 
