@@ -1,0 +1,18 @@
+FROM ruby:2.5.5
+RUN apt-get update -qq && apt-get install -y nodejs netcat
+RUN mkdir /myapp
+WORKDIR /myapp
+COPY Gemfile /myapp/Gemfile
+COPY Gemfile.lock /myapp/Gemfile.lock
+RUN bundle install
+COPY . /myapp
+COPY config/secrets_example.yml config/secrets.yml
+
+# Add a script to be executed every time the container starts.
+COPY entrypoint.sh /usr/bin/
+RUN chmod +x /usr/bin/entrypoint.sh
+ENTRYPOINT ["entrypoint.sh"]
+#EXPOSE 3000
+
+# Start the main process.
+CMD ["bundle", "exec", "rake"]

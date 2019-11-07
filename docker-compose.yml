@@ -1,0 +1,29 @@
+version: '3.7'
+
+services:
+
+  elasticsearch:
+    build:
+      context: ./
+      dockerfile: Dockerfile.elasticsearch
+    environment:
+      discovery.type: single-node
+      cluster.name: elasticsearch_56
+      node.name: "es56"
+    ports:
+      - '9256:9200'
+
+  rails:
+    build:
+      context: ./
+      dockerfile: Dockerfile.rails
+    command: ["bundle", "exec", "rake"]
+    entrypoint: ["entrypoint.sh"]
+    # command: ["sleep", "10000"]
+    environment:
+      elastichost: "elasticsearch:9200"
+      ELASTICHOST: "elasticsearch"
+      ELASTICPORT: "9200"
+
+    depends_on:
+      - elasticsearch

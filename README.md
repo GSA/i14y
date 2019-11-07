@@ -8,6 +8,8 @@ i14y
 Search engine for agencies' published content
 
 ## Dependencies/Prerequisistes
+
+To run locally follow these instructions.  You may skip these instructions if running in docker containers and jump to the [tests section](#tsts)
 - Install Elasticsearch 5.6+:
 ```
 $ brew search elasticsearch
@@ -69,9 +71,11 @@ $ curl localhost:9256
 If you ever want to start from scratch with your indexes/templates, you can clear everything out:
 `bundle exec rake i14y:clear_all`
 
-## Tests
+## <a name="tests"></a>Tests
 
 `bundle exec rake`
+
+To test inside docker containers simply run `docker-compose up --build rails`
 
 ## Deployment
 
