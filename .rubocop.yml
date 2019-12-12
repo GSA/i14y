@@ -1839,6 +1839,8 @@ Style/MixinGrouping:
 Style/MixinUsage:
   Description: Checks that `include`, `extend` and `prepend` exists at the top level.
   Enabled: true
+  Exclude:
+    - bin/*
 
 # Supports --auto-correct
 Style/MultilineIfModifier:
