@@ -34,6 +34,7 @@ group :development, :test do
   # https://docs.codeclimate.com/v1.0/docs/rubocop#section-using-rubocop-s-newer-versions
   gem 'rubocop', '0.52.1'
   gem 'mry', '~> 0.52.0'
+  gem 'listen'
 end
 
 group :test do
