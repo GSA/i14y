@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-gem 'rails', '5.1.6.2'
+gem 'rails', ' ~> 5.2.0'
 
 gem 'rack-cors', '~> 1.0.5'
 gem 'grape', '~> 1.1.0'
@@ -34,6 +34,7 @@ group :development, :test do
   # https://docs.codeclimate.com/v1.0/docs/rubocop#section-using-rubocop-s-newer-versions
   gem 'rubocop', '0.52.1'
   gem 'mry', '~> 0.52.0'
+  gem 'listen'
 end
 
 group :test do
