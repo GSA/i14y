@@ -6,7 +6,7 @@ executors:
       - image: circleci/ruby:${RUBY_VERSION}-node-browsers
     working_directory: ~/app
     environment:
-      ES_VER: 5.6.8
+      ES_VER: 6.8.6
 
 jobs:
   build:
@@ -20,7 +20,7 @@ jobs:
       - checkout
       - run: cp -p config/secrets_example.yml config/secrets.yml
       - restore_cache:
-          key: elasticsearch-5.6.8-0
+          key: elasticsearch-6.8.6-0
       - run:
           name: Installing Elasticsearch
           command: |
@@ -35,15 +35,16 @@ jobs:
               for plugin in ${PLUGINS[*]}; do ~/elasticsearch-$ES_VER/bin/elasticsearch-plugin install $plugin; done
             fi
       - save_cache:
-          key: elasticsearch-5.6.8-0
+          key: elasticsearch-6.8.6-0
           paths:
-            - ~/elasticsearch-5.6.8
+            - ~/elasticsearch-6.8.6
       - run:
           name: Run Elasticsearch in background
-          command: ~/elasticsearch-$ES_VER/bin/elasticsearch -E http.port=9256
+          command: ~/elasticsearch-$ES_VER/bin/elasticsearch -E http.port=9268
           background: true
       - restore_cache:
            key: bundle-{{ checksum "Gemfile.lock" }}
+      - run: gem install bundler:1.17.3
       - run: bundle install --path vendor/bundle
       - save_cache:
           key: bundle-{{ checksum "Gemfile.lock" }}
@@ -56,7 +57,7 @@ jobs:
             chmod +x ./cc-test-reporter
       - run:
           name: Waiting for Elasticsearch
-          command: dockerize --wait http://localhost:9256 -timeout 1m
+          command: dockerize --wait http://localhost:9268 -timeout 1m
       - run:
           name: RSpec
           environment:
@@ -79,3 +80,6 @@ workflows:
       - build:
           name: 'ruby 2.6.3'
           ruby_version: 2.6.3
+      - build:
+          name: 'ruby 2.7.0'
+          ruby_version: 2.7.0
