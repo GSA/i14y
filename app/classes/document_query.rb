@@ -155,7 +155,7 @@ class DocumentQuery
         fragment_size: 75,
         number_of_fragments: 2,
         type: 'fvh'
-      },
+      }
     }
   end
 
