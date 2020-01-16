@@ -186,7 +186,7 @@ class Documents
   def bigrams(json)
     json.bigrams do
       json.analyzer "bigrams_analyzer"
-      json.type "string"
+      json.type "text"
     end
   end
 
@@ -253,7 +253,7 @@ class Documents
       json.child! do
         json.set! locale do
           json.match "*_#{locale}"
-          json.match_mapping_type "string"
+          json.match_mapping_type "text"
           json.mapping do
             json.analyzer "#{locale}_analyzer"
             json.type "text"
