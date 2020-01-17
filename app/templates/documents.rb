@@ -253,7 +253,7 @@ class Documents
       json.child! do
         json.set! locale do
           json.match "*_#{locale}"
-          json.match_mapping_type "text"
+          json.match_mapping_type "string"
           json.mapping do
             json.analyzer "#{locale}_analyzer"
             json.type "text"
