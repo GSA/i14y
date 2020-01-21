@@ -186,7 +186,7 @@ class Documents
   def bigrams(json)
     json.bigrams do
       json.analyzer "bigrams_analyzer"
-      json.type "string"
+      json.type "text"
     end
   end
 
