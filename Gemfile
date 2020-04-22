@@ -2,8 +2,7 @@ source 'https://rubygems.org'
 gem 'rails', ' ~> 5.2.0'
 
 gem 'rack-cors', '~> 1.0.5'
-gem 'grape', '~> 1.1.0'
-gem 'thin', '~> 1.7.1'
+gem 'grape', '~> 1.3.2'
 
 gem 'jbuilder', '~> 2.7'
 
@@ -35,6 +34,7 @@ group :development, :test do
   gem 'rubocop', '0.52.1'
   gem 'mry', '~> 0.52.0'
   gem 'listen'
+  gem 'puma',  '~> 4.3'
 end
 
 group :test do
