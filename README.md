@@ -25,12 +25,10 @@ We recommend using [Docker](https://www.docker.com/get-started) to install and r
 $ docker-compose up elasticsearch
 ```
 
-Verify that Elasticsearch 6.8.x is running on port 9268 (we use 9268
-instead of the default 9200 to simplify development when running
-multiple versions of Elasticsearch):
+Verify that Elasticsearch 6.8.x is running on port 9200:
 
 ```
-$ curl localhost:9268
+$ curl localhost:9200
 {
   "name" : "wp9TsCe",
   "cluster_name" : "docker-cluster",
@@ -59,7 +57,7 @@ You can also run Kibana using Docker:
 $ docker-compose up kibana
 ```
 
-Verify that you can access Kibana in your browser: [http://localhost:5668/](http://localhost:5668/)
+Verify that you can access Kibana in your browser: [http://localhost:5601/](http://localhost:5601/)
 
 ## Development
 
