@@ -7,7 +7,7 @@ i14y
 
 Search engine for agencies' published content
 
-## Dependencies/Prerequisistes
+## Dependencies/Prerequisites
 
 * Ruby
 
