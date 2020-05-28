@@ -1,6 +1,6 @@
 # This file is overwritten by Chef during a deploy. Any production
 # changes should be made in the cookbooks.
 hosts:
-  - localhost:9256
+  - localhost:9268
 user: elastic
 password: changeme
