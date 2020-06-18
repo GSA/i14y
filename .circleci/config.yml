@@ -40,7 +40,7 @@ jobs:
             - ~/elasticsearch-6.8.6
       - run:
           name: Run Elasticsearch in background
-          command: ~/elasticsearch-$ES_VER/bin/elasticsearch -E http.port=9268
+          command: ~/elasticsearch-$ES_VER/bin/elasticsearch -E http.port=9200
           background: true
       - restore_cache:
            key: bundle-{{ checksum "Gemfile.lock" }}
@@ -57,7 +57,7 @@ jobs:
             chmod +x ./cc-test-reporter
       - run:
           name: Waiting for Elasticsearch
-          command: dockerize --wait http://localhost:9268 -timeout 1m
+          command: dockerize --wait http://localhost:9200 -timeout 1m
       - run:
           name: RSpec
           environment:

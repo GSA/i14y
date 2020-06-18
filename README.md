@@ -7,61 +7,60 @@ i14y
 
 Search engine for agencies' published content
 
-## Dependencies/Prerequisistes
-- Install Elasticsearch 5.6+:
-```
-$ brew search elasticsearch
-$ brew install elasticsearch@5.6
-```
+## Dependencies/Prerequisites
 
-To allow ES 5.6 to run in parallel with another version of Elasticsearch in development and test environments, we run I14y on port 9256 instead of the default port 9200. You'll need to specify the port, cluster name, and node name for your 5.6 cluster:
-```
-$ vi /usr/local/Cellar/elasticsearch@5.6/<specific version>/libexec/config/elasticsearch.yml
-  
-  cluster.name: elasticsearch_56
-  node.name: "es56"
-  http.port: 9256
-```
+* Ruby
 
-- You'll need Java 7+ to run the included `stream2es` utility that handles copying data from one index version to the next.
-Run `java -version` to make sure.
+Use [rvm](https://rvm.io/) to install the version of Ruby specified in `.ruby-version`.
 
-- Your Elasticsearch cluster needs the [ICU analysis plugin](https://github.com/elastic/elasticsearch-analysis-icu) and
-the [Kuromoji analysis plugin](https://github.com/elastic/elasticsearch-analysis-kuromoji/blob/master/README.md) and
-the [Smart Chinese Analysis Plugin](https://github.com/elastic/elasticsearch-analysis-smartcn) installed:
+* [Elasticsearch 6.8](https://www.elastic.co/elasticsearch/)
+* Elasticsearch Plugins:
+    * [analysis-kuromoji](https://www.elastic.co/guide/en/elasticsearch/plugins/current/analysis-kuromoji.html)
+    * [analysis-icu](https://www.elastic.co/guide/en/elasticsearch/plugins/master/analysis-icu-analyzer.html)
+    * [analysis-smartcn](https://www.elastic.co/guide/en/elasticsearch/plugins/current/analysis-smartcn.html)
+
+We recommend using [Docker](https://www.docker.com/get-started) to install and run Elasticsearch:
 
 ```
-$ /usr/local/opt/elasticsearch@5.6/libexec/bin/elasticsearch-plugin install analysis-kuromoji
-$ /usr/local/opt/elasticsearch@5.6/libexec/bin/elasticsearch-plugin install analysis-icu
-$ /usr/local/opt/elasticsearch@5.6/libexec/bin/elasticsearch-plugin install analysis-smartcn
+$ docker-compose up elasticsearch
 ```
 
-Be sure to restart Elasticsearch after you have installed the plugins:
-```
-$ brew services restart elasticsearch@5.6
-```
+Verify that Elasticsearch 6.8.x is running on port 9200:
 
-Verify that Elasticsearch 5.6.x is running on port 9256:
 ```
-$ curl localhost:9256
+$ curl localhost:9200
 {
-  "name" : "es56",
-  "cluster_name" : "elasticsearch_56",
-  "cluster_uuid" : "IhVLFTNYQj6Ac6Xi4Uegmg",
+  "name" : "wp9TsCe",
+  "cluster_name" : "docker-cluster",
+  "cluster_uuid" : "WGf_peYTTZarT49AtEgc3g",
   "version" : {
-    "number" : "5.6.9",
-    "build_hash" : "877a590",
-    "build_date" : "2018-04-12T16:25:14.838Z",
+    "number" : "6.8.7",
+    "build_flavor" : "default",
+    "build_type" : "docker",
+    "build_hash" : "c63e621",
+    "build_date" : "2020-02-26T14:38:01.193138Z",
     "build_snapshot" : false,
-    "lucene_version" : "6.6.1"
+    "lucene_version" : "7.7.2",
+    "minimum_wire_compatibility_version" : "5.6.0",
+    "minimum_index_compatibility_version" : "5.0.0"
   },
   "tagline" : "You Know, for Search"
 }
 ```
 
+* Kibana
+
+Kibana is not required, but it can very helpful for debugging your Elasticsearch cluster or data.
+You can also run Kibana using Docker:
+
+```
+$ docker-compose up kibana
+```
+
+Verify that you can access Kibana in your browser: [http://localhost:5601/](http://localhost:5601/)
+
 ## Development
 
-- Use `rvm` to install the version of Ruby specified in `.ruby-version`.
 - `bundle install`.
 - Copy `config/secrets_example.yml` to `config/secrets.yml` and fill in your own secrets. To generate a random long secret, use `rake secret`.
 - Run `bundle exec rake i14y:setup` to create the neccessary indexes, index templates, and dynamic field templates.
@@ -69,14 +68,53 @@ $ curl localhost:9256
 If you ever want to start from scratch with your indexes/templates, you can clear everything out:
 `bundle exec rake i14y:clear_all`
 
+- Run the Rails server on port 8081 for compatibility with the
+  search-gov app:
+```
+$ rails s -p 8081
+```
+
+You should see the default Rails index page on [http://localhost:8081/](http://localhost:8081/).
+
+## Basic Usage
+
+### Create a collection for storing documents
+```
+$ curl -u dev:devpwd -XPOST http://localhost:8081/api/v1/collections \
+ -H "Content-Type:application/json" -d \
+ '{"handle":"test_collection","description":"my test collection","token":"test_collection_token"}'
+```
+
+### Create a document within that collection
+Use the collection handle and token for authorization:
+
+```
+curl http://localhost:8081/api/v1/documents \
+  -XPOST \
+  -H "Content-Type:application/json" \
+  -u test_collection:test_collection_token \
+  -d '{"document_id":"1",
+      "title":"a doc about rutabagas",
+      "path": "http://www.foo.gov/rutabagas.html",
+      "created": "2020-05-12T22:35:09Z",
+      "description":"Lots of very important info on rutabagas",
+      "content":"rutabagas",
+      "promote": false,
+      "language" : "en",
+      "tags" : "tag1, another tag"
+      }'
+```
+
+### Search for a document within a collection
+```
+$ curl -u dev:devpwd http://localhost:8081/api/v1/collections/search?handles=test_collection&query=rutabaga
+```
+
 ## Tests
+```
+# Fire up Elasticsearch
+$ docker-compose up elasticsearch
 
-`bundle exec rake`
-
-## Deployment
-
-- Set your Airbrake api key in `config/airbrake.yml` in the deployment directory for `/i14y/shared/config`. This will get copied into the current release directory on deployment.
-- Update your `config/secrets.yml` file in the deployment directory for `/i14y/shared/config`. This will get copied into the current release directory on deployment.
-- Update your `config/newrelic.yml` file in the deployment directory for `/i14y/shared/config`. This will get copied into the current release directory on deployment.
-- `bundle exec cap staging deploy` to deploy to a staging environment
-- `bundle exec cap production deploy` to deploy to a production environment
+$ bundle exec rake i14y:setup
+$ rake
+```
