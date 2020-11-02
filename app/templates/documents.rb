@@ -23,7 +23,6 @@ class Documents
         json.document do
           dynamic_templates(json)
           properties(json)
-          json._all { json.enabled false }
         end
       end
     end
