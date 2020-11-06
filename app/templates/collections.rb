@@ -9,7 +9,6 @@ class Collections
       json.mappings do
         json.collection do
           dynamic_templates(json)
-          json._all { json.enabled false }
         end
       end
     end
