@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Documents
   include Templatable
   LIGHT_STEMMERS = { fr: "french", de: "german", es: "spanish", it: "italian", pt: "portuguese" }
@@ -10,7 +12,7 @@ class Documents
 
   def body
     Jbuilder.encode do |json|
-      json.template "*-#{I14y::APP_NAME}-documents-*"
+      json.index_patterns "*-#{I14y::APP_NAME}-documents-*"
       json.settings do
         json.analysis do
           char_filter(json)
