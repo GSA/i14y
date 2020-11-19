@@ -105,7 +105,7 @@ class DocumentQuery
             extension: %w(doc docx pdf ppt pptx xls xlsx)
           }
         },
-        weight: -3
+        weight: '.75'
       },
 
       # Prefer documents that have been clicked more often
