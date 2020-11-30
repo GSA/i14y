@@ -50,6 +50,8 @@ describe API::V1::Collections do
       it 'stores the appropriate fields in the Elasticsearch collection' do
         collection = Collection.find('agency_blogs')
         expect(collection.token).to eq('secret')
+        expect(collection.created_at).to be_an_instance_of(Time)
+        expect(collection.updated_at).to be_an_instance_of(Time)
       end
 
       it_behaves_like 'a data modifying request made during read-only mode'

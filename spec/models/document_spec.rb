@@ -34,6 +34,11 @@ describe Document do
     )
   end
 
+  describe 'validations' do
+    it { is_expected.to validate_presence_of(:path) }
+    it { is_expected.to validate_presence_of(:language) }
+  end
+
   describe '.create' do
     context 'when language fields contain HTML/CSS and HTML entities' do
       let(:html) do
