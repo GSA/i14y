@@ -26,11 +26,7 @@ describe API::V1::Collections do
   describe 'POST /api/v1/collections' do
     context 'success case' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query(
-          index: Collection.index_name,
-          q: '*:*',
-          conflicts: 'proceed'
-        )
+        clear_index(collections_index_name)
         post '/api/v1/collections', params: valid_params, headers: valid_session
       end
 
@@ -125,7 +121,7 @@ describe API::V1::Collections do
   describe 'DELETE /api/v1/collections/{handle}' do
     context 'success case' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*', conflicts: 'proceed'
+        clear_index(collections_index_name)
         Collection.create(_id: 'agency_blogs', token: 'secret')
         delete '/api/v1/collections/agency_blogs', headers: valid_session
       end
@@ -150,10 +146,10 @@ describe API::V1::Collections do
   describe 'GET /api/v1/collections/{handle}' do
     context 'success case' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*', conflicts: 'proceed'
+        clear_index(collections_index_name)
         post '/api/v1/collections', params: valid_params, headers: valid_session
         Document.index_name = Document.index_namespace('agency_blogs')
-        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
+        clear_index(Document.index_name)
       end
 
       let(:datetime) { DateTime.now.utc }
@@ -202,10 +198,10 @@ describe API::V1::Collections do
   describe 'GET /api/v1/collections/search' do
     context 'success case' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*', conflicts: 'proceed'
+        clear_index(collections_index_name)
         post '/api/v1/collections', params: valid_params, headers: valid_session
         Document.index_name = Document.index_namespace('agency_blogs')
-        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
+        clear_index(Document.index_name)
       end
 
       let(:datetime) { DateTime.now.utc.to_s }
@@ -300,10 +296,10 @@ describe API::V1::Collections do
 
     context 'no results' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*', conflicts: 'proceed'
+        clear_index(collections_index_name)
         post '/api/v1/collections', params: valid_params, headers: valid_session
         Document.index_name = Document.index_namespace('agency_blogs')
-        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
+        clear_index(Document.index_name)
       end
 
       it 'returns JSON no hits results' do
@@ -343,7 +339,7 @@ describe API::V1::Collections do
       end
 
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*', conflicts: 'proceed'
+        clear_index(collections_index_name)
         Collection.create(_id: 'agency_blogs', token: 'secret')
         get '/api/v1/collections/search', params: bad_handle_params, headers: valid_session
       end
