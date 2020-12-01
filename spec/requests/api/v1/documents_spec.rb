@@ -348,7 +348,7 @@ describe API::V1::Documents, elasticsearch: true  do
         expect { put_document }.to change { Document.find(id).updated_at }
       end
 
-      it 'does not updated the created_at timestamp' do
+      it 'does not update the created_at timestamp' do
         expect { put_document }.not_to change { Document.find(id).created_at }
       end
     end
