@@ -18,18 +18,20 @@ describe Document do
 
   before(:all) do
     handle = 'test_index'
-    Elasticsearch::Persistence.client.indices.delete(
+    ES.client.indices.delete(
       index: [Document.index_namespace(handle), '*'].join('-')
     )
     es_documents_index_name = [Document.index_namespace(handle), 'v1'].join('-')
     Document.create_index!(index: es_documents_index_name)
-    Elasticsearch::Persistence.client.indices.put_alias index: es_documents_index_name,
-                                                        name: Document.index_namespace(handle)
+    ES.client.indices.put_alias(
+      index: es_documents_index_name,
+      name: Document.index_namespace(handle)
+    )
     Document.index_name = Document.index_namespace(handle)
   end
 
   after(:all) do
-    Elasticsearch::Persistence.client.indices.delete(
+    ES.client.indices.delete(
       index: [Document.index_namespace('test_index'), '*'].join('-')
     )
   end

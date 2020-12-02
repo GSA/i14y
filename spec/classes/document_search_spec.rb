@@ -20,14 +20,18 @@ describe DocumentSearch do
   let(:document_search_results) { document_search.search }
 
   before do
-    Elasticsearch::Persistence.client.indices.delete(index: [Document.index_namespace('agency_blogs'), '*'].join('-'))
+    ES.client.indices.delete(
+      index: [Document.index_namespace('agency_blogs'), '*'].join('-')
+    )
     es_documents_index_name = [Document.index_namespace('agency_blogs'), 'v1'].join('-')
     #Using a single shard prevents intermittent relevancy issues in tests
     #https://www.elastic.co/guide/en/elasticsearch/guide/current/relevance-is-broken.html
     Document.settings(index: { number_of_shards: 1 })
     Document.create_index!(index: es_documents_index_name)
-    Elasticsearch::Persistence.client.indices.put_alias index: es_documents_index_name,
-                                                        name: Document.index_namespace('agency_blogs')
+    ES.client.indices.put_alias(
+      index: es_documents_index_name,
+      name: Document.index_namespace('agency_blogs')
+    )
     Document.index_name = Document.index_namespace('agency_blogs')
   end
 
@@ -97,7 +101,7 @@ describe DocumentSearch do
       let(:query) { 'uh oh' }
       let(:error) { StandardError.new('something went wrong') }
 
-      before { allow(Elasticsearch::Persistence.client).to receive(:search).and_raise(error) }
+      before { allow(ES).to receive(:client).and_raise(error) }
 
       it 'returns a no results response' do
         expect(document_search_results.total).to eq(0)
@@ -152,8 +156,10 @@ describe DocumentSearch do
       Document.refresh_index!
       es_documents_index_name = [Document.index_namespace('other_agency_blogs'), 'v1'].join('-')
       Document.create_index!(index: es_documents_index_name)
-      Elasticsearch::Persistence.client.indices.put_alias index: es_documents_index_name,
-                                                          name: Document.index_namespace('other_agency_blogs')
+      ES.client.indices.put_alias(
+        index: es_documents_index_name,
+        name: Document.index_namespace('other_agency_blogs')
+      )
       Document.index_name = Document.index_namespace('other_agency_blogs')
       Document.create(language: 'en', title: 'other title 1 common content', description: 'other description 1 common content', created: DateTime.now, path: 'http://www.otheragency.gov/page1.html')
       Document.refresh_index!
