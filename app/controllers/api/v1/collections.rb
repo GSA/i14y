@@ -49,8 +49,10 @@ module API
           error!(collection.errors.messages, 400) unless collection.valid?
           es_documents_index_name = [Document.index_namespace(handle), 'v1'].join('-')
           Document.create_index!(index: es_documents_index_name)
-          Elasticsearch::Persistence.client.indices.put_alias index: es_documents_index_name,
-                                                              name: Document.index_namespace(handle)
+          ES.client.indices.put_alias(
+            index: es_documents_index_name,
+            name: Document.index_namespace(handle)
+          )
           ok("Your collection was successfully created.")
         end
 
@@ -60,7 +62,9 @@ module API
           handle = params.delete(:handle)
           collection = Collection.find(handle)
           error!(collection.errors.messages, 400) unless collection.destroy
-          Elasticsearch::Persistence.client.indices.delete(index: [Document.index_namespace(handle), '*'].join('-'))
+          ES.client.indices.delete(
+            index: [Document.index_namespace(handle), '*'].join('-')
+          )
           ok("Your collection was successfully deleted.")
         end
 
