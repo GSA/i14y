@@ -6,8 +6,12 @@ module API
       rack_response({ developer_message: message, status: 503 }.to_json, 503)
     end
 
-    rescue_from Elasticsearch::Persistence::Repository::DocumentNotFound do |_e|
-      rack_response({ developer_message: "Resource could not be found.", status: 400 }.to_json, 400)
+    rescue_from Elasticsearch::Persistence::Repository::DocumentNotFound,
+      Elasticsearch::Transport::Transport::Errors::NotFound do |_e|
+        rack_response(
+          { developer_message: "Resource could not be found.", status: 400 }.to_json,
+          400
+        )
     end
 
     rescue_from :all do |e|

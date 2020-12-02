@@ -12,6 +12,10 @@ module ES
                               retry_on_failure: true,
                               reload_connections: true)
   end
+
+  def self.collection_repository
+    CollectionRepository.new
+  end
 end
 
 if Rails.env.development?
@@ -20,5 +24,3 @@ if Rails.env.development?
   logger.formatter = proc { |_s, _d, _p, m| "\e[2m#{m}\n\e[0m" }
   ES.client.transport.logger = logger
 end
-
-Elasticsearch::Persistence.client = ES.client

@@ -13,8 +13,11 @@ describe 'create fake test documents' do
     end
 
     it 'generates the required number of documents' do
-      expect(Document).to receive(:create).exactly(3).times
-      Rake::Task['fake:documents'].invoke('my_drawer','3')
+      expect {
+        Rake::Task['fake:documents'].invoke('my_drawer','3')
+      }.to change {
+        ES.client.count(index: '*my_drawer*')['count']
+      }.from(0).to(3)
     end
   end
 end

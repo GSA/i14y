@@ -1,6 +1,10 @@
+# frozen_string_literal: true
+
 module Serde
-  def self.serialize_hash(hash, language, language_field_keys)
-    language_field_keys.each do |key|
+  LANGUAGE_FIELDS = %i[title description content]
+
+  def self.serialize_hash(hash, language)
+    LANGUAGE_FIELDS.each do |key|
       value = hash[key.to_sym]
       if value.present?
         sanitized_value = Loofah.fragment(value).text(encode_special_chars: false).squish
@@ -10,11 +14,12 @@ module Serde
     end
     hash.merge!(uri_params_hash(hash[:path])) if hash[:path].present?
     hash[:tags] = hash[:tags].extract_array if hash[:tags].present?
+    hash[:updated_at] = Time.now.utc
     hash
   end
 
-  def self.deserialize_hash(hash, language, language_field_keys)
-    derivative_language_fields = language_field_keys.collect { |key| "#{key}_#{language}" }
+  def self.deserialize_hash(hash, language)
+    derivative_language_fields = LANGUAGE_FIELDS.collect { |key| "#{key}_#{language}" }
     (derivative_language_fields & hash.keys).each do |field|
       hash[field.chomp("_#{language}")] = hash.delete(field)
     end

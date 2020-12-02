@@ -1,11 +1,9 @@
 require 'rails_helper'
 
 describe Serde do
-  let(:language_field_keys) { Document::LANGUAGE_FIELDS }
-
   describe '.serialize_hash' do
     subject(:serialize_hash) do
-      Serde.serialize_hash(original_hash, :en, language_field_keys)
+      Serde.serialize_hash(original_hash, 'en')
     end
     let(:original_hash) do
       ActiveSupport::HashWithIndifferentAccess.new(
@@ -16,12 +14,14 @@ describe Serde do
           "promote" => false,
           "tags" => "this that",
           "created" => "2018-01-01T12:00:00Z",
-          "changed" => "2018-02-01T12:00:00Z" }
+          "changed" => "2018-02-01T12:00:00Z",
+          "created_at" => "2018-01-01T12:00:00Z",
+          "updated_at" => "2018-02-01T12:00:00Z" }
       )
     end
 
     it 'stores the language fields with the language suffix' do
-      expect(serialize_hash).to eq(
+      expect(serialize_hash).to match(hash_including(
         { "path" => "http://www.foo.gov/bar.html",
           "promote" => false,
           "tags" => ["this that"],
@@ -35,7 +35,11 @@ describe Serde do
           "url_path" => "/bar.html",
           "domain_name" => "www.foo.gov"
         }
-      )
+      ))
+    end
+
+    it 'updates the updated_at value' do
+      expect(serialize_hash[:updated_at]).to be > 1.second.ago
     end
 
     context 'when language fields contain HTML/CSS' do
@@ -62,11 +66,21 @@ describe Serde do
         ))
       end
     end
+
+    context 'when the tags are a comma-delimited list' do
+      let(:original_hash) do
+        { tags: 'this, that' }
+      end
+
+      it 'converts the tags to an array' do
+        expect(serialize_hash).to match(hash_including(tags: %w[this that]))
+      end
+    end
   end
 
   describe '.deserialize_hash' do
     subject(:deserialize_hash) do
-      Serde.deserialize_hash(original_hash, :en, language_field_keys)
+      Serde.deserialize_hash(original_hash, :en)
     end
     let(:original_hash) do
       ActiveSupport::HashWithIndifferentAccess.new(

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class DocumentSearchResults
   attr_reader :total, :offset, :results, :suggestion
 
@@ -42,8 +44,6 @@ class DocumentSearchResults
 
   def deserialized(hit)
     Serde.deserialize_hash(ActiveSupport::HashWithIndifferentAccess.new(hit['_source']),
-                           hit['_source']['language'],
-                           %i[title description content])
-
+                           hit['_source']['language'])
   end
 end

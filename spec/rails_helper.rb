@@ -37,26 +37,10 @@ RSpec.configure do |config|
 
   config.before(:suite) do
     TestServices::delete_es_indexes
-    TestServices::create_es_indexes
+    TestServices::create_collections_index
   end
 
   config.after(:suite) do
     TestServices::delete_es_indexes
-  end
-
-  config.before :each, elasticsearch: true do
-    begin
-      Document.create_index!
-      Document.refresh_index!
-    rescue => Elasticsearch::Transport::Transport::Errors::NotFound
-      # This kills "Index does not exist" errors being written to console
-      # by this: https://github.com/elastic/elasticsearch-rails/blob/738c63efacc167b6e8faae3b01a1a0135cfc8bbb/elasticsearch-model/lib/elasticsearch/model/indexing.rb#L268
-    rescue StandardError => error
-      STDERR.puts "There was an error creating the elasticsearch index for #{Document.name}: #{error.inspect}"
-    end
-  end
-
-  config.after :each, elasticsearch: true do
-    ES.client.indices.delete index: '*documents*'
   end
 end

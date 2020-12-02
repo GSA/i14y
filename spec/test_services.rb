@@ -3,11 +3,11 @@
 module TestServices
   module_function
 
-  def create_es_indexes
-    Collection.create_index!(index: collections_index_name)
+  def create_collections_index
+    ES.client.indices.create(index: collections_index_name)
     ES.client.indices.put_alias(
       index: collections_index_name,
-      name: Collection.index_name
+      name: ES.collection_repository.index_name
     )
   end
 

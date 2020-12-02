@@ -7,7 +7,7 @@ class DocumentSearch
     @offset = options[:offset] || 0
     @size = options[:size]
     @doc_query = DocumentQuery.new(options)
-    @indices = options[:handles].map { |handle| Document.index_namespace(handle) }
+    @indices = options[:handles].map { |handle| DocumentRepository.index_namespace(handle) }
   end
 
   def search
