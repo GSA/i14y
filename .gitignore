@@ -5,6 +5,7 @@ capybara-*.html
 .idea
 
 .rspec
+.rspec-local
 /log
 /tmp
 /db/*.sqlite3
