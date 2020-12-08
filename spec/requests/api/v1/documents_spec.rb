@@ -70,6 +70,23 @@ describe API::V1::Documents, elasticsearch: true  do
         expect(document.updated_at).to be_an_instance_of(Time)
       end
 
+      context 'when a "created" value is provided but not "changed"' do
+        let(:valid_params) do
+          { document_id: id,
+            title:       'my title',
+            path:        'http://www.gov.gov/goo.html',
+            description: 'my desc',
+            language:    'hy',
+            content:     'my content',
+            created:     '2020-01-01T10:00:00Z' }
+        end
+
+        it 'sets "changed" to be the same as "created"' do
+          document = Document.find(id)
+          expect(document.changed).to eq '2020-01-01T10:00:00Z'
+        end
+      end
+
       it_behaves_like 'a data modifying request made during read-only mode'
     end
 

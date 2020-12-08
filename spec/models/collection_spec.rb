@@ -14,6 +14,15 @@ describe Collection do
 
   it { is_expected.to be_valid }
 
+  describe 'attributes' do
+    it do
+      is_expected.to have_attributes(
+        token: 'secret',
+        id: 'agency_blogs'
+      )
+    end
+  end
+
   describe 'validations' do
     it { is_expected.to validate_presence_of(:token) }
   end
