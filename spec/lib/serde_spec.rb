@@ -37,6 +37,31 @@ describe Serde do
         }
       )
     end
+
+    context 'when language fields contain HTML/CSS' do
+      let(:html) do
+        <<~HTML
+          <div style="height: 100px; width: 100px;"></div>
+          <p>hello & goodbye!</p>
+        HTML
+      end
+
+      let(:original_hash) do
+        ActiveSupport::HashWithIndifferentAccess.new(
+          title: '<b><a href="http://foo.com/">foo</a></b><img src="bar.jpg">',
+          description: html,
+          content: "this <b>is</b> <a href='http://gov.gov/url.html'>html</a>"
+        )
+      end
+
+      it 'sanitizes the language fields' do
+        expect(serialize_hash).to match(hash_including(
+          title_en: 'foo',
+          description_en: 'hello & goodbye!',
+          content_en: 'this is html'
+        ))
+      end
+    end
   end
 
   describe '.deserialize_hash' do

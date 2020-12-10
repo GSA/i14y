@@ -40,5 +40,5 @@ end
 group :test do
   gem 'simplecov', '~> 0.13.0', require: false
   gem "codeclimate-test-reporter", '~> 1.0.8', require: nil
-  gem 'fuubar', '~> 2.2'
+  gem 'shoulda', '~> 4.0'
 end

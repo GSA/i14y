@@ -66,6 +66,25 @@ describe API::V1::Documents, elasticsearch: true  do
         expect(document.description).to eq('my desc')
         expect(document.content).to eq('my content')
         expect(document.tags).to match_array(['bar blat', 'foo'])
+        expect(document.created_at).to be_an_instance_of(Time)
+        expect(document.updated_at).to be_an_instance_of(Time)
+      end
+
+      context 'when a "created" value is provided but not "changed"' do
+        let(:valid_params) do
+          { document_id: id,
+            title:       'my title',
+            path:        'http://www.gov.gov/goo.html',
+            description: 'my desc',
+            language:    'hy',
+            content:     'my content',
+            created:     '2020-01-01T10:00:00Z' }
+        end
+
+        it 'sets "changed" to be the same as "created"' do
+          document = Document.find(id)
+          expect(document.changed).to eq '2020-01-01T10:00:00Z'
+        end
       end
 
       it_behaves_like 'a data modifying request made during read-only mode'
@@ -260,6 +279,13 @@ describe API::V1::Documents, elasticsearch: true  do
   end
 
   describe 'PUT /api/v1/documents/{document_id}' do
+    subject(:put_document) do
+      put "/api/v1/documents/#{URI.encode(id)}",
+        params: update_params,
+        headers: valid_session
+      Document.refresh_index!
+    end
+
     let(:update_params) do
       {
         title:       'new title',
@@ -285,7 +311,7 @@ describe API::V1::Documents, elasticsearch: true  do
                          promote:     true,
                          path:        'http://www.gov.gov/url4.html')
 
-        api_put "/api/v1/documents/#{URI.encode(id)}", update_params, valid_session
+        put_document
       end
 
       it 'returns success message as JSON' do
@@ -309,6 +335,39 @@ describe API::V1::Documents, elasticsearch: true  do
       end
 
       it_behaves_like 'a data modifying request made during read-only mode'
+    end
+
+    context 'when time has passed since the document was created' do
+      before do
+        document_create(_id:           id,
+                         language:    'en',
+                         title:       'hi there 4',
+                         description: 'bigger desc 4',
+                         content:     'huge content 4',
+                         path:        'http://www.gov.gov/url4.html')
+        # Force-update the timestamps to avoid fooling the specs with any
+        # automagic trickery
+        Elasticsearch::Persistence.client.update(
+          index: Document.index_name,
+          id: id,
+          body: {
+            doc: {
+              updated_at: 1.year.ago,
+              created_at: 1.year.ago
+            }
+          },
+          type: 'document'
+        )
+        Document.refresh_index!
+      end
+
+      it 'updates the updated_at timestamp' do
+        expect { put_document }.to change { Document.find(id).updated_at }
+      end
+
+      it 'does not update the created_at timestamp' do
+        expect { put_document }.not_to change { Document.find(id).created_at }
+      end
     end
   end
 

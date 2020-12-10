@@ -1,13 +1,14 @@
+# frozen_string_literal: true
+
 class Collections
   include Templatable
 
   def body
     Jbuilder.encode do |json|
-      json.template "*-#{I14y::APP_NAME}-collections-*"
+      json.index_patterns "*-#{I14y::APP_NAME}-collections-*"
       json.mappings do
         json.collection do
           dynamic_templates(json)
-          json._all { json.enabled false }
         end
       end
     end

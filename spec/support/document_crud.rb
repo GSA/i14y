@@ -10,11 +10,6 @@ module DocumentCrud
     Document.refresh_index!
   end
 
-  def api_put(path,params, session)
-    put path, params: params, headers: session
-    Document.refresh_index!
-  end
-
   def api_delete(path,session)
     delete path, headers: session
   end
