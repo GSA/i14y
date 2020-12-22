@@ -1,10 +1,10 @@
 version: '3.8'
 
 services:
-  elasticsearch:
+  elasticsearch6:
     build:
       context: ./
-      dockerfile: Dockerfile.elasticsearch
+      dockerfile: Dockerfile.elasticsearch6
     environment:
       - bootstrap.memory_lock=true
       - discovery.type=single-node
@@ -15,18 +15,46 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - es_data:/usr/share/elasticsearch/data
+      - es_6_data:/usr/share/elasticsearch/data
     ports:
-      - 9200:9200
+      - 9268:9200
 
-  kibana:
-    image: docker.elastic.co/kibana/kibana:6.8.9
-    depends_on:
-      - elasticsearch
-    ports:
-      - 5601:5601
+  elasticsearch7:
+    build:
+      context: ./
+      dockerfile: Dockerfile.elasticsearch7
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_7_data:/usr/share/elasticsearch/data
+    ports:
+      - 9271:9200
+
+  kibana6:
+    image: docker.elastic.co/kibana/kibana:6.8.13
+    depends_on:
+      - elasticsearch6
+    ports:
+      - 5668:5601
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch6:9200
+
+  kibana7:
+    image: docker.elastic.co/kibana/kibana:7.10.1
+    depends_on:
+      - elasticsearch7
+    ports:
+      - 5671:5601
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch7:9200
 
 volumes:
-  es_data:
+  es_6_data:
+  es_7_data:
