@@ -9,4 +9,5 @@ class CollectionRepository
   klass Collection
   client ES.client
   index_name index_namespace
-end
+  settings number_of_shards: 1, number_of_replicas: 1
+ end

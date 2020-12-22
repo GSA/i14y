@@ -8,6 +8,7 @@ class DocumentRepository
 
   klass Document
   client ES.client
+  settings number_of_shards: 1, number_of_replicas: 1
 
   def serialize(document)
     document_hash = ActiveSupport::HashWithIndifferentAccess.new(super)
