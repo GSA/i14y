@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class DocumentQuery
   include Elasticsearch::DSL
 
@@ -171,8 +173,11 @@ class DocumentQuery
     (query.downcase.split(/ +/) - DEFAULT_STOPWORDS).join(' ')
   end
 
+  # Disabling length-related cops, as this method is intended to mimic the structure
+  # of a complex Elasticsearch query using the Elasticsearch DSL
+  # https://github.com/elastic/elasticsearch-ruby/tree/master/elasticsearch-dsl
+  # rubocop:disable Metrics/MethodLength, Metrics/BlockLength
   def build_search_query
-    #DSL reference: https://github.com/elastic/elasticsearch-ruby/tree/master/elasticsearch-dsl
     doc_query = self
 
     search.query do
@@ -224,11 +229,15 @@ class DocumentQuery
               bool do
                 must { term language: doc_query.language } if doc_query.language.present?
 
-                doc_query.included_sites.each do |site_filter|
-                  should do
-                    bool do
-                      must { term domain_name: site_filter.domain_name }
-                      must { term url_path: site_filter.url_path } if site_filter.url_path.present?
+                if doc_query.included_sites.any?
+                  minimum_should_match 1
+
+                  doc_query.included_sites.each do |site_filter|
+                    should do
+                      bool do
+                        must { term domain_name: site_filter.domain_name }
+                        must { term url_path: site_filter.url_path } if site_filter.url_path.present?
+                      end
                     end
                   end
                 end
@@ -257,4 +266,5 @@ class DocumentQuery
       end
     end
   end
+  # rubocop:enable Metrics/MethodLength, Metrics/BlockLength
 end
