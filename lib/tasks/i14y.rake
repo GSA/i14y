@@ -10,11 +10,11 @@ namespace :i14y do
                                      order: 0,
                                      create: true)
     end
-    es_collections_index_name = [Collection.index_namespace, 'v1'].join('-')
-    Collection.create_index!(index: es_collections_index_name)
+    es_collections_index_name = [CollectionRepository.index_namespace, 'v1'].join('-')
+    CollectionRepository.new.create_index!(index: es_collections_index_name)
     ES.client.indices.put_alias(
       index: es_collections_index_name,
-      name: Collection.index_name
+      name: CollectionRepository.index_name
     )
   end
 

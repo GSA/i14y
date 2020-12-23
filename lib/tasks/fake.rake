@@ -4,19 +4,20 @@ namespace :fake do
   # rake fake:documents[my_drawer,10]
 
   task :documents, [:index_name, :document_count] => [:environment] do |_t, args|
-    Document.index_name = Document.index_namespace(args[:index_name])
+    index_name = DocumentRepository.index_namespace(args[:index_name])
+    repository = DocumentRepository.new(index_name: index_name)
     count = args[:document_count].to_i
-
-    count.times { Document.create(fake_doc) }
+    count.times { repository.save(fake_doc) }
+    repository.refresh_index!
   end
 
   private
 
   def fake_doc
-    { _id: Time.now.to_f.to_s,
+    { id: Time.now.to_f.to_s,
       title: Faker::TwinPeaks.character,
       path: fake_url,
-      created: [Faker::Time.between(3.years.ago, Date.today).to_json, nil].sample,
+      created: [Faker::Time.between(3.years.ago, Date.today), nil].sample,
       description:  [nil, Faker::TwinPeaks.location].sample,
       content: quotes,
       promote: [true,false].sample,

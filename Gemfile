@@ -3,17 +3,17 @@ gem 'rails', ' ~> 5.2.0'
 
 gem 'rack-cors', '~> 1.0.5'
 gem 'grape', '~> 1.3.2'
-
 gem 'jbuilder', '~> 2.7'
+# Virtus is no longer supported. Consider replacing with ActiveModel::Attributes
+gem 'virtus', '~> 1.0'
 
 gem 'capistrano', '~> 3.9.0'
 gem 'capistrano-rails', '~> 1.3'
 gem 'capistrano-bundler', '~> 1.2'
 gem 'capistrano-passenger', '~> 0.2.0'
 
-gem "elasticsearch-persistence", '5.0.2', require: 'elasticsearch/persistence/model'
-gem 'elasticsearch', '5.0.4'
-gem 'elasticsearch-model', '~> 5.0.2'
+gem "elasticsearch-persistence", '~> 6.0'
+gem 'elasticsearch', '~> 6.0'
 gem 'elasticsearch-dsl', '~> 0.1.5'
 
 gem 'newrelic_rpm', '~> 4.2'

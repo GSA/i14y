@@ -12,4 +12,8 @@ describe CollectionRepository do
 
     it { is_expected.to eq(Collection) }
   end
+
+  it 'uses the collections index namespace' do
+    expect(repository.index_name).to eq('test-i14y-collections')
+  end
 end
