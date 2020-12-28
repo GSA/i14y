@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 ENV["RAILS_ENV"] ||= 'test'
 require 'spec_helper'
 require File.expand_path("../../config/environment", __FILE__)
 require 'rspec/rails'
+require 'test_services'
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
@@ -28,32 +31,16 @@ RSpec.configure do |config|
   # The different available types are documented in the features, such as in
   # https://relishapp.com/rspec/rspec-rails/docs
   config.include DocumentCrud
+  config.include TestServices
 
   config.infer_spec_type_from_file_location!
 
   config.before(:suite) do
-    require 'test_services'
     TestServices::delete_es_indexes
-    TestServices::create_es_indexes
+    TestServices::create_collections_index
   end
 
   config.after(:suite) do
     TestServices::delete_es_indexes
-  end
-
-  config.before :each, elasticsearch: true do
-    begin
-      Document.create_index!
-      Document.refresh_index!
-    rescue => Elasticsearch::Transport::Transport::Errors::NotFound
-      # This kills "Index does not exist" errors being written to console
-      # by this: https://github.com/elastic/elasticsearch-rails/blob/738c63efacc167b6e8faae3b01a1a0135cfc8bbb/elasticsearch-model/lib/elasticsearch/model/indexing.rb#L268
-    rescue StandardError => error
-      STDERR.puts "There was an error creating the elasticsearch index for #{Document.name}: #{error.inspect}"
-    end
-  end
-
-  config.after :each, elasticsearch: true do
-    Elasticsearch::Persistence.client.indices.delete index: '*documents*'
   end
 end

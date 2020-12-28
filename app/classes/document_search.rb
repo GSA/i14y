@@ -7,7 +7,7 @@ class DocumentSearch
     @offset = options[:offset] || 0
     @size = options[:size]
     @doc_query = DocumentQuery.new(options)
-    @indices = options[:handles].map { |handle| Document.index_namespace(handle) }
+    @indices = options[:handles].map { |handle| DocumentRepository.index_namespace(handle) }
   end
 
   def search
@@ -34,7 +34,7 @@ class DocumentSearch
   def execute_client_search
     params = { index: indices, body: doc_query.body, from: offset, size: size }
     Rails.logger.debug "Query: *****\n#{doc_query.body.to_json}\n*****"
-    result = Elasticsearch::Persistence.client.search(params)
+    result = ES.client.search(params)
     DocumentSearchResults.new(result, offset)
   end
 end

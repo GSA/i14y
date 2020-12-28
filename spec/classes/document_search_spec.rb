@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 describe DocumentSearch do
@@ -18,28 +20,45 @@ describe DocumentSearch do
   end
   let(:document_search) { DocumentSearch.new(search_options) }
   let(:document_search_results) { document_search.search }
+  let(:documents_index_name) do
+    [DocumentRepository.index_namespace('agency_blogs'), 'v1'].join('-')
+  end
+  # Using a single shard prevents intermittent relevancy issues in tests
+  # https://www.elastic.co/guide/en/elasticsearch/guide/current/relevance-is-broken.html
+  let(:document_repository) do
+    DocumentRepository.new(
+      index_name: documents_index_name,
+      settings: { index: { number_of_shards: 1 } }
+    )
+  end
+
+  def create_documents(document_hashes)
+    document_hashes.each { |hash| create_document(hash, document_repository) }
+  end
 
   before do
-    Elasticsearch::Persistence.client.indices.delete(index: [Document.index_namespace('agency_blogs'), '*'].join('-'))
-    es_documents_index_name = [Document.index_namespace('agency_blogs'), 'v1'].join('-')
-    #Using a single shard prevents intermittent relevancy issues in tests
-    #https://www.elastic.co/guide/en/elasticsearch/guide/current/relevance-is-broken.html
-    Document.settings(index: { number_of_shards: 1 })
-    Document.create_index!(index: es_documents_index_name)
-    Elasticsearch::Persistence.client.indices.put_alias index: es_documents_index_name,
-                                                        name: Document.index_namespace('agency_blogs')
-    Document.index_name = Document.index_namespace('agency_blogs')
+    ES.client.indices.delete(
+      index: [DocumentRepository.index_namespace('agency_blogs'), '*'].join('-')
+    )
+    document_repository.create_index!
+    ES.client.indices.put_alias(
+      index: documents_index_name,
+      name: DocumentRepository.index_namespace('agency_blogs')
+    )
   end
 
   context 'when searching across a single index collection' do
     context 'when matching documents exist' do
       before do
-        Document.create(language: 'en',
-                        title: 'title 1 common content',
-                        description: 'description 1 common content',
-                        created: DateTime.now,
-                        path: 'http://www.agency.gov/page1.html')
-        Document.refresh_index!
+        create_documents([
+          {
+            language: 'en',
+            title: 'title 1 common content',
+            description: 'description 1 common content',
+            created: DateTime.now,
+            path: 'http://www.agency.gov/page1.html'
+          }
+        ])
       end
 
       it 'returns results' do
@@ -97,7 +116,7 @@ describe DocumentSearch do
       let(:query) { 'uh oh' }
       let(:error) { StandardError.new('something went wrong') }
 
-      before { allow(Elasticsearch::Persistence.client).to receive(:search).and_raise(error) }
+      before { allow(ES).to receive(:client).and_raise(error) }
 
       it 'returns a no results response' do
         expect(document_search_results.total).to eq(0)
@@ -120,11 +139,10 @@ describe DocumentSearch do
 
   context 'paginating' do
     before do
-      Document.create(common_params.merge(title: "most relevant title common content", description: "other content"))
-      10.times do |x|
-        Document.create(common_params.merge(title: "title #{x}", description: "common content #{x}"))
-      end
-      Document.refresh_index!
+      create_documents([
+        common_params.merge(title: "most relevant title common content", description: "other content"),
+        Array.new(10) { |x| common_params.merge(title: "title #{x}", description: "common content #{x}") },
+      ].flatten)
     end
 
     it 'returns "size" results' do
@@ -148,15 +166,17 @@ describe DocumentSearch do
 
   context 'searching across multiple indexes' do
     before do
-      Document.create(language: 'en', title: 'title 1 common content', description: 'description 1 common content', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
-      Document.refresh_index!
-      es_documents_index_name = [Document.index_namespace('other_agency_blogs'), 'v1'].join('-')
-      Document.create_index!(index: es_documents_index_name)
-      Elasticsearch::Persistence.client.indices.put_alias index: es_documents_index_name,
-                                                          name: Document.index_namespace('other_agency_blogs')
-      Document.index_name = Document.index_namespace('other_agency_blogs')
-      Document.create(language: 'en', title: 'other title 1 common content', description: 'other description 1 common content', created: DateTime.now, path: 'http://www.otheragency.gov/page1.html')
-      Document.refresh_index!
+      create_document(common_params, document_repository)
+      es_documents_index_name = [
+        DocumentRepository.index_namespace('other_agency_blogs'), 'v1'
+      ].join('-')
+      other_repository = DocumentRepository.new(index_name: es_documents_index_name)
+      other_repository.create_index!
+      ES.client.indices.put_alias(
+        index: es_documents_index_name,
+        name: DocumentRepository.index_namespace('other_agency_blogs')
+      )
+      create_document(common_params, other_repository)
     end
 
     it 'returns results from all indexes' do
@@ -169,8 +189,9 @@ describe DocumentSearch do
   describe "recall" do
     context 'matches on all query terms in URL basename' do
       before do
-        Document.create(language: 'en', title: 'The president drops by Housing and Urban Development', description: 'Here he is', created: DateTime.now, path: 'http://www.agency.gov/archives/obama-visits-hud.html')
-        Document.refresh_index!
+        create_documents([
+          common_params.merge(path: 'http://www.agency.gov/obama-visits-hud.html')
+        ])
       end
 
       it "matches" do
@@ -182,13 +203,14 @@ describe DocumentSearch do
 
     context "enough low frequency and high frequency words are found" do
       before do
-        Document.create(language: 'en', title: 'low frequency term', description: 'some description', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
-        Document.create(language: 'en', title: 'very rare words', description: 'some other description', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
-        80.times do |_x|
-          Document.create(language: 'en', title: 'high occurrence tokens', description: 'these are like stopwords', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
-          Document.create(language: 'en', title: 'showing up everywhere', description: 'these are like stopwords', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
-        end
-        Document.refresh_index!
+        create_documents([
+          common_params.merge(title: 'low frequency term'),
+          common_params.merge(title: 'very rare words'),
+          Array.new(80, common_params.merge(title: 'high occurrence tokens',
+                                            description: 'these are like stopwords')),
+          Array.new(80, common_params.merge(title: 'showing up everywhere',
+                                            description: 'these are like stopwords'))
+        ].flatten)
       end
 
       it "matches 3 out of 4 low freq or missing terms" do
@@ -211,9 +233,10 @@ describe DocumentSearch do
   describe "overall relevancy" do
     context 'exact phrase matches' do
       before do
-        Document.create(common_params.merge(title: 'jefferson township Petitions and Memorials'))
-        Document.create(common_params.merge(title: 'jefferson Memorial and township Petitions'))
-        Document.refresh_index!
+        create_documents([
+          common_params.merge(title: 'jefferson township Petitions and Memorials'),
+          common_params.merge(title: 'jefferson Memorial and township Petitions')
+        ])
       end
 
       it 'ranks those higher' do
@@ -225,11 +248,13 @@ describe DocumentSearch do
 
     context 'when a search term appears in varying fields' do
       let(:query) { 'rutabaga' }
+
       before do
-         Document.create(common_params.merge( title: 'other', description: 'other', content: 'Rutabagas'))
-         Document.create(common_params.merge( title: 'other', description: 'Rutabagas', content: 'other'))
-         Document.create(common_params.merge( title: 'Rutabagas', description: 'other', content: 'other'))
-         Document.refresh_index!
+        create_documents([
+          common_params.merge(title: 'other', description: 'other', content: 'Rutabagas'),
+          common_params.merge(title: 'other', description: 'Rutabagas', content: 'other'),
+          common_params.merge(title: 'Rutabagas', description: 'other', content: 'other')
+        ])
       end
 
       it 'prioritizes matches in the title, then description, then content' do
@@ -243,11 +268,12 @@ describe DocumentSearch do
     %w[doc docx pdf ppt pptx xls xlsx].each do |ext|
       context 'when the results contain demoted and non-demoted file types' do
         before do
-          Document.create(common_params.merge( path: "http://www.agency.gov/dir1/page1.#{ext}"))
-          Document.create(common_params.merge( path: 'http://www.agency.gov/dir1/page1.html'))
-          Document.create(common_params.merge( path: 'http://www.agency.gov/dir1/page1'))
-          Document.create(common_params.merge( path: 'http://www.agency.gov/dir1/page1.txt'))
-          Document.refresh_index!
+          create_documents([
+            common_params.merge( path: "http://www.agency.gov/dir1/page1.#{ext}"),
+            common_params.merge( path: 'http://www.agency.gov/dir1/page1.html'),
+            common_params.merge( path: 'http://www.agency.gov/dir1/page1'),
+            common_params.merge( path: 'http://www.agency.gov/dir1/page1.txt'),
+          ])
         end
 
         it "docs ending in .#{ext} appear after non-demoted docs" do
@@ -261,9 +287,10 @@ describe DocumentSearch do
         common_params = { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html',
                           title: "I would prefer a document about seasons than seasoning if I am on a weather site",
                           description: %q(Some people, when confronted with an information retrieval problem, think "I know, I'll use a stemmer." Now they have two problems.) }
-        Document.create(common_params.merge(description: 'jefferson township Memorial new'))
-        Document.create(common_params.merge(description: 'jefferson township memorials news'))
-        Document.refresh_index!
+        create_documents([
+          common_params.merge(description: 'jefferson township Memorial new'),
+          common_params.merge(description: 'jefferson township memorials news')
+        ])
       end
 
       it 'ranks those higher' do
@@ -281,10 +308,11 @@ describe DocumentSearch do
         common_params = { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html',
                           title: "This mentions stats in the title",
                           description: %q(Some people, when confronted with an information retrieval problem, think "I know, I'll use a stemmer." Now they have two problems.) }
-        Document.create(common_params)
-        Document.create(common_params.merge(tags: 'stats'))
-        Document.create(common_params.merge(tags: 'unimportant stats'))
-        Document.refresh_index!
+        create_documents([
+          common_params,
+          common_params.merge(tags: 'stats'),
+          common_params.merge(tags: 'unimportant stats')
+        ])
       end
 
       it 'ranks those higher' do
@@ -295,12 +323,11 @@ describe DocumentSearch do
 
     context 'when documents include click counts' do
       before do
-        Document.create(common_params.merge(path: 'http://agency.gov/popular'))
-        Document.create(common_params.merge(path: 'http://agency.gov/most_popular',
-                                            click_count: 10))
-        Document.create(common_params.merge(path: 'http://agency.gov/more_popular',
-                                            click_count: 5))
-        Document.refresh_index!
+        create_documents([
+          common_params.merge(path: 'http://agency.gov/popular'),
+          common_params.merge(path: 'http://agency.gov/most_popular', click_count: 10),
+          common_params.merge(path: 'http://agency.gov/more_popular', click_count: 5)
+        ])
       end
 
       it 'ranks documents with higher click counts higher' do
@@ -316,18 +343,19 @@ describe DocumentSearch do
 
   describe "sorting by date" do
     before do
-      Document.create(common_params.merge(changed: 2.month.ago,
-                                          path: 'http://www.agency.gov/2months.html'))
-      Document.create(common_params.merge(changed: nil,
-                                          created: nil,
-                                          path: 'http://www.agency.gov/nodate.html'))
-      Document.create(common_params.merge(changed: 6.months.ago,
-                                          path: 'http://www.agency.gov/6months.html'))
-      Document.create(common_params.merge(changed: 1.minute.ago,
-                                          path: 'http://www.agency.gov/1minute.html'))
-      Document.create(common_params.merge(changed: 3.years.ago,
-                                          path: 'http://www.agency.gov/3years.html'))
-      Document.refresh_index!
+      create_documents([
+        common_params.merge(changed: 2.months.ago,
+                            path: 'http://www.agency.gov/2months.html'),
+        common_params.merge(changed: nil,
+                            created: nil,
+                            path: 'http://www.agency.gov/nodate.html'),
+        common_params.merge(changed: 6.months.ago,
+                            path: 'http://www.agency.gov/6months.html'),
+        common_params.merge(changed: 1.minute.ago,
+                            path: 'http://www.agency.gov/1minute.html'),
+        common_params.merge(changed: 3.years.ago,
+                            path: 'http://www.agency.gov/3years.html'),
+      ])
     end
 
     context 'by default' do
@@ -371,9 +399,14 @@ describe DocumentSearch do
 
   describe "filtering on language" do
     before do
-      Document.create(language: 'en', title: 'america title 1', description: 'description 1', created: DateTime.now, path: 'http://www.agency.gov/page1.html')
-      Document.create(language: 'fr', title: 'america title 1', description: 'description 1', created: DateTime.now, path: 'http://fr.www.agency.gov/page1.html')
-      Document.refresh_index!
+      create_documents([
+        common_params.merge(language: 'en',
+                            title: 'america',
+                            path: 'http://www.agency.gov/page1.html'),
+        common_params.merge(language: 'fr',
+                            title: 'america',
+                            path: 'http://fr.agency.gov/page1.html')
+      ])
     end
 
     it 'returns results from only that language' do
@@ -388,12 +421,14 @@ describe DocumentSearch do
     let(:search_options) do
       { handles: handles, language: :en, query: query, size: 10, offset: 0, include: ['tags'] }
     end
+
     before do
-      Document.create(common_params.merge(tags: 'usa'))
-      Document.create(common_params.merge(tags: 'york, usa'))
-      Document.create(common_params.merge(tags: 'new york, usa'))
-      Document.create(common_params.merge(tags: 'random tag'))
-      Document.refresh_index!
+      create_documents([
+        common_params.merge(tags: 'usa'),
+        common_params.merge(tags: 'york, usa'),
+        common_params.merge(tags: 'new york, usa'),
+        common_params.merge(tags: 'random tag')
+      ])
     end
 
     context 'inclusive filtering' do
@@ -454,15 +489,16 @@ describe DocumentSearch do
     let(:document_search) { DocumentSearch.new(date_filtered_options) }
 
     before do
-      Document.create(common_params.merge(changed: 1.month.ago,
-                                          path: 'http://www.agency.gov/dir1/page1.html'))
-      Document.create(common_params.merge(changed: 1.week.ago,
-                                          path: 'http://www.agency.gov/dir1/page2.html'))
-      Document.create(common_params.merge(changed: DateTime.now,
-                                          path: 'http://www.agency.gov/dir1/page3.html'))
-      Document.create(common_params.merge(changed: nil,
-                                          path: 'http://www.agency.gov/dir1/page4.html'))
-      Document.refresh_index!
+      create_documents([
+        common_params.merge(changed: 1.month.ago,
+                            path: 'http://www.agency.gov/dir1/page1.html'),
+        common_params.merge(changed: 1.week.ago,
+                            path: 'http://www.agency.gov/dir1/page2.html'),
+        common_params.merge(changed: DateTime.now,
+                            path: 'http://www.agency.gov/dir1/page3.html'),
+        common_params.merge(changed: nil,
+                            path: 'http://www.agency.gov/dir1/page4.html')
+      ])
     end
 
     it 'returns results from only that date range' do
@@ -473,12 +509,17 @@ describe DocumentSearch do
   end
 
   describe "filtering on site:" do
+    let(:common_params) do
+      { language: 'en', title: 'america title 1', description: 'description 1' }#created?
+    end
+
     before do
-      Document.create(language: 'en', title: 'america title 1', description: 'description 1', created: DateTime.now, path: 'http://www.agency.gov/dir1/page1.html')
-      Document.create(language: 'en', title: 'america title 1', description: 'description 1', created: DateTime.now, path: 'http://www.agency.gov/dir1/dir2/page1.html')
-      Document.create(language: 'en', title: 'america title 1', description: 'description 1', created: DateTime.now, path: 'http://www.other.gov/dir2/dir3/page1.html')
-      Document.create(language: 'en', title: 'america title 1', description: 'description 1', created: DateTime.now, path: 'http://agency.gov/page1.html')
-      Document.refresh_index!
+      create_documents([
+        common_params.merge(path: 'http://www.agency.gov/dir1/page1.html'),
+        common_params.merge(path: 'http://www.agency.gov/dir1/dir2/page1.html'),
+        common_params.merge(path: 'http://www.other.gov/dir2/dir3/page1.html'),
+        common_params.merge(path: 'http://agency.gov/page1.html'),
+      ])
     end
 
     let(:base_search_params) do
@@ -572,9 +613,22 @@ describe DocumentSearch do
 
   context 'when search term yields no results but a similar spelling does have results' do
     before do
-      Document.create(language: 'en', title: '99 problems', description: 'but speling aint one of the 99 problems', created: DateTime.now, path: 'http://en.agency.gov/page1.html', content: "Will I have to pay more if I have employees with health problems")
-      Document.create(language: 'es', title: '99 problemas', description: 'pero la ortografía no es uno dello las 99 problemas', created: DateTime.now, path: 'http://es.agency.gov/page1.html', content: '¿Tendré que pagar más si tengo empleados con problemas de la salud?')
-      Document.refresh_index!
+      create_documents([
+        {
+          language: 'en',
+          title: '99 problems',
+          description: 'but speling aint one of the 99 problems',
+          path: 'http://en.agency.gov/page1.html',
+          content: "Will I have to pay more if I have employees with health problems"
+        },
+        {
+          language: 'es',
+          title: '99 problemas',
+          description: 'pero la ortografía no es uno dello las 99 problemas',
+          path: 'http://es.agency.gov/page1.html',
+          content: '¿Tendré que pagar más si tengo empleados con problemas de la salud?'
+        }
+      ])
     end
 
     it 'should return results for the close spelling for English' do
@@ -604,9 +658,11 @@ describe DocumentSearch do
     let(:query) { 'fsands' }
 
     before do
-      document_create(common_params.merge(content: 'FSAND'))
-      document_create(common_params.merge(content: 'fund'))
-      document_create(common_params.merge(content: 'fraud'))
+      create_documents([
+        common_params.merge(content: 'FSAND'),
+        common_params.merge(content: 'fund'),
+        common_params.merge(content: 'fraud')
+      ])
     end
 
     it 'does not return a suggestion' do
@@ -618,8 +674,10 @@ describe DocumentSearch do
     let(:query) { '"amazing spiderman"' }
 
     before do
-      document_create(common_params.merge(content: 'amazing spiderman'))
-      document_create(common_params.merge(content: 'spiderman is amazing'))
+      create_documents([
+        common_params.merge(content: 'amazing spiderman'),
+        common_params.merge(content: 'spiderman is amazing')
+      ])
     end
 
     it 'returns exact matches only' do
@@ -631,9 +689,11 @@ describe DocumentSearch do
       let(:query) { '"exact phrase"' }
 
       before do
-        document_create(common_params.merge(
-          content: 'This phrase match is not exact. This is an exact phrase match'
-        ))
+        create_documents([
+          common_params.merge(
+            content: 'This phrase match is not exact. This is an exact phrase match'
+          )
+        ])
       end
 
       it 'only highlights exact matches' do
@@ -654,10 +714,11 @@ describe DocumentSearch do
 
   context 'when a document has been promoted' do
     before do
-      Document.create(common_params.merge(title: 'no', promote: false))
-      Document.create(common_params.merge(title: 'yes', promote: true))
-      Document.create(common_params.merge(title: 'no', promote: false))
-      Document.refresh_index!
+      create_documents([
+        common_params.merge(title: 'no', promote: false),
+        common_params.merge(title: 'yes', promote: true),
+        common_params.merge(title: 'no', promote: false)
+      ])
     end
 
     it 'prioritizes promoted documents' do
@@ -670,10 +731,11 @@ describe DocumentSearch do
     let(:query) { 'renew' }
 
     before do
-      Document.create(common_params.merge(content: 'passport renewal'))
-      Document.create(common_params.merge(content: 'renew passport'))
-      Document.create(common_params.merge(content: 'something unrelated'))
-      Document.refresh_index!
+      create_documents([
+        common_params.merge(content: 'passport renewal'),
+        common_params.merge(content: 'renew passport'),
+        common_params.merge(content: 'something unrelated')
+      ])
     end
 
     it 'finds similar similar by word stem' do
