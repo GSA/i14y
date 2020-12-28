@@ -17,7 +17,7 @@ services:
     volumes:
       - es_6_data:/usr/share/elasticsearch/data
     ports:
-      - 9268:9200
+      - 9200:9200
 
   elasticsearch7:
     build:
@@ -42,7 +42,7 @@ services:
     depends_on:
       - elasticsearch6
     ports:
-      - 5668:5601
+      - 5601:5601
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch6:9200
 

@@ -1,9 +1,11 @@
-yaml = YAML.load_file("#{Rails.root}/config/elasticsearch.yml").presence
+# frozen_string_literal: true
+
+config = Rails.application.config_for(:elasticsearch).freeze
 
 Elasticsearch::Persistence.client = Elasticsearch::Client.new(log: Rails.env.development?,
-                                                              hosts: yaml['hosts'],
-                                                              user: yaml['user'],
-                                                              password: yaml['password'],
+                                                              hosts: config['hosts'],
+                                                              user: config['user'],
+                                                              password: config['password'],
                                                               randomize_hosts: true,
                                                               retry_on_failure: true,
                                                               reload_connections: true)
