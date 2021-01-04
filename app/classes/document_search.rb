@@ -32,7 +32,15 @@ class DocumentSearch
   private
 
   def execute_client_search
-    params = { index: indices, body: doc_query.body, from: offset, size: size }
+    params = {
+      index: indices,
+      body: doc_query.body,
+      from: offset,
+      size: size,
+      # For compatibility with ES 6. This parameter will be removed in ES 8.
+      # https://www.elastic.co/guide/en/elasticsearch/reference/current/breaking-changes-7.0.html#hits-total-now-object-search-response
+      rest_total_hits_as_int: true
+    }
     Rails.logger.debug "Query: *****\n#{doc_query.body.to_json}\n*****"
     result = ES.client.search(params)
     DocumentSearchResults.new(result, offset)
