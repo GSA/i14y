@@ -40,7 +40,7 @@ describe DocumentSearch do
     ES.client.indices.delete(
       index: [DocumentRepository.index_namespace('agency_blogs'), '*'].join('-')
     )
-    document_repository.create_index!
+    document_repository.create_index!(include_type_name: true)
     ES.client.indices.put_alias(
       index: documents_index_name,
       name: DocumentRepository.index_namespace('agency_blogs')
@@ -171,7 +171,7 @@ describe DocumentSearch do
         DocumentRepository.index_namespace('other_agency_blogs'), 'v1'
       ].join('-')
       other_repository = DocumentRepository.new(index_name: es_documents_index_name)
-      other_repository.create_index!
+      other_repository.create_index!(include_type_name: true)
       ES.client.indices.put_alias(
         index: es_documents_index_name,
         name: DocumentRepository.index_namespace('other_agency_blogs')

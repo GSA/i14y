@@ -49,7 +49,10 @@ module API
           error!(collection.errors.messages, 400) unless collection.valid?
           ES.collection_repository.save(collection)
           documents_index_name = [DocumentRepository.index_namespace(handle), 'v1'].join('-')
-          DocumentRepository.new.create_index!(index: documents_index_name)
+          DocumentRepository.new.create_index!(
+            index: documents_index_name,
+            include_type_name: true
+          )
           ES.client.indices.put_alias(
             index: documents_index_name,
             name: DocumentRepository.index_namespace(handle)

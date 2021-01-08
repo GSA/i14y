@@ -22,10 +22,8 @@ class Documents
         end
       end
       json.mappings do
-        json.document do
-          dynamic_templates(json)
-          properties(json)
-        end
+        dynamic_templates(json)
+        properties(json)
       end
     end
   end

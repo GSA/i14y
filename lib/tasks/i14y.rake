@@ -5,13 +5,19 @@ namespace :i14y do
       entity_name = File.basename(template_generator, '.rb')
       klass = entity_name.camelize.constantize
       template_generator = klass.new
-      ES.client.indices.put_template(name: entity_name,
-                                     body: template_generator.body,
-                                     order: 0,
-                                     create: true)
+      ES.client.indices.put_template(
+        name: entity_name,
+        body: template_generator.body,
+        order: 0,
+        create: true,
+        include_type_name: false
+      )
     end
     es_collections_index_name = [CollectionRepository.index_namespace, 'v1'].join('-')
-    CollectionRepository.new.create_index!(index: es_collections_index_name)
+    CollectionRepository.new.create_index!(
+      index: es_collections_index_name,
+      include_type_name: true
+    )
     ES.client.indices.put_alias(
       index: es_collections_index_name,
       name: CollectionRepository.index_name
