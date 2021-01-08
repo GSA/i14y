@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module ES
-  CONFIG = YAML.load_file("#{Rails.root}/config/elasticsearch.yml").presence.freeze
+  CONFIG = Rails.application.config_for(:elasticsearch).freeze
 
   def self.client
     Elasticsearch::Client.new(log: Rails.env.development?,
