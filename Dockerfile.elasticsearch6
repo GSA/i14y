@@ -1,3 +1,4 @@
+# searchgov/elasticsearch:6.8.13
 FROM docker.elastic.co/elasticsearch/elasticsearch:6.8.13
 RUN elasticsearch-plugin install analysis-kuromoji
 RUN elasticsearch-plugin install analysis-icu

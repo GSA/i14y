@@ -2,46 +2,37 @@ version: 2.1
 
 executors:
   test_executor:
-    docker:
-      - image: circleci/ruby:${RUBY_VERSION}-node-browsers
-    working_directory: ~/app
-    environment:
-      ES_VER: 6.8.6
-
-jobs:
-  build:
-    environment:
-      RUBY_VERSION: << parameters.ruby_version >>
-    executor: test_executor
     parameters:
       ruby_version:
         type: string
+      elasticsearch_version:
+        type: string
+    docker:
+      - image: circleci/ruby:<< parameters.ruby_version >>-node-browsers
+      - image: searchgov/elasticsearch:<< parameters.elasticsearch_version >>
+        environment:
+          - bootstrap.memory_lock=true
+          - discovery.type=single-node
+          - xpack.security.enabled=false
+          - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    working_directory: ~/app
+
+jobs:
+  build:
+    parameters:
+      ruby_version:
+        type: string
+      elasticsearch_version:
+        type: string
+    environment:
+      RUBY_VERSION: << parameters.ruby_version >>
+    executor:
+      name: test_executor
+      ruby_version:  << parameters.ruby_version >>
+      elasticsearch_version:  << parameters.elasticsearch_version >>
     steps:
       - checkout
       - run: cp -p config/secrets_example.yml config/secrets.yml
-      - restore_cache:
-          key: elasticsearch-6.8.6-0
-      - run:
-          name: Installing Elasticsearch
-          command: |
-            if [ ! -d ~/elasticsearch-$ES_VER ]; then
-              curl -L -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$ES_VER.tar.gz
-              tar -xvf elasticsearch-$ES_VER.tar.gz -C ~/
-              PLUGINS=(
-                "analysis-icu"
-                "analysis-kuromoji"
-                "analysis-smartcn"
-              )
-              for plugin in ${PLUGINS[*]}; do ~/elasticsearch-$ES_VER/bin/elasticsearch-plugin install $plugin; done
-            fi
-      - save_cache:
-          key: elasticsearch-6.8.6-0
-          paths:
-            - ~/elasticsearch-6.8.6
-      - run:
-          name: Run Elasticsearch in background
-          command: ~/elasticsearch-$ES_VER/bin/elasticsearch -E http.port=9200
-          background: true
       - restore_cache:
            key: bundle-{{ checksum "Gemfile.lock" }}
       - run: gem install bundler:1.17.3
@@ -55,9 +46,6 @@ jobs:
           command: |
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
-      - run:
-          name: Waiting for Elasticsearch
-          command: dockerize --wait http://localhost:9200 -timeout 1m
       - run:
           name: RSpec
           environment:
@@ -75,11 +63,12 @@ workflows:
   build_and_test:
     jobs:
       - build:
-          name: 'ruby 2.5.5'
-          ruby_version: 2.5.5
-      - build:
-          name: 'ruby 2.6.3'
-          ruby_version: 2.6.3
-      - build:
-          name: 'ruby 2.7.0'
-          ruby_version: 2.7.0
+          matrix:
+            parameters:
+              ruby_version:
+                - 2.5.5
+                - 2.6.6
+                - 2.7.2
+              elasticsearch_version:
+                - 6.8.13
+                - 7.10.1
