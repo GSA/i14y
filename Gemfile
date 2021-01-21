@@ -22,7 +22,7 @@ gem 'elasticsearch-dsl', git: 'https://github.com/MothOnMars/elasticsearch-ruby'
 gem 'newrelic_rpm', '~> 4.2'
 gem 'airbrake', '~> 7.1'
 
-gem 'patron', '~> 0.10.0'
+gem 'typhoeus', '~> 1.4.0'
 
 group :development, :test do
   gem 'rspec-rails', '~> 3.7'
@@ -37,7 +37,7 @@ group :development, :test do
   gem 'rubocop', '0.52.1'
   gem 'mry', '~> 0.52.0'
   gem 'listen'
-  gem 'puma',  '~> 4.3'
+  gem 'puma',  '~> 5.0'
 end
 
 group :test do
