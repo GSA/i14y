@@ -12,12 +12,12 @@ class Document
   attribute :description, String
   attribute :content, String
   attribute :updated, DateTime
-  attribute :changed, DateTime, default: -> (doc, attr) { doc.created }
+  attribute :changed, DateTime, default: ->(doc, _attr) { doc.created }
   attribute :promote, Boolean
   attribute :tags, String, mapping: { type: 'keyword' }
   attribute :click_count, Integer
-  attribute :created_at, Time, default: -> (doc, attr) { Time.now.utc }
-  attribute :updated_at, Time, default: -> (doc, attr) { Time.now.utc }
+  attribute :created_at, Time, default: proc { Time.now.utc }
+  attribute :updated_at, Time, default: proc { Time.now.utc }
 
   validates :language, presence: true
   validates :path, presence: true
