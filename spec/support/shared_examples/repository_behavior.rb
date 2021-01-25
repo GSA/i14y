@@ -9,6 +9,24 @@ shared_examples_for 'a repository' do
     it { is_expected.to be_a Hash }
   end
 
+  describe 'deserialization' do
+    subject(:deserialize) { repository.deserialize(hash) }
+
+    # Ensures backwards compatibility with pre-ES 7 documents
+    context 'when the source does not include the id' do
+      let(:hash) do
+        {
+          '_id' => 'a123',
+          '_source' => { }
+        }
+      end
+
+      it 'sets the id on the deserialized object' do
+        expect(deserialize.id).to eq 'a123'
+      end
+    end
+  end
+
   it 'can connect to Elasticsearch' do
     expect(repository.client.ping).to be(true)
   end
