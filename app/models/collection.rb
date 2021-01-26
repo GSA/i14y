@@ -7,8 +7,8 @@ class Collection
 
   attribute :id, String
   attribute :token, String
-  attribute :created_at, Time, default: -> (doc, attr) { Time.now.utc }
-  attribute :updated_at, Time, default: -> (doc, attr) { Time.now.utc }
+  attribute :created_at, Time, default: proc { Time.now.utc }
+  attribute :updated_at, Time, default: proc { Time.now.utc }
 
   validates :token, presence: true
 
