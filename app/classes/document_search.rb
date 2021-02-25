@@ -7,7 +7,7 @@ class DocumentSearch
     @offset = options[:offset] || 0
     @size = options[:size]
     @doc_query = DocumentQuery.new(options)
-    @indices = options[:handles].map { |handle| Document.index_namespace(handle) }
+    @indices = options[:handles].map { |handle| DocumentRepository.index_namespace(handle) }
   end
 
   def search
@@ -32,9 +32,17 @@ class DocumentSearch
   private
 
   def execute_client_search
-    params = { index: indices, body: doc_query.body, from: offset, size: size }
+    params = {
+      index: indices,
+      body: doc_query.body,
+      from: offset,
+      size: size,
+      # For compatibility with ES 6. This parameter will be removed in ES 8.
+      # https://www.elastic.co/guide/en/elasticsearch/reference/current/breaking-changes-7.0.html#hits-total-now-object-search-response
+      rest_total_hits_as_int: true
+    }
     Rails.logger.debug "Query: *****\n#{doc_query.body.to_json}\n*****"
-    result = Elasticsearch::Persistence.client.search(params)
+    result = ES.client.search(params)
     DocumentSearchResults.new(result, offset)
   end
 end

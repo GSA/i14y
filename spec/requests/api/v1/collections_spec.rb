@@ -13,6 +13,10 @@ describe API::V1::Collections do
   end
   let(:allow_updates) { true }
   let(:maintenance_message) { nil }
+  let(:documents_index_name) { DocumentRepository.index_namespace('agency_blogs') }
+  let(:document_repository) do
+    DocumentRepository.new(index_name: documents_index_name)
+  end
 
   before do
     I14y::Application.config.updates_allowed = allow_updates
@@ -26,11 +30,7 @@ describe API::V1::Collections do
   describe 'POST /api/v1/collections' do
     context 'success case' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query(
-          index: Collection.index_name,
-          q: '*:*',
-          conflicts: 'proceed'
-        )
+        clear_index(collections_index_name)
         post '/api/v1/collections', params: valid_params, headers: valid_session
       end
 
@@ -44,11 +44,11 @@ describe API::V1::Collections do
       end
 
       it 'uses the collection handle as the Elasticsearch ID' do
-        expect(Collection.find('agency_blogs')).to be_present
+        expect(ES.collection_repository.find('agency_blogs')).to be_present
       end
 
       it 'stores the appropriate fields in the Elasticsearch collection' do
-        collection = Collection.find('agency_blogs')
+        collection = ES.collection_repository.find('agency_blogs')
         expect(collection.token).to eq('secret')
         expect(collection.created_at).to be_an_instance_of(Time)
         expect(collection.updated_at).to be_an_instance_of(Time)
@@ -109,7 +109,7 @@ describe API::V1::Collections do
 
     context 'something terrible happens' do
       before do
-        allow(Collection).to receive(:create) { raise_error(Exception) }
+        allow(Collection).to receive(:new) { raise_error(Exception) }
         post '/api/v1/collections', params: valid_params, headers: valid_session
       end
 
@@ -127,8 +127,9 @@ describe API::V1::Collections do
   describe 'DELETE /api/v1/collections/{handle}' do
     context 'success case' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*', conflicts: 'proceed'
-        Collection.create(_id: 'agency_blogs', token: 'secret')
+        clear_index(collections_index_name)
+        collection = Collection.new(id: 'agency_blogs', token: 'secret')
+        ES.collection_repository.save(collection)
         delete '/api/v1/collections/agency_blogs', headers: valid_session
       end
 
@@ -142,7 +143,7 @@ describe API::V1::Collections do
       end
 
       it 'deletes the collection' do
-        expect(Collection.exists?('agency_blogs')).to be_falsey
+        expect(ES.collection_repository.exists?('agency_blogs')).to be_falsey
       end
 
       it_behaves_like 'a data modifying request made during read-only mode'
@@ -152,10 +153,9 @@ describe API::V1::Collections do
   describe 'GET /api/v1/collections/{handle}' do
     context 'success case' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*', conflicts: 'proceed'
+        clear_index(collections_index_name)
         post '/api/v1/collections', params: valid_params, headers: valid_session
-        Document.index_name = Document.index_namespace('agency_blogs')
-        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
+        clear_index(documents_index_name)
       end
 
       let(:datetime) { DateTime.now.utc }
@@ -181,9 +181,9 @@ describe API::V1::Collections do
       end
 
       it 'returns success message with Collection stats as JSON' do
-        Document.create(hash1)
-        Document.create(hash2)
-        Document.refresh_index!
+        document_repository.save(Document.new(hash1))
+        document_repository.save(Document.new(hash2))
+        document_repository.refresh_index!
         get '/api/v1/collections/agency_blogs', headers: valid_session
         expect(response.status).to eq(200)
         expect(JSON.parse(response.body)).to match(
@@ -204,10 +204,9 @@ describe API::V1::Collections do
   describe 'GET /api/v1/collections/search' do
     context 'success case' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*', conflicts: 'proceed'
+        clear_index(collections_index_name)
         post '/api/v1/collections', params: valid_params, headers: valid_session
-        Document.index_name = Document.index_namespace('agency_blogs')
-        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
+        clear_index(documents_index_name)
       end
 
       let(:datetime) { DateTime.now.utc.to_s }
@@ -231,9 +230,9 @@ describe API::V1::Collections do
                       updated_at: datetime } }
 
       it 'returns highlighted JSON search results' do
-        Document.create(hash1)
-        Document.create(hash2)
-        Document.refresh_index!
+        document_repository.save(Document.new(hash1))
+        document_repository.save(Document.new(hash2))
+        document_repository.refresh_index!
         valid_params = { language: 'en', query: 'common contentx', handles: 'agency_blogs' }
         get '/api/v1/collections/search', params: valid_params, headers: valid_session
         expect(response.status).to eq(200)
@@ -302,10 +301,9 @@ describe API::V1::Collections do
 
     context 'no results' do
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*', conflicts: 'proceed'
+        clear_index(collections_index_name)
         post '/api/v1/collections', params: valid_params, headers: valid_session
-        Document.index_name = Document.index_namespace('agency_blogs')
-        Elasticsearch::Persistence.client.delete_by_query index: Document.index_name, q: '*:*', conflicts: 'proceed'
+        clear_index(documents_index_name)
       end
 
       it 'returns JSON no hits results' do
@@ -345,8 +343,9 @@ describe API::V1::Collections do
       end
 
       before do
-        Elasticsearch::Persistence.client.delete_by_query index: Collection.index_name, q: '*:*', conflicts: 'proceed'
-        Collection.create(_id: 'agency_blogs', token: 'secret')
+        clear_index(collections_index_name)
+        collection = Collection.new(id: 'agency_blogs', token: 'secret')
+        ES.collection_repository.save(collection)
         get '/api/v1/collections/search', params: bad_handle_params, headers: valid_session
       end
 
