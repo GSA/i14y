@@ -1,14 +1,19 @@
 require 'rails_helper'
 require 'uri'
 
-describe API::V1::Documents, elasticsearch: true  do
+describe API::V1::Documents do
   let(:id) { 'some really!weird@id.name' }
+  let(:credentials) do
+    ActionController::HttpAuthentication::Basic.encode_credentials('test_index',
+                                                                   'test_key')
+  end
   let(:valid_session) do
-    credentials = ActionController::HttpAuthentication::Basic.encode_credentials 'test_index', 'test_key'
     { HTTP_AUTHORIZATION: credentials }
   end
   let(:allow_updates) { true }
   let(:maintenance_message) { nil }
+  let(:documents_index_name) { DocumentRepository.index_namespace('test_index') }
+  let(:document_repository) { DocumentRepository.new(index_name: documents_index_name) }
 
   before(:all) do
     yaml = YAML.load_file("#{Rails.root}/config/secrets.yml")
@@ -17,7 +22,6 @@ describe API::V1::Documents, elasticsearch: true  do
     valid_collection_session = { HTTP_AUTHORIZATION: credentials }
     valid_collection_params = { handle: 'test_index', token: 'test_key' }
     post '/api/v1/collections', params: valid_collection_params, headers: valid_collection_session
-    Document.index_name = Document.index_namespace('test_index')
   end
 
   before do
@@ -27,9 +31,15 @@ describe API::V1::Documents, elasticsearch: true  do
 
   after do
     I14y::Application.config.updates_allowed = true
+    clear_index(documents_index_name)
   end
 
   describe 'POST /api/v1/documents' do
+    subject(:post_document) do
+      post "/api/v1/documents", params: document_params, headers: valid_session
+      document_repository.refresh_index!
+    end
+
     let(:valid_params) do
       { document_id: id,
         title:       'my title',
@@ -40,10 +50,11 @@ describe API::V1::Documents, elasticsearch: true  do
         content:     'my content',
         tags:        'Foo, Bar blat' }
     end
+    let(:document_params) { valid_params }
 
     context 'success case' do
       before do
-        api_post valid_params, valid_session
+        post_document
       end
 
       it 'returns success message as JSON' do
@@ -55,11 +66,11 @@ describe API::V1::Documents, elasticsearch: true  do
       end
 
       it 'uses the collection handle and the document_id in the Elasticsearch ID' do
-        expect(Document.find(id)).to be_present
+        expect(document_repository.find(id)).to be_present
       end
 
       it 'stores the appropriate fields in the Elasticsearch document' do
-        document = Document.find(id)
+        document = document_repository.find(id)
         expect(document.path).to eq('http://www.gov.gov/goo.html')
         expect(document.promote).to be_truthy
         expect(document.title).to eq('my title')
@@ -82,7 +93,7 @@ describe API::V1::Documents, elasticsearch: true  do
         end
 
         it 'sets "changed" to be the same as "created"' do
-          document = Document.find(id)
+          document = document_repository.find(id)
           expect(document.changed).to eq '2020-01-01T10:00:00Z'
         end
       end
@@ -91,19 +102,11 @@ describe API::V1::Documents, elasticsearch: true  do
     end
 
     context 'trying to create an existing document' do
-      before do
-        document_create(valid_params.merge(_id: 'its_a_dupe'))
+      let(:document_params) { valid_params.merge(document_id: 'its_a_dupe') }
 
-        dupe_params = { document_id: 'its_a_dupe',
-                        title:       'my title',
-                        path:        'http://www.gov.gov/goo.html',
-                        created:     '2013-02-27T10:00:00Z',
-                        description: 'my desc',
-                        promote:     true,
-                        language:    'hy',
-                        content:     'my content',
-                        tags:        'Foo, Bar blat' }
-        api_post dupe_params, valid_session
+      before do
+        create_document(valid_params.merge(id: 'its_a_dupe'), document_repository)
+        post_document
       end
 
       it 'returns failure message as JSON' do
@@ -115,16 +118,9 @@ describe API::V1::Documents, elasticsearch: true  do
     end
 
     context 'invalid language param' do
-      before do
-        valid_params = { document_id:  'a1234',
-                         title:        'my title',
-                         path:         'http://www.gov.gov/goo.html',
-                         created:      '2013-02-27T10:00:00Z',
-                         description:  'my desc',
-                         promote:      true,
-                         language:     'qq' }
-        api_post valid_params, valid_session
-      end
+      let(:document_params) { valid_params.merge(language: 'qq') }
+
+      before { post_document }
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
@@ -135,7 +131,9 @@ describe API::V1::Documents, elasticsearch: true  do
     end
 
     context 'slash in id' do
-      before { api_post valid_params.merge(document_id: 'a1/234'), valid_session }
+      let(:document_params) { valid_params.merge(document_id: 'a1/234') }
+
+      before { post_document }
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
@@ -146,18 +144,16 @@ describe API::V1::Documents, elasticsearch: true  do
     end
 
     context 'id larger than 512 bytes' do
-      before do
+      let(:string_with_513_bytes_but_only_257_characters) do
         two_byte_character = '\u00b5'
-        string_with_513_bytes_but_only_257_characters = 'x' + two_byte_character * 256
-        valid_params = { document_id: string_with_513_bytes_but_only_257_characters,
-                         title:       'my title',
-                         path:        'http://www.gov.gov/goo.html',
-                         created:     '2013-02-27T10:00:00Z',
-                         description: 'my desc',
-                         promote:     true,
-                         language:    'en' }
-        api_post valid_params, valid_session
+        'x' + two_byte_character * 256
       end
+
+      let(:document_params) do
+        valid_params.merge(document_id: string_with_513_bytes_but_only_257_characters)
+      end
+
+      before { post_document }
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
@@ -168,25 +164,19 @@ describe API::V1::Documents, elasticsearch: true  do
     end
 
     context 'missing language param' do
-      before do
-        valid_params = { document_id: 'a1234',
-                         title:       'my title',
-                         path:        'http://www.gov.gov/goo.html',
-                         created:     '2013-02-27T10:00:00Z',
-                         description: 'my desc' }
-        api_post valid_params, valid_session
-      end
+      let(:document_params) { valid_params.except(:language) }
+
+      before { post_document }
 
       it 'uses English (en) as default' do
-        expect(Document.find('a1234').language).to eq('en')
+        expect(document_repository.find(id).language).to eq('en')
       end
     end
 
     context 'a required parameter is empty/blank' do
-      before do
-        invalid_params = valid_params.merge({ 'title' => ' ' })
-        api_post invalid_params, valid_session
-      end
+      let(:document_params) { valid_params.merge(title: ' ') }
+
+      before { post_document }
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
@@ -197,14 +187,9 @@ describe API::V1::Documents, elasticsearch: true  do
     end
 
     context 'path URL is poorly formatted' do
-      before do
-        invalid_params = { document_id: 'a1234',
-                           title:       'weird URL with blank',
-                           description: 'some description',
-                           path:        'http://www.gov.gov/ goo.html',
-                           created:     '2013-02-27T10:00:00Z' }
-        api_post invalid_params, valid_session
-      end
+      let(:document_params) { valid_params.merge(path: 'http://www.gov.gov/ goo.html') }
+
+      before { post_document }
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
@@ -215,18 +200,12 @@ describe API::V1::Documents, elasticsearch: true  do
     end
 
     context 'failed authentication/authorization' do
-      before do
-        valid_params = { document_id: 'a1234',
-                         title:       'my title',
-                         path:        'http://www.gov.gov/goo.html',
-                         created:     '2013-02-27T10:00:00Z',
-                         description: 'my desc',
-                         promote:     true }
-        bad_credentials = ActionController::HttpAuthentication::Basic.encode_credentials 'nope', 'wrong'
-
-        valid_session = { HTTP_AUTHORIZATION:  bad_credentials }
-        api_post valid_params, valid_session
+      let(:credentials) do
+        ActionController::HttpAuthentication::Basic.encode_credentials('test_index',
+                                                                       'bad_key')
       end
+
+      before { post_document }
 
       it 'returns error message as JSON' do
         expect(response.status).to eq(400)
@@ -238,14 +217,9 @@ describe API::V1::Documents, elasticsearch: true  do
 
     context 'something terrible happens during authentication' do
       before do
-        allow(Collection).to receive(:find).and_raise(Elasticsearch::Transport::Transport::Errors::BadRequest)
-        valid_params = { document_id: 'a1234',
-                         title:       'my title',
-                         path:        'http://www.gov.gov/goo.html',
-                         created:     '2013-02-27T10:00:00Z',
-                         description: 'my desc',
-                         promote:    true }
-        api_post valid_params, valid_session
+        allow(ES).to receive(:collection_repository).
+          and_raise(Elasticsearch::Transport::Transport::Errors::BadRequest)
+        post_document
       end
 
       it 'returns error message as JSON' do
@@ -259,13 +233,7 @@ describe API::V1::Documents, elasticsearch: true  do
     context 'something terrible happens creating the document' do
       before do
         allow(Document).to receive(:new) { raise_error(Exception) }
-        valid_params = { document_id: 'a1234',
-                         title:       'my title',
-                         path:        'http://www.gov.gov/goo.html',
-                         created:     '2013-02-27T10:00:00Z',
-                         description: 'my desc',
-                         promote:     true }
-        api_post valid_params, valid_session
+        post_document
       end
 
       it 'returns failure message as JSON' do
@@ -283,7 +251,7 @@ describe API::V1::Documents, elasticsearch: true  do
       put "/api/v1/documents/#{URI.encode(id)}",
         params: update_params,
         headers: valid_session
-      Document.refresh_index!
+      document_repository.refresh_index!
     end
 
     let(:update_params) do
@@ -301,7 +269,7 @@ describe API::V1::Documents, elasticsearch: true  do
 
     context 'success case' do
       before do
-        document_create(_id:           id,
+        create_document({id:           id,
                          language:    'en',
                          title:       'hi there 4',
                          description: 'bigger desc 4',
@@ -309,7 +277,7 @@ describe API::V1::Documents, elasticsearch: true  do
                          created:     2.hours.ago,
                          updated:     Time.now,
                          promote:     true,
-                         path:        'http://www.gov.gov/url4.html')
+                         path:        'http://www.gov.gov/url4.html'}, document_repository)
 
         put_document
       end
@@ -323,7 +291,7 @@ describe API::V1::Documents, elasticsearch: true  do
       end
 
       it 'updates the document' do
-        document = Document.find(id)
+        document = document_repository.find(id)
         expect(document.path).to eq('http://www.next.gov/updated.html')
         expect(document.promote).to be_falsey
         expect(document.title).to eq('new title')
@@ -339,16 +307,18 @@ describe API::V1::Documents, elasticsearch: true  do
 
     context 'when time has passed since the document was created' do
       before do
-        document_create(_id:           id,
-                         language:    'en',
-                         title:       'hi there 4',
-                         description: 'bigger desc 4',
-                         content:     'huge content 4',
-                         path:        'http://www.gov.gov/url4.html')
+        create_document({
+          id:           id,
+          language:    'en',
+          title:       'hi there 4',
+          description: 'bigger desc 4',
+          content:     'huge content 4',
+          path:        'http://www.gov.gov/url4.html'
+        }, document_repository)
         # Force-update the timestamps to avoid fooling the specs with any
         # automagic trickery
-        Elasticsearch::Persistence.client.update(
-          index: Document.index_name,
+        ES.client.update(
+          index: documents_index_name,
           id: id,
           body: {
             doc: {
@@ -356,35 +326,41 @@ describe API::V1::Documents, elasticsearch: true  do
               created_at: 1.year.ago
             }
           },
-          type: 'document'
+          type: '_doc'
         )
-        Document.refresh_index!
+        document_repository.refresh_index!
       end
 
       it 'updates the updated_at timestamp' do
-        expect { put_document }.to change { Document.find(id).updated_at }
+        expect { put_document }.to change { document_repository.find(id).updated_at }
       end
 
       it 'does not update the created_at timestamp' do
-        expect { put_document }.not_to change { Document.find(id).created_at }
+        expect { put_document }.not_to change { document_repository.find(id).created_at }
       end
     end
   end
 
   describe 'DELETE /api/v1/documents/{document_id}' do
+    subject(:delete_document) do
+      delete "/api/v1/documents/#{URI.encode(id)}", headers: valid_session
+    end
+
     context 'success case' do
       before do
-        document_create(_id:          id,
-                         language:    'en',
-                         title:       'hi there 4',
-                         description: 'bigger desc 4',
-                         content:     'huge content 4',
-                         created:     2.hours.ago,
-                         updated:     Time.now,
-                         promote:     true,
-                         path:        'http://www.gov.gov/url4.html')
+        create_document({
+          id:          id,
+          language:    'en',
+          title:       'hi there 4',
+          description: 'bigger desc 4',
+          content:     'huge content 4',
+          created:     2.hours.ago,
+          updated:     Time.now,
+          promote:     true,
+          path:        'http://www.gov.gov/url4.html'
+        }, document_repository)
 
-        api_delete "/api/v1/documents/#{URI.encode(id)}", valid_session
+        delete_document
       end
 
       it 'returns success message as JSON' do
@@ -396,16 +372,16 @@ describe API::V1::Documents, elasticsearch: true  do
       end
 
       it 'deletes the document' do
-        expect(Document.exists?(id)).to be_falsey
+        expect(document_repository.exists?(id)).to be_falsey
       end
 
       it_behaves_like 'a data modifying request made during read-only mode'
     end
 
     context 'deleting a non-existent document' do
-      before do
-        api_delete '/api/v1/documents/non_existent_document_id', valid_session
-      end
+      let(:id) { 'nonexistent' }
+
+      before { delete_document }
 
       it 'returns error message as JSON' do
         expect(response.status).to eq(400)

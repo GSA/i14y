@@ -3,23 +3,26 @@ gem 'rails', ' ~> 5.2.0'
 
 gem 'rack-cors', '~> 1.0.5'
 gem 'grape', '~> 1.3.2'
-
 gem 'jbuilder', '~> 2.7'
+# Virtus is no longer supported. Consider replacing with ActiveModel::Attributes
+gem 'virtus', '~> 1.0'
 
 gem 'capistrano', '~> 3.9.0'
 gem 'capistrano-rails', '~> 1.3'
 gem 'capistrano-bundler', '~> 1.2'
 gem 'capistrano-passenger', '~> 0.2.0'
 
-gem "elasticsearch-persistence", '5.0.2', require: 'elasticsearch/persistence/model'
-gem 'elasticsearch', '5.0.4'
-gem 'elasticsearch-model', '~> 5.0.2'
-gem 'elasticsearch-dsl', '~> 0.1.5'
+gem "elasticsearch-persistence", '~> 6.0'
+gem 'elasticsearch', '~> 6.0'
+# Using fork until https://github.com/elastic/elasticsearch-ruby/issues/1150
+# is resolved
+gem 'elasticsearch-dsl', git: 'https://github.com/MothOnMars/elasticsearch-ruby',
+  branch: 'minimum_should_match'
 
 gem 'newrelic_rpm', '~> 4.2'
 gem 'airbrake', '~> 7.1'
 
-gem 'patron', '~> 0.10.0'
+gem 'typhoeus', '~> 1.4.0'
 
 group :development, :test do
   gem 'rspec-rails', '~> 3.7'
@@ -34,7 +37,7 @@ group :development, :test do
   gem 'rubocop', '0.52.1'
   gem 'mry', '~> 0.52.0'
   gem 'listen'
-  gem 'puma',  '~> 4.3'
+  gem 'puma',  '~> 5.0'
 end
 
 group :test do

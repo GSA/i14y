@@ -3,7 +3,7 @@ require 'rails_helper'
 describe Document do
   let(:valid_params) do
     {
-      _id: 'a123',
+      id: 'a123',
       language: 'en',
       path: 'http://www.agency.gov/page1.html',
       title: 'My Title',
@@ -22,6 +22,7 @@ describe Document do
 
     it do
       is_expected.to have_attributes(
+        id: 'a123',
         language: 'en',
         path: 'http://www.agency.gov/page1.html',
         title: 'My Title',
@@ -33,6 +34,11 @@ describe Document do
         tags: 'this,that',
         click_count: 5
       )
+    end
+
+    it 'sets default timestamps' do
+      expect(document.created_at).to be_a Time
+      expect(document.updated_at).to be_a Time
     end
   end
 

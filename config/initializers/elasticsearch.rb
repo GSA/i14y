@@ -1,16 +1,26 @@
-yaml = YAML.load_file("#{Rails.root}/config/elasticsearch.yml").presence
+# frozen_string_literal: true
 
-Elasticsearch::Persistence.client = Elasticsearch::Client.new(log: Rails.env.development?,
-                                                              hosts: yaml['hosts'],
-                                                              user: yaml['user'],
-                                                              password: yaml['password'],
-                                                              randomize_hosts: true,
-                                                              retry_on_failure: true,
-                                                              reload_connections: true)
+module ES
+  CONFIG = Rails.application.config_for(:elasticsearch).freeze
+
+  def self.client
+    Elasticsearch::Client.new(log: Rails.env.development?,
+                              hosts: CONFIG['hosts'],
+                              user: CONFIG['user'],
+                              password: CONFIG['password'],
+                              randomize_hosts: true,
+                              retry_on_failure: true,
+                              reload_connections: true)
+  end
+
+  def self.collection_repository
+    CollectionRepository.new
+  end
+end
 
 if Rails.env.development?
   logger = ActiveSupport::Logger.new(STDERR)
   logger.level = Logger::DEBUG
   logger.formatter = proc { |_s, _d, _p, m| "\e[2m#{m}\n\e[0m" }
-  Elasticsearch::Persistence.client.transport.logger = logger
+  ES.client.transport.logger = logger
 end

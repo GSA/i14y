@@ -1,17 +1,10 @@
 module DocumentCrud
-
-  def document_create(params)
-    Document.create(params)
-    Document.refresh_index!
+  def create_document(params, repository)
+    document = Document.new(params)
+    # Ensure this helper method is only used to create valid docs
+    document.validate!
+    repository.save(document)
+    # Ensure the document is searchable
+    repository.refresh_index!
   end
-
-  def api_post(params,session)
-    post "/api/v1/documents", params: params, headers: session
-    Document.refresh_index!
-  end
-
-  def api_delete(path,session)
-    delete path, headers: session
-  end
-
 end
