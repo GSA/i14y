@@ -88,6 +88,10 @@ $ rails s -p 8081
 
 You should see the default Rails index page on [http://localhost:8081/](http://localhost:8081/).
 
+### Code Quality
+
+We use [Rubocop](https://rubocop.org/) for static code analysis. Settings specific to I14Y are configured via [.rubocop.yml](.rubocop.yml). Settings that can be shared among all Search.gov repos should be configured via the [searchgov_style](https://github.com/GSA/searchgov_style) gem.
+
 ## Basic Usage
 
 ### Create a collection for storing documents
