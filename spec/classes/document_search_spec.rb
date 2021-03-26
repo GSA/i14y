@@ -141,7 +141,7 @@ describe DocumentSearch do
     before do
       create_documents([
         common_params.merge(title: 'most relevant title common content', description: 'other content'),
-        Array.new(10) { |x| common_params.merge(title: "title #{x}", description: "common content #{x}") },
+        Array.new(10) { |x| common_params.merge(title: "title #{x}", description: "common content #{x}") }
       ].flatten)
     end
 
@@ -272,7 +272,7 @@ describe DocumentSearch do
             common_params.merge( path: "http://www.agency.gov/dir1/page1.#{ext}"),
             common_params.merge( path: 'http://www.agency.gov/dir1/page1.html'),
             common_params.merge( path: 'http://www.agency.gov/dir1/page1'),
-            common_params.merge( path: 'http://www.agency.gov/dir1/page1.txt'),
+            common_params.merge( path: 'http://www.agency.gov/dir1/page1.txt')
           ])
         end
 
@@ -354,7 +354,7 @@ describe DocumentSearch do
         common_params.merge(changed: 1.minute.ago,
                             path: 'http://www.agency.gov/1minute.html'),
         common_params.merge(changed: 3.years.ago,
-                            path: 'http://www.agency.gov/3years.html'),
+                            path: 'http://www.agency.gov/3years.html')
       ])
     end
 
@@ -518,7 +518,7 @@ describe DocumentSearch do
         common_params.merge(path: 'http://www.agency.gov/dir1/page1.html'),
         common_params.merge(path: 'http://www.agency.gov/dir1/dir2/page1.html'),
         common_params.merge(path: 'http://www.other.gov/dir2/dir3/page1.html'),
-        common_params.merge(path: 'http://agency.gov/page1.html'),
+        common_params.merge(path: 'http://agency.gov/page1.html')
       ])
     end
 
