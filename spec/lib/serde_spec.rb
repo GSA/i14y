@@ -5,7 +5,7 @@ require 'rails_helper'
 describe Serde do
   describe '.serialize_hash' do
     subject(:serialize_hash) do
-      Serde.serialize_hash(original_hash, 'en')
+      described_class.serialize_hash(original_hash, 'en')
     end
     let(:original_hash) do
       ActiveSupport::HashWithIndifferentAccess.new(
@@ -82,7 +82,7 @@ describe Serde do
 
   describe '.deserialize_hash' do
     subject(:deserialize_hash) do
-      Serde.deserialize_hash(original_hash, :en)
+      described_class.deserialize_hash(original_hash, :en)
     end
     let(:original_hash) do
       ActiveSupport::HashWithIndifferentAccess.new(
@@ -127,7 +127,7 @@ describe Serde do
   end
 
   context '.uri_params_hash' do
-    subject(:result) { Serde.uri_params_hash(path) }
+    subject(:result) { described_class.uri_params_hash(path) }
     let(:path) { 'https://www.agency.gov/directory/page1.html' }
 
     it 'computes basename' do

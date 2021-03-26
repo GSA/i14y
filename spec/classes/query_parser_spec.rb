@@ -4,7 +4,7 @@ require 'rails_helper'
 
 describe QueryParser do
   let(:query) { 'govt site stuff' }
-  let(:parsed_query) { QueryParser.new(query) }
+  let(:parsed_query) { described_class.new(query) }
 
   context 'one or more site: params in query string' do
     let(:query) do
@@ -27,12 +27,12 @@ describe QueryParser do
     end
 
     it 'does not alter the original query' do #because here there be bugs
-      expect { QueryParser.new(query) }.not_to change { query }
+      expect { described_class.new(query) }.not_to change { query }
     end
   end
 
   context 'one or more -site: params in query string' do
-    let(:site_params_parser) { QueryParser.new('(-site:excluded3.agency.gov/archives/2016 -site:excluded.agency.gov -Site:excluded2.agency.gov) govt site stuff') }
+    let(:site_params_parser) { described_class.new('(-site:excluded3.agency.gov/archives/2016 -site:excluded.agency.gov -Site:excluded2.agency.gov) govt site stuff') }
 
     it 'should extract an array of :excluded_sites as SiteFilters' do
       site_filters = site_params_parser.site_filters
