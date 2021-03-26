@@ -269,10 +269,10 @@ describe DocumentSearch do
       context 'when the results contain demoted and non-demoted file types' do
         before do
           create_documents([
-            common_params.merge( path: "http://www.agency.gov/dir1/page1.#{ext}"),
-            common_params.merge( path: 'http://www.agency.gov/dir1/page1.html'),
-            common_params.merge( path: 'http://www.agency.gov/dir1/page1'),
-            common_params.merge( path: 'http://www.agency.gov/dir1/page1.txt')
+            common_params.merge(path: "http://www.agency.gov/dir1/page1.#{ext}"),
+            common_params.merge(path: 'http://www.agency.gov/dir1/page1.html'),
+            common_params.merge(path: 'http://www.agency.gov/dir1/page1'),
+            common_params.merge(path: 'http://www.agency.gov/dir1/page1.txt')
           ])
         end
 
@@ -566,7 +566,7 @@ describe DocumentSearch do
 
     context 'when excluding domains' do
       let(:query) { '-site:agency.gov america' }
-      let(:document_search_results) { DocumentSearch.new(base_search_params.merge(query: query )).search.results }
+      let(:document_search_results) { DocumentSearch.new(base_search_params.merge(query: query)).search.results }
       let(:document_paths) { document_search_results.map { |result| result['path'] }.join(' ') }
 
       it 'excludes results from those domains' do
