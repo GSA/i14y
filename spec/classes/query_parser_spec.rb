@@ -27,7 +27,7 @@ describe QueryParser do
     end
 
     it 'does not alter the original query' do #because here there be bugs
-      expect{ QueryParser.new(query) }.not_to change{ query }
+      expect { QueryParser.new(query) }.not_to change { query }
     end
   end
 

@@ -364,7 +364,7 @@ describe DocumentSearch do
       end
 
       it 'returns results in reverse chronological order based on changed timestamp' do
-        expect(document_search_results.results.map{ |r| r['path'] }).
+        expect(document_search_results.results.map { |r| r['path'] }).
           to eq (
             %w[
                 http://www.agency.gov/nodate.html
@@ -383,7 +383,7 @@ describe DocumentSearch do
       end
 
       it 'returns results in reverse chronological order based on changed timestamp' do
-        expect(document_search_results.results.map{ |r| r['path'] }).
+        expect(document_search_results.results.map { |r| r['path'] }).
           to eq (
             %w[
                 http://www.agency.gov/1minute.html
@@ -567,7 +567,7 @@ describe DocumentSearch do
     context 'when excluding domains' do
       let(:query) { '-site:agency.gov america' }
       let(:document_search_results) { DocumentSearch.new(base_search_params.merge(query: query )).search.results }
-      let(:document_paths) { document_search_results.map{ |result| result['path'] }.join(' ') }
+      let(:document_paths) { document_search_results.map { |result| result['path'] }.join(' ') }
 
       it 'excludes results from those domains' do
         expect(document_search_results.count).to eq(1)
