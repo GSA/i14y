@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'rails_helper'
 
 TWO_BYTE_CHARACTER = "\u00b5"

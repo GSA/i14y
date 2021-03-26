@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 shared_examples 'a data modifying request made during read-only mode' do
   let(:allow_updates) { false }
 
