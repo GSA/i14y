@@ -61,8 +61,8 @@ describe API::V1::Documents do
 
       it 'returns success message as JSON' do
         expect(response.status).to eq(201)
-        expect(JSON.parse(response.body))
-            .to match(hash_including('status' => 200,
+        expect(JSON.parse(response.body)).
+            to match(hash_including('status' => 200,
                                      'developer_message' => 'OK',
                                      'user_message' => 'Your document was successfully created.'))
       end
@@ -113,8 +113,8 @@ describe API::V1::Documents do
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(422)
-        expect(JSON.parse(response.body))
-            .to match(hash_including('status' => 422,
+        expect(JSON.parse(response.body)).
+            to match(hash_including('status' => 422,
                                      'developer_message' => 'Document already exists with that ID'))
       end
     end
@@ -126,8 +126,8 @@ describe API::V1::Documents do
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body))
-            .to match(hash_including('status' => 400,
+        expect(JSON.parse(response.body)).
+            to match(hash_including('status' => 400,
                                      'developer_message' => 'language does not have a valid value'))
       end
     end
@@ -139,8 +139,8 @@ describe API::V1::Documents do
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body))
-            .to match(hash_including('status' => 400,
+        expect(JSON.parse(response.body)).
+            to match(hash_including('status' => 400,
                                      'developer_message' => "document_id cannot contain any of the following characters: ['/']"))
       end
     end
@@ -159,8 +159,8 @@ describe API::V1::Documents do
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body))
-            .to match(hash_including('status' => 400,
+        expect(JSON.parse(response.body)).
+            to match(hash_including('status' => 400,
                                      'developer_message' => 'document_id cannot be more than 512 bytes long'))
       end
     end
@@ -182,8 +182,8 @@ describe API::V1::Documents do
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body))
-            .to match(hash_including('status' => 400,
+        expect(JSON.parse(response.body)).
+            to match(hash_including('status' => 400,
                                      'developer_message' => 'title is empty'))
       end
     end
@@ -195,8 +195,8 @@ describe API::V1::Documents do
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body))
-            .to match(hash_including('status' => 400,
+        expect(JSON.parse(response.body)).
+            to match(hash_including('status' => 400,
                                      'developer_message' => 'path is invalid'))
       end
     end
@@ -211,8 +211,8 @@ describe API::V1::Documents do
 
       it 'returns error message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body))
-            .to match(hash_including('status' => 400,
+        expect(JSON.parse(response.body)).
+            to match(hash_including('status' => 400,
                                      'developer_message' => 'Unauthorized'))
       end
     end
@@ -226,8 +226,8 @@ describe API::V1::Documents do
 
       it 'returns error message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body))
-            .to match(hash_including('status' => 400,
+        expect(JSON.parse(response.body)).
+            to match(hash_including('status' => 400,
                                      'developer_message' => 'Unauthorized'))
       end
     end
@@ -240,8 +240,8 @@ describe API::V1::Documents do
 
       it 'returns failure message as JSON' do
         expect(response.status).to eq(500)
-        expect(JSON.parse(response.body))
-            .to match(hash_including('status' => 500,
+        expect(JSON.parse(response.body)).
+            to match(hash_including('status' => 500,
                                      'developer_message' => "Something unexpected happened and we've been alerted."))
       end
     end
@@ -286,8 +286,8 @@ describe API::V1::Documents do
 
       it 'returns success message as JSON' do
         expect(response.status).to eq(200)
-        expect(JSON.parse(response.body))
-            .to match(hash_including('status' => 200,
+        expect(JSON.parse(response.body)).
+            to match(hash_including('status' => 200,
                                      'developer_message' => 'OK',
                                      'user_message' => 'Your document was successfully updated.'))
       end
@@ -367,8 +367,8 @@ describe API::V1::Documents do
 
       it 'returns success message as JSON' do
         expect(response.status).to eq(200)
-        expect(JSON.parse(response.body))
-            .to match(hash_including('status' => 200,
+        expect(JSON.parse(response.body)).
+            to match(hash_including('status' => 200,
                                      'developer_message' => 'OK',
                                      'user_message' => 'Your document was successfully deleted.'))
       end
@@ -387,8 +387,8 @@ describe API::V1::Documents do
 
       it 'returns error message as JSON' do
         expect(response.status).to eq(400)
-        expect(JSON.parse(response.body))
-            .to match(hash_including('status' => 400,
+        expect(JSON.parse(response.body)).
+            to match(hash_including('status' => 400,
                                      'developer_message' => 'Resource could not be found.'))
       end
     end
