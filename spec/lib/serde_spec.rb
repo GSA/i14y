@@ -8,33 +8,33 @@ describe Serde do
     end
     let(:original_hash) do
       ActiveSupport::HashWithIndifferentAccess.new(
-        { "title" => "my title",
-          "description" => "my description",
-          "content" => "my content",
-          "path" => "http://www.foo.gov/bar.html",
-          "promote" => false,
-          "tags" => "this that",
-          "created" => "2018-01-01T12:00:00Z",
-          "changed" => "2018-02-01T12:00:00Z",
-          "created_at" => "2018-01-01T12:00:00Z",
-          "updated_at" => "2018-02-01T12:00:00Z" }
+        { 'title' => 'my title',
+          'description' => 'my description',
+          'content' => 'my content',
+          'path' => 'http://www.foo.gov/bar.html',
+          'promote' => false,
+          'tags' => 'this that',
+          'created' => '2018-01-01T12:00:00Z',
+          'changed' => '2018-02-01T12:00:00Z',
+          'created_at' => '2018-01-01T12:00:00Z',
+          'updated_at' => '2018-02-01T12:00:00Z' }
       )
     end
 
     it 'stores the language fields with the language suffix' do
       expect(serialize_hash).to match(hash_including(
-        { "path" => "http://www.foo.gov/bar.html",
-          "promote" => false,
-          "tags" => ["this that"],
-          "created" => "2018-01-01T12:00:00Z",
-          "changed" => "2018-02-01T12:00:00Z",
-          "title_en" => "my title",
-          "description_en" => "my description",
-          "content_en" => "my content",
-          "basename" => "bar",
-          "extension" => "html",
-          "url_path" => "/bar.html",
-          "domain_name" => "www.foo.gov"
+        { 'path' => 'http://www.foo.gov/bar.html',
+          'promote' => false,
+          'tags' => ['this that'],
+          'created' => '2018-01-01T12:00:00Z',
+          'changed' => '2018-02-01T12:00:00Z',
+          'title_en' => 'my title',
+          'description_en' => 'my description',
+          'content_en' => 'my content',
+          'basename' => 'bar',
+          'extension' => 'html',
+          'url_path' => '/bar.html',
+          'domain_name' => 'www.foo.gov'
         }
       ))
     end
@@ -85,22 +85,22 @@ describe Serde do
     end
     let(:original_hash) do
       ActiveSupport::HashWithIndifferentAccess.new(
-        { "created_at" => "2018-08-09T21:36:50.087Z",
-          "updated_at" => "2018-08-09T21:36:50.087Z",
-          "path" => "http://www.foo.gov/bar.html",
-          "language" => "en",
-          "created" => "2018-08-09T19:36:50.087Z",
-          "updated" => "2018-08-09T14:36:50.087-07:00",
-          "changed" => "2018-08-09T14:36:50.087-07:00",
-          "promote" => true,
-          "tags" => "this that",
-          "title_en" => "my title",
-          "description_en" => "my description",
-          "content_en" => "my content",
-          "basename" => "bar",
-          "extension" => "html",
-          "url_path" => "/bar.html",
-          "domain_name" => "www.foo.gov"
+        { 'created_at' => '2018-08-09T21:36:50.087Z',
+          'updated_at' => '2018-08-09T21:36:50.087Z',
+          'path' => 'http://www.foo.gov/bar.html',
+          'language' => 'en',
+          'created' => '2018-08-09T19:36:50.087Z',
+          'updated' => '2018-08-09T14:36:50.087-07:00',
+          'changed' => '2018-08-09T14:36:50.087-07:00',
+          'promote' => true,
+          'tags' => 'this that',
+          'title_en' => 'my title',
+          'description_en' => 'my description',
+          'content_en' => 'my content',
+          'basename' => 'bar',
+          'extension' => 'html',
+          'url_path' => '/bar.html',
+          'domain_name' => 'www.foo.gov'
         }
       )
     end
@@ -108,18 +108,18 @@ describe Serde do
 
     it 'removes the language suffix from the text fields' do
       expect(deserialize_hash).to eq(
-        { "created_at" => "2018-08-09T21:36:50.087Z",
-          "updated_at" => "2018-08-09T21:36:50.087Z",
-          "path" => "http://www.foo.gov/bar.html",
-          "language" => "en",
-          "created" => "2018-08-09T19:36:50.087Z",
-          "title" => "my title",
-          "description" => "my description",
-          "content" => "my content",
-          "updated" => "2018-08-09T14:36:50.087-07:00",
-          "changed" => "2018-08-09T14:36:50.087-07:00",
-          "promote" => true,
-          "tags" => "this that"
+        { 'created_at' => '2018-08-09T21:36:50.087Z',
+          'updated_at' => '2018-08-09T21:36:50.087Z',
+          'path' => 'http://www.foo.gov/bar.html',
+          'language' => 'en',
+          'created' => '2018-08-09T19:36:50.087Z',
+          'title' => 'my title',
+          'description' => 'my description',
+          'content' => 'my content',
+          'updated' => '2018-08-09T14:36:50.087-07:00',
+          'changed' => '2018-08-09T14:36:50.087-07:00',
+          'promote' => true,
+          'tags' => 'this that'
         }
       )
     end

@@ -37,7 +37,7 @@ describe API::V1::Documents do
 
   describe 'POST /api/v1/documents' do
     subject(:post_document) do
-      post "/api/v1/documents", params: document_params, headers: valid_session
+      post '/api/v1/documents', params: document_params, headers: valid_session
       document_repository.refresh_index!
     end
 
