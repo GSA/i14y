@@ -7,6 +7,7 @@ describe Serde do
     subject(:serialize_hash) do
       described_class.serialize_hash(original_hash, 'en')
     end
+
     let(:original_hash) do
       ActiveSupport::HashWithIndifferentAccess.new(
         { 'title' => 'my title',
@@ -84,6 +85,7 @@ describe Serde do
     subject(:deserialize_hash) do
       described_class.deserialize_hash(original_hash, :en)
     end
+
     let(:original_hash) do
       ActiveSupport::HashWithIndifferentAccess.new(
         { 'created_at' => '2018-08-09T21:36:50.087Z',
@@ -128,6 +130,7 @@ describe Serde do
 
   context '.uri_params_hash' do
     subject(:result) { described_class.uri_params_hash(path) }
+
     let(:path) { 'https://www.agency.gov/directory/page1.html' }
 
     it 'computes basename' do
