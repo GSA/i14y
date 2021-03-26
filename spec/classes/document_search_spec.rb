@@ -15,7 +15,7 @@ describe DocumentSearch do
       path: 'http://www.agency.gov/page1.html',
       title: 'title',
       description: 'description',
-      content: 'common content',
+      content: 'common content'
     }
   end
   let(:document_search) { DocumentSearch.new(search_options) }
