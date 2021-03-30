@@ -63,6 +63,7 @@ workflows:
   build_and_test:
     jobs:
       - build:
+          name: "Ruby << matrix.ruby_version >>, ES << matrix.elasticsearch_version >>"
           matrix:
             parameters:
               ruby_version:
