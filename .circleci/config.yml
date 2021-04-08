@@ -36,6 +36,7 @@ jobs:
     steps:
       - checkout
       - run: cp -p config/secrets_example.yml config/secrets.yml
+      - run: gem install bundler:2.2.15
       # Install gems with Bundler
       - ruby/install-deps
       - run:
