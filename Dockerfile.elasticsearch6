@@ -1,5 +1,5 @@
-# searchgov/elasticsearch:6.8.13
-FROM docker.elastic.co/elasticsearch/elasticsearch:6.8.13
+# searchgov/elasticsearch:6.8.15
+FROM docker.elastic.co/elasticsearch/elasticsearch:6.8.15
 RUN elasticsearch-plugin install analysis-kuromoji
 RUN elasticsearch-plugin install analysis-icu
 RUN elasticsearch-plugin install analysis-smartcn
