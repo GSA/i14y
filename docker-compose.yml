@@ -38,7 +38,7 @@ services:
       - 9271:9200
 
   kibana6:
-    image: docker.elastic.co/kibana/kibana:6.8.13
+    image: docker.elastic.co/kibana/kibana:6.8.15
     depends_on:
       - elasticsearch6
     ports:
