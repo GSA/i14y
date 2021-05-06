@@ -1,9 +1,12 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 TWO_BYTE_CHARACTER = "\u00b5"
 
 describe MaxBytes do
   subject(:validator) { described_class.new(attrs, options, required, scope.new) }
+
   let(:attrs) { nil }
   let(:options) { [10] }
   let(:required) { false }

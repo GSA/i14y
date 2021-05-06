@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 describe API::V1::Collections do
@@ -284,7 +286,7 @@ describe API::V1::Collections do
                        }
         expected_params = Hashie::Mash.new('language' => :en,
                                            'query' => 'common content',
-                                           'handles' => %w(agency_blogs),
+                                           'handles' => %w[agency_blogs],
                                            'offset' => 2**32,
                                            'size' => 3,
                                            'sort_by_date' => true,

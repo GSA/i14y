@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 describe DocumentQuery do
@@ -5,7 +7,7 @@ describe DocumentQuery do
   let(:options) do
     { query: query }
   end
-  let(:document_query) { DocumentQuery.new(options) }
+  let(:document_query) { described_class.new(options) }
   let(:body) { document_query.body.to_hash }
 
   describe '#body' do

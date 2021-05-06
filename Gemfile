@@ -30,14 +30,15 @@ group :development, :test do
   gem 'pry-rails', '~> 0.3'
   gem 'faker', '~> 1.7'
   gem 'awesome_print', '~> 1.8' #To enable in Pry: https://github.com/awesome-print/awesome_print#pry-integration
-  # Updating rubocop? Update & run mry to ensure rubocop.yml is updated:
-  # https://github.com/pocke/mry#usage (include the target version to add new cops)
-  # Also bump the rubocop channel in .codeclimate.yml:
-  # https://docs.codeclimate.com/v1.0/docs/rubocop#section-using-rubocop-s-newer-versions
-  gem 'rubocop', '0.52.1'
-  gem 'mry', '~> 0.52.0'
   gem 'listen'
   gem 'puma',  '~> 5.0'
+end
+
+group :development do
+  # Bumping searchgov_style? Be sure to update the Rubocop channel
+  # in .codeclimate.yml to match the channel in searchgov_style
+  # https://github.com/GSA/searchgov_style/blob/main/.codeclimate.yml
+  gem 'searchgov_style', '~> 0.1', require: false
 end
 
 group :test do

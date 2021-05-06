@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module DocumentCrud
   def create_document(params, repository)
     document = Document.new(params)
