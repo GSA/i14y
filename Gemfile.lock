@@ -357,12 +357,8 @@ DEPENDENCIES
   pry-rails (~> 0.3)
   puma (~> 5.0)
   rack-cors (~> 1.0.5)
-<<<<<<< HEAD
   rails (~> 6.1.0)
-=======
-  rails (~> 6.0.0)
   rake (~> 13.0.0)
->>>>>>> 9c46ea8 (Removed airbrake, its configuration files, and a bit of code.)
   rspec-rails (~> 3.7)
   searchgov_style (~> 0.1)
   shoulda (~> 4.0)
