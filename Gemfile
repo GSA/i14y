@@ -20,9 +20,10 @@ gem 'elasticsearch-dsl', git: 'https://github.com/MothOnMars/elasticsearch-ruby'
   branch: 'minimum_should_match'
 
 gem 'newrelic_rpm', '~> 7.0.0'
-gem 'airbrake', '~> 11.0.3'
 
 gem 'typhoeus', '~> 1.4.0'
+
+gem 'rake', '~> 13.0.0'
 
 group :development, :test do
   gem 'rspec-rails', '~> 3.7'

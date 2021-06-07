@@ -67,10 +67,6 @@ GEM
       minitest (>= 5.1)
       tzinfo (~> 2.0)
       zeitwerk (~> 2.3)
-    airbrake (11.0.3)
-      airbrake-ruby (~> 5.1)
-    airbrake-ruby (5.2.0)
-      rbtree3 (~> 0.5)
     airbrussh (1.4.0)
       sshkit (>= 1.6.1, != 1.7.0)
     ast (2.4.2)
@@ -251,7 +247,6 @@ GEM
     rb-fsevent (0.11.0)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
-    rbtree3 (0.6.0)
     regexp_parser (2.1.1)
     rexml (3.2.5)
     rspec-core (3.9.3)
@@ -344,7 +339,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  airbrake (~> 11.0.3)
   awesome_print (~> 1.8)
   capistrano (~> 3.9.0)
   capistrano-bundler (~> 1.2)
@@ -364,6 +358,7 @@ DEPENDENCIES
   puma (~> 5.0)
   rack-cors (~> 1.0.5)
   rails (~> 6.1.0)
+  rake (~> 13.0.0)
   rspec-rails (~> 3.7)
   searchgov_style (~> 0.1)
   shoulda (~> 4.0)
