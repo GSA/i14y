@@ -5,9 +5,9 @@ module ES
 
   def self.client
     Elasticsearch::Client.new(log: Rails.env.development?,
-                              hosts: CONFIG['hosts'],
-                              user: CONFIG['user'],
-                              password: CONFIG['password'],
+                              hosts: CONFIG[:hosts],
+                              user: CONFIG[:user],
+                              password: CONFIG[:password],
                               randomize_hosts: true,
                               retry_on_failure: true,
                               reload_connections: true)

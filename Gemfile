@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-gem 'rails', ' ~> 6.0.0'
+gem 'rails', ' ~> 6.1.0'
 
 gem 'rack-cors', '~> 1.0.5'
 gem 'grape', '~> 1.3.2'
@@ -23,6 +23,8 @@ gem 'newrelic_rpm', '~> 6.15.0'
 gem 'airbrake', '~> 11.0.3'
 
 gem 'typhoeus', '~> 1.4.0'
+
+gem 'rake', '~> 13.0.0'
 
 group :development, :test do
   gem 'rspec-rails', '~> 3.7'
