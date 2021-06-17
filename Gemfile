@@ -19,7 +19,7 @@ gem 'elasticsearch', '~> 6.0'
 gem 'elasticsearch-dsl', git: 'https://github.com/MothOnMars/elasticsearch-ruby',
   branch: 'minimum_should_match'
 
-gem 'newrelic_rpm', '~> 4.2'
+gem 'newrelic_rpm', '~> 6.15.0'
 gem 'airbrake', '~> 7.1'
 
 gem 'typhoeus', '~> 1.4.0'
