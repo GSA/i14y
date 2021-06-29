@@ -27,6 +27,11 @@ common: &default_settings
   #
   # agent_enabled: auto
 
+  # Newrelic defaults this to false, but recommends that we set it to
+  # true. They default to false because it can interfere with other
+  # gems which monitor ActiveRecord.
+  backport_fast_active_record: true
+
   # Application Name Set this to be the name of your application as
   # you'd like it show up in New Relic. The service will then auto-map
   # instances of your application into an "application" on your
