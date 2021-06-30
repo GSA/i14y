@@ -3,7 +3,7 @@
 require 'rails_helper'
 require 'uri'
 
-describe API::V1::Documents do
+describe Api::V1::Documents do
   let(:id) { 'some really!weird@id.name' }
   let(:credentials) do
     ActionController::HttpAuthentication::Basic.encode_credentials('test_index',

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module API
+module Api
   class Base < Grape::API
     rescue_from ReadOnlyAccessControl::DisallowedUpdate do
       message = 'The i14y API is currently in read-only mode.'
@@ -22,6 +22,6 @@ module API
       rack_response({ developer_message: "Something unexpected happened and we've been alerted.", status: 500 }.to_json, 500)
     end
 
-    mount API::V1::Base
+    mount Api::V1::Base
   end
 end
