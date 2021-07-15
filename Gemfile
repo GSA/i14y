@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-gem 'rails', ' ~> 5.2.0'
+gem 'rails', ' ~> 6.1.0'
 
 gem 'rack-cors', '~> 1.0.5'
 gem 'grape', '~> 1.3.2'
@@ -20,9 +20,10 @@ gem 'elasticsearch-dsl', git: 'https://github.com/MothOnMars/elasticsearch-ruby'
   branch: 'minimum_should_match'
 
 gem 'newrelic_rpm', '~> 6.15.0'
-gem 'airbrake', '~> 7.1'
 
 gem 'typhoeus', '~> 1.4.0'
+
+gem 'rake', '~> 13.0.0'
 
 group :development, :test do
   gem 'rspec-rails', '~> 3.7'
