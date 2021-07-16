@@ -1,8 +1,8 @@
-module API
+module Api
   module V1
     class Base < Grape::API
-      mount API::V1::Documents
-      mount API::V1::Collections
+      mount Api::V1::Documents
+      mount Api::V1::Collections
     end
   end
 end

@@ -2,11 +2,11 @@
 
 require 'rails_helper'
 
-describe API::V1::Collections do
+describe Api::V1::Collections do
   let(:valid_session) do
     env_secrets = Rails.application.config_for(:secrets)
     credentials = ActionController::HttpAuthentication::Basic.encode_credentials(
-      env_secrets['admin_user'], env_secrets['admin_password']
+      env_secrets[:admin_user], env_secrets[:admin_password]
     )
     { 'HTTP_AUTHORIZATION' => credentials }
   end
