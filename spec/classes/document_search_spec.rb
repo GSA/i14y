@@ -571,7 +571,7 @@ describe DocumentSearch do
 
       it 'excludes results from those domains' do
         expect(document_search_results.count).to eq(1)
-        expect(document_paths).not_to match(%r{agency.gov})
+        expect(document_paths).to_not match(%r{agency.gov})
       end
 
       context 'when excluding a path' do
