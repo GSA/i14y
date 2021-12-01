@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  ruby: circleci/ruby@1.1.4
+  ruby: circleci/ruby@1.2.0
 
 executors:
   test_executor:
@@ -11,7 +11,7 @@ executors:
       elasticsearch_version:
         type: string
     docker:
-      - image: circleci/ruby:<< parameters.ruby_version >>-node-browsers
+      - image: cimg/ruby:<< parameters.ruby_version >>-node
       - image: searchgov/elasticsearch:<< parameters.elasticsearch_version >>
         environment:
           - bootstrap.memory_lock=true
@@ -37,7 +37,10 @@ jobs:
       - checkout
       - run: cp -p config/secrets_example.yml config/secrets.yml
       # Install gems with Bundler
-      - ruby/install-deps
+      - ruby/install-deps:
+          # Need to clear the gem cache? Set or bump the CACHE_VERSION in your
+          # CircleCi project: Project Settings > Environment Variables
+          key: gems-ruby-<< parameters.ruby_version >>-v{{ .Environment.CACHE_VERSION }}
       - run:
           name: Setup Code Climate test-reporter
           command: |
@@ -68,7 +71,11 @@ workflows:
             parameters:
               ruby_version:
                 - 2.6.6
+                - 2.7.1
+                - 2.7.2
                 - 2.7.3
+                - 2.7.4
+                - 2.7.5
               elasticsearch_version:
                 - 6.8.15
                 - 7.10.1
