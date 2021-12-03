@@ -11,7 +11,7 @@ executors:
       elasticsearch_version:
         type: string
     docker:
-      - image: cimg/ruby:<< parameters.ruby_version >>-node
+      - image: cimg/ruby:<< parameters.ruby_version >>
       - image: searchgov/elasticsearch:<< parameters.elasticsearch_version >>
         environment:
           - bootstrap.memory_lock=true
