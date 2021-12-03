@@ -5,11 +5,6 @@ orbs:
 
 executors:
   test_executor:
-    parameters:
-      ruby_version:
-        type: string
-      elasticsearch_version:
-        type: string
     docker:
       - image: cimg/ruby:<< parameters.ruby_version >>
       - image: searchgov/elasticsearch:<< parameters.elasticsearch_version >>
