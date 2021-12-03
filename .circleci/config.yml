@@ -6,8 +6,8 @@ orbs:
 executors:
   test_executor:
     docker:
-      - image: cimg/ruby:<< parameters.ruby_version >>
-      - image: searchgov/elasticsearch:<< parameters.elasticsearch_version >>
+      - image: cimg/ruby:<< matrix.ruby_version >>
+      - image: searchgov/elasticsearch:<< matrix.elasticsearch_version >>
         environment:
           - bootstrap.memory_lock=true
           - discovery.type=single-node
