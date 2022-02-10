@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  ruby: circleci/ruby@1.2.0
+  ruby: circleci/ruby@1.4.0
 
 jobs:
   build_and_test:
@@ -61,7 +61,6 @@ workflows:
           matrix:
             parameters:
               ruby_version:
-                - 2.6.6
                 - 2.7.5
                 # not yet compatible with Ruby 3.x
               elasticsearch_version:
