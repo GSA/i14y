@@ -1,43 +1,37 @@
 version: 2.1
 
 orbs:
-  ruby: circleci/ruby@1.1.4
+  ruby: circleci/ruby@1.4.0
 
-executors:
-  test_executor:
+jobs:
+  build_and_test:
     parameters:
       ruby_version:
         type: string
       elasticsearch_version:
         type: string
+
     docker:
-      - image: circleci/ruby:<< parameters.ruby_version >>-node-browsers
+      - image: cimg/ruby:<< parameters.ruby_version >>
+        # Using custom Docker images including required Elasticsearch plugins.
+        # See Dockerfile.elasticsearch* for details
       - image: searchgov/elasticsearch:<< parameters.elasticsearch_version >>
         environment:
           - bootstrap.memory_lock=true
           - discovery.type=single-node
           - xpack.security.enabled=false
           - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+
     working_directory: ~/app
 
-jobs:
-  build:
-    parameters:
-      ruby_version:
-        type: string
-      elasticsearch_version:
-        type: string
-    environment:
-      RUBY_VERSION: << parameters.ruby_version >>
-    executor:
-      name: test_executor
-      ruby_version:  << parameters.ruby_version >>
-      elasticsearch_version:  << parameters.elasticsearch_version >>
     steps:
       - checkout
       - run: cp -p config/secrets_example.yml config/secrets.yml
       # Install gems with Bundler
-      - ruby/install-deps
+      - ruby/install-deps:
+          # Need to clear the gem cache? Set or bump the CACHE_VERSION in your
+          # CircleCi project: Project Settings > Environment Variables
+          key: gems-ruby-<< parameters.ruby_version >>-v{{ .Environment.CACHE_VERSION }}
       - run:
           name: Setup Code Climate test-reporter
           command: |
@@ -62,13 +56,13 @@ jobs:
 workflows:
   build_and_test:
     jobs:
-      - build:
+      - build_and_test:
           name: "Ruby << matrix.ruby_version >>, ES << matrix.elasticsearch_version >>"
           matrix:
             parameters:
               ruby_version:
-                - 2.6.6
-                - 2.7.3
+                - 2.7.5
+                # not yet compatible with Ruby 3.x
               elasticsearch_version:
                 - 6.8.15
                 - 7.10.1
