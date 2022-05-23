@@ -10,7 +10,7 @@ set :deploy_to, '/home/search/i14y'
 set :linked_dirs, %w[log tmp/pids tmp/cache tmp/sockets]
 set :linked_files, %w[config/newrelic.yml config/secrets.yml config/elasticsearch.yml]
 
-# Default branch is :master
+# Default branch is :main
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
 
 # Default deploy_to directory is /var/www/my_app_name
