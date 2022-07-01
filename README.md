@@ -21,7 +21,7 @@ The Elasticsearch services provided by `searchgov-services` is configured to run
 
     ES_HOSTS=localhost:9207 bin/rspec spec
 
-Verify that Elasticsearch 6.8.x is running on port the expected port (in this example, port 9200):
+Verify that Elasticsearch 6.8.x is running on the expected port (port 9200 by default):
 
 ```
 $ curl localhost:9200
