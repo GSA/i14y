@@ -6,16 +6,12 @@
 Please ensure you have addressed all concerns below before marking a PR "ready for review" or before requesting a re-review:
  
 #### Functionality Checks
- 
-- [ ] Code is functional.
 
 - [ ] Automated checks pass. If CodeClimate checks do not pass, explain reason for failures:
 
-- [ ] If your changes will be tested manually, you have run `bundle update` and committed your changes to Gemfile.lock.
+- [ ] You have run `bundle update` and committed your changes to Gemfile.lock.
  
 - [ ] You have merged the latest changes from the target branch (usually `main`) into your branch.
- 
-- [ ] Your target branch is `main` or `production`, or you have specified the reason for an alternate branch here:
  
 - [ ] PR title is either of the format **SRCH-#### \<description\>** matching the associated Jira ticket (i.e. "SRCH-123 implement feature X"), or **Release - SRCH-####, SRCH-####, SRCH-####** matching the Jira ticket numbers in the release.
  
@@ -25,4 +21,4 @@ Please ensure you have addressed all concerns below before marking a PR "ready f
  
 #### Process Checks
 
-- [ ] You have specified an "Assignee", and if necessary, additional reviewers
+- [ ] You have specified at least one "Reviewer", and if necessary, additional reviewers
