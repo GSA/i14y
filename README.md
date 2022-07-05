@@ -13,19 +13,15 @@ Search engine for agencies' published content
 
 Use [rvm](https://rvm.io/) to install the version of Ruby specified in `.ruby-version`.
 
-* [Elasticsearch 6.8](https://www.elastic.co/elasticsearch/)
-* Elasticsearch Plugins:
-    * [analysis-kuromoji](https://www.elastic.co/guide/en/elasticsearch/plugins/current/analysis-kuromoji.html)
-    * [analysis-icu](https://www.elastic.co/guide/en/elasticsearch/plugins/master/analysis-icu-analyzer.html)
-    * [analysis-smartcn](https://www.elastic.co/guide/en/elasticsearch/plugins/current/analysis-smartcn.html)
+### Docker Services
 
-We recommend using [Docker](https://www.docker.com/get-started) to install and run Elasticsearch:
+The required services (MySQL, Elasticsearch, etc.) can be run using Docker. Please refer to [searchgov-services](https://github.com/GSA/search-services) for detailed instructions on centralized configuration for services.
 
-```
-$ docker-compose up elasticsearch
-```
+The Elasticsearch services provided by `searchgov-services` is configured to run on the default port, [9200](http://localhost:9200/). To use a different host (with or without port) or set of hosts, set the `ES_HOSTS` environment variable. For example, use following command to run the specs using Elasticsearch running on `localhost:9207`:
 
-Verify that Elasticsearch 6.8.x is running on port 9200:
+    ES_HOSTS=localhost:9207 bin/rspec spec
+
+Verify that Elasticsearch 6.8.x is running on the expected port (port 9200 by default):
 
 ```
 $ curl localhost:9200
@@ -47,29 +43,6 @@ $ curl localhost:9200
   "tagline" : "You Know, for Search"
 }
 ```
-
-* Kibana
-
-[Kibana](https://www.elastic.co/kibana) is not required, but it can very helpful for debugging your Elasticsearch cluster or data.
-You can also run Kibana using Docker:
-
-```
-$ docker-compose up kibana
-```
-
-Verify that you can access Kibana in your browser: [http://localhost:5601/](http://localhost:5601/)
-
-For development purposes, you can run versions 6 & 7 of both Elasticsearch & Kibana in parallel:
-
-```
-$ docker-compose up
-```
-To develop and test using Elasticsearch 7, specify `9271` as the Elasticsearch port:
-
-```
-$ ES_PORT=9271 bundle exec rake
-```
-Kibana 7 is configured to run on port 5671: [http://localhost:5671/](http://localhost:5671/)
 
 ## Development
 
