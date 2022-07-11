@@ -17,7 +17,7 @@ Please ensure you have addressed all concerns below before marking a PR "ready f
 
 - [ ] PR title is either of the format **SRCH-#### \<description\>** matching the associated Jira ticket (i.e. "SRCH-123 implement feature X"), or **Release - SRCH-####, SRCH-####, SRCH-####** matching the Jira ticket numbers in the release.
  
-- [ ] Automated checks pass. If CodeClimate checks do not pass, explain reason for failures:
+- [ ] Automated checks pass. If Code Climate checks do not pass, explain reason for failures:
  
 #### Process Checks
 
