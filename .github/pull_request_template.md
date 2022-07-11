@@ -3,7 +3,7 @@
 - Any additional information or context which may help the reviewer
  
 ### Checklist
-Please ensure you have addressed all concerns below before marking a PR "ready for review" or before requesting a re-review. If you cannot complete an item below, replace the checkbox with the ⚠️ `:warning:` emoji.
+Please ensure you have addressed all concerns below before marking a PR "ready for review" or before requesting a re-review. If you cannot complete an item below, replace the checkbox with the ⚠️ `:warning:` emoji and explain why the step was not completed.
  
 #### Functionality Checks
 
