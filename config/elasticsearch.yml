@@ -1,6 +1,6 @@
 default: &DEFAULT
   hosts:
-    - <%= ENV['ES_HOST'] || 'localhost:9200' %>
+    - <%= ENV['ES_HOSTS'] || 'localhost:9200' %>
   user: elastic
   password: changeme
 
