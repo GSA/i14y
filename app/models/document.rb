@@ -11,6 +11,7 @@ class Document
   attribute :title, String
   attribute :description, String
   attribute :content, String
+  attribute :mime_type, String
   attribute :updated, DateTime
   attribute :changed, DateTime, default: ->(doc, _attr) { doc.created }
   attribute :promote, Boolean
@@ -21,4 +22,8 @@ class Document
 
   validates :language, presence: true
   validates :path, presence: true
+
+  validates_each :mime_type do |record, attr, value|
+    record.errors.add(attr, 'is not a recognized MIME type.') unless value.blank? || MIME::Types.include?(value)
+  end
 end

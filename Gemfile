@@ -17,6 +17,8 @@ gem 'typhoeus', '~> 1.4.0'
 
 gem 'rake', '~> 13.0.0'
 
+gem 'mime-types', '~> 3.4'
+
 group :development, :test do
   gem 'rspec-rails', '~> 3.7'
   gem 'pry-byebug', '~> 3.4'

@@ -43,14 +43,17 @@ describe Api::V1::Documents do
     end
 
     let(:valid_params) do
-      { document_id: id,
-        title:       'my title',
-        path:        'http://www.gov.gov/goo.html',
+      {
+        document_id: id,
+        title: 'my title',
+        path: 'http://www.gov.gov/goo.html',
         description: 'my desc',
-        promote:     true,
-        language:    'hy',
-        content:     'my content',
-        tags:        'Foo, Bar blat' }
+        promote: true,
+        language: 'hy',
+        content: 'my content',
+        tags: 'Foo, Bar blat',
+        mime_type: 'text/html; charset=windows-1252'
+      }
     end
     let(:document_params) { valid_params }
 
@@ -81,6 +84,7 @@ describe Api::V1::Documents do
         expect(document.tags).to match_array(['bar blat', 'foo'])
         expect(document.created_at).to be_an_instance_of(Time)
         expect(document.updated_at).to be_an_instance_of(Time)
+        expect(document.mime_type).to eq('text/html')
       end
 
       context 'when a "created" value is provided but not "changed"' do
@@ -258,14 +262,15 @@ describe Api::V1::Documents do
 
     let(:update_params) do
       {
-        title:       'new title',
+        title: 'new title',
         description: 'new desc',
-        content:     'new content',
-        path:        'http://www.next.gov/updated.html',
-        promote:     false,
-        tags:        'new category',
-        changed:     '2016-01-01T10:00:01Z',
-        click_count: 1000
+        content: 'new content',
+        path: 'http://www.next.gov/updated.html',
+        promote: false,
+        tags: 'new category',
+        changed: '2016-01-01T10:00:01Z',
+        click_count: 1000,
+        mime_type: 'text/plain; charset=UTF-8'
       }
     end
 
@@ -302,6 +307,7 @@ describe Api::V1::Documents do
         expect(document.tags).to match_array(['new category'])
         expect(document.changed).to eq('2016-01-01T10:00:01Z')
         expect(document.click_count).to eq(1000)
+        expect(document.mime_type).to eq('text/plain')
       end
 
       it_behaves_like 'a data modifying request made during read-only mode'

@@ -73,6 +73,10 @@ module Api
                    type: String,
                    allow_blank: false,
                    desc: "Document content/body"
+          optional :mime_type,
+                   type: String,
+                   allow_blank: true,
+                   desc: 'Document MIME type'
           optional :changed,
                    type: DateTime,
                    allow_blank: false,
@@ -96,64 +100,70 @@ module Api
         post do
           id = params.delete(:document_id)
           document = Document.new(params.merge(id: id))
+          params[:mime_type]&.sub!(/;.*$/, '')
           error!(document.errors.messages, 400) unless document.valid?
           document_repository.save(document, op_type: :create)
           ok("Your document was successfully created.")
         end
 
-        desc "Update a document"
+        desc 'Update a document'
         params do
           optional :title,
                    type: String,
                    allow_blank: false,
-                   desc: "Document title"
+                   desc: 'Document title'
           optional :path,
                    type: String,
                    allow_blank: false,
                    regexp: %r(^https?:\/\/[^\s\/$.?#].[^\s]*$),
-                   desc: "Document link URL"
+                   desc: 'Document link URL'
           optional :created,
                    type: DateTime,
                    allow_blank: true,
-                   desc: "When document was initially created",
+                   desc: 'When document was initially created',
                    documentation: { example: '2013-02-27T10:00:00Z' }
           optional :description,
                    type: String,
                    allow_blank: false,
-                   desc: "Document description"
+                   desc: 'Document description'
           optional :content,
                    type: String,
                    allow_blank: false,
-                   desc: "Document content/body"
+                   desc: 'Document content/body'
+          optional :mime_type,
+                   type: String,
+                   allow_blank: false,
+                   desc: 'Document MIME type'
           optional :changed,
                    type: DateTime,
                    allow_blank: false,
-                   desc: "When document was modified",
+                   desc: 'When document was modified',
                    documentation: { example: '2013-02-27T10:00:01Z' }
           optional :promote,
                    type: Boolean,
-                   desc: "Whether to promote the document in the relevance ranking"
+                   desc: 'Whether to promote the document in the relevance ranking'
           optional :language,
                    type: Symbol,
                    values: SUPPORTED_LOCALES,
                    allow_blank: false,
-                   desc: "Two-letter locale describing language of document"
+                   desc: 'Two-letter locale describing language of document'
           optional :tags,
                    type: String,
                    allow_blank: false,
-                   desc: "Comma-separated list of category tags"
+                   desc: 'Comma-separated list of category tags'
           optional :click_count,
                    type: Integer,
                    allow_blank: false,
-                   desc: "Count of clicks"
+                   desc: 'Count of clicks'
 
-          at_least_one_of :title, :path, :created, :content, :description,
+          at_least_one_of :title, :path, :created, :content, :description, :mime_type,
             :changed, :promote, :language, :tags, :click_count
         end
         put ':document_id', requirements: { document_id: /.*/ } do
           id = params.delete(:document_id)
           document = document_repository.find(id, '_source': 'language')
           params.merge!(id: id, language: document.language)
+          params[:mime_type]&.sub!(/;.*$/, '')
           error!(document.errors.messages, 400) unless document_repository.update(params)
           ok("Your document was successfully updated.")
         end
