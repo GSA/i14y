@@ -25,18 +25,18 @@ describe Document do
   describe 'attributes' do
     it do
       is_expected.to have_attributes(
-        id: 'b246',
-        language: 'en',
-        path: 'http://www.document_agency.gov/page1.html',
-        title: 'Title of Document',
-        created: DateTime.new(2022, 2, 2),
-        changed: DateTime.new(2022, 2, 4),
-        description: 'Description of Document',
-        content: 'content document content',
-        mime_type: 'text/plain',
-        promote: true,
+        click_count: 6,
         tags: 'argle_tag,bargle_tag',
-        click_count: 6
+        promote: true,
+        mime_type: 'text/plain',
+        content: 'content document content',
+        description: 'Description of Document',
+        changed: DateTime.new(2022, 2, 4),
+        created: DateTime.new(2022, 2, 2),
+        title: 'Title of Document',
+        path: 'http://www.document_agency.gov/page1.html',
+        language: 'en',
+        id: 'b246'
       )
     end
 
