@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'mini_mime'
+
 class Document
   include Virtus.model
   include ActiveModel::Validations
@@ -23,7 +25,13 @@ class Document
   validates :language, presence: true
   validates :path, presence: true
 
-  validates_each :mime_type do |record, attr, value|
-    record.errors.add(attr, 'is not a recognized MIME type.') unless value.blank? || MIME::Types.include?(value)
+  validate :mime_type_is_valid
+
+  private
+
+  def mime_type_is_valid
+    return unless mime_type
+
+    errors.add(:mime_type, 'is invalid') unless MiniMime.lookup_by_content_type(mime_type)
   end
 end

@@ -52,7 +52,7 @@ describe Api::V1::Documents do
         language: 'hy',
         content: 'my content',
         tags: 'Foo, Bar blat',
-        mime_type: 'text/html; charset=windows-1252'
+        mime_type: 'text/html'
       }
     end
     let(:document_params) { valid_params }
@@ -270,7 +270,7 @@ describe Api::V1::Documents do
         tags: 'new category',
         changed: '2016-01-01T10:00:01Z',
         click_count: 1000,
-        mime_type: 'text/plain; charset=UTF-8'
+        mime_type: 'text/plain'
       }
     end
 

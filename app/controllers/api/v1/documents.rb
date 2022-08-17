@@ -75,7 +75,7 @@ module Api
                    desc: "Document content/body"
           optional :mime_type,
                    type: String,
-                   allow_blank: true,
+                   allow_blank: false,
                    desc: 'Document MIME type'
           optional :changed,
                    type: DateTime,
@@ -100,7 +100,6 @@ module Api
         post do
           id = params.delete(:document_id)
           document = Document.new(params.merge(id: id))
-          params[:mime_type]&.sub!(/;.*$/, '')
           error!(document.errors.messages, 400) unless document.valid?
           document_repository.save(document, op_type: :create)
           ok("Your document was successfully created.")
@@ -163,7 +162,6 @@ module Api
           id = params.delete(:document_id)
           document = document_repository.find(id, '_source': 'language')
           params.merge!(id: id, language: document.language)
-          params[:mime_type]&.sub!(/;.*$/, '')
           error!(document.errors.messages, 400) unless document_repository.update(params)
           ok("Your document was successfully updated.")
         end
