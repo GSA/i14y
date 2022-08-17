@@ -7,17 +7,17 @@ describe Document do
 
   let(:valid_params) do
     {
-      id: 'a123',
+      id: 'b246',
       language: 'en',
-      path: 'http://www.agency.gov/page1.html',
-      title: 'My Title',
-      created: DateTime.new(2020, 1, 1),
-      changed: DateTime.new(2020, 1, 2),
-      description: 'My Description',
-      content: 'some content',
-      mime_type: 'text/html',
+      path: 'http://www.document_agency.gov/page1.html',
+      title: 'Title of Document',
+      created: DateTime.new(2022, 2, 2),
+      changed: DateTime.new(2022, 2, 4),
+      description: 'Description of Document',
+      content: 'content document content',
+      mime_type: 'text/plain',
       promote: true,
-      tags: 'this,that',
+      tags: 'argle_tag,bargle_tag',
       click_count: 6
     }
   end
@@ -25,16 +25,17 @@ describe Document do
   describe 'attributes' do
     it do
       is_expected.to have_attributes(
-        id: 'a123',
+        id: 'b246',
         language: 'en',
-        path: 'http://www.agency.gov/page1.html',
-        title: 'My Title',
-        created: DateTime.new(2020, 1, 1),
-        changed: DateTime.new(2020, 1, 2),
-        description: 'My Description',
-        content: 'some content',
+        path: 'http://www.document_agency.gov/page1.html',
+        title: 'Title of Document',
+        created: DateTime.new(2022, 2, 2),
+        changed: DateTime.new(2022, 2, 4),
+        description: 'Description of Document',
+        content: 'content document content',
+        mime_type: 'text/plain',
         promote: true,
-        tags: 'this,that',
+        tags: 'argle_tag,bargle_tag',
         click_count: 6
       )
     end
