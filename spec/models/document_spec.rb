@@ -18,7 +18,7 @@ describe Document do
       mime_type: 'text/html',
       promote: true,
       tags: 'this,that',
-      click_count: 5
+      click_count: 6
     }
   end
 
@@ -35,7 +35,7 @@ describe Document do
         content: 'some content',
         promote: true,
         tags: 'this,that',
-        click_count: 5
+        click_count: 6
       )
     end
 
