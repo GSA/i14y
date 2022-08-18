@@ -7,36 +7,36 @@ describe Document do
 
   let(:valid_params) do
     {
-      id: 'b246',
+      id: 'a123',
       language: 'en',
-      path: 'http://www.document_agency.gov/page1.html',
-      title: 'Title of Document',
-      created: DateTime.new(2022, 2, 2),
-      changed: DateTime.new(2022, 2, 4),
-      description: 'Description of Document',
-      content: 'content document content',
-      mime_type: 'text/plain',
+      path: 'http://www.agency.gov/page1.html',
+      title: 'My Title',
+      created: DateTime.new(2020, 1, 1),
+      changed: DateTime.new(2020, 1, 2),
+      description: 'My Description',
+      content: 'some content',
+      mime_type: 'text/html',
       promote: true,
-      tags: 'argle_tag,bargle_tag',
-      click_count: 6
+      tags: 'this,that',
+      click_count: 5
     }
   end
 
   describe 'attributes' do
     it do
       is_expected.to have_attributes(
-        click_count: 6,
-        tags: 'argle_tag,bargle_tag',
-        promote: true,
-        mime_type: 'text/plain',
-        content: 'content document content',
-        description: 'Description of Document',
-        changed: DateTime.new(2022, 2, 4),
-        created: DateTime.new(2022, 2, 2),
-        title: 'Title of Document',
-        path: 'http://www.document_agency.gov/page1.html',
-        language: 'en',
-        id: 'b246'
+      id: 'a123',
+      language: 'en',
+      path: 'http://www.agency.gov/page1.html',
+      title: 'My Title',
+      created: DateTime.new(2020, 1, 1),
+      changed: DateTime.new(2020, 1, 2),
+      description: 'My Description',
+      content: 'some content',
+      mime_type: 'text/html',
+      promote: true,
+      tags: 'this,that',
+      click_count: 5
       )
     end
 
