@@ -37,7 +37,7 @@ describe Document do
         promote: true,
         tags: 'this,that',
         click_count: 5
-    )
+      )
     end
 
     it 'sets default timestamps' do
