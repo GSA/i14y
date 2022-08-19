@@ -71,7 +71,7 @@ describe Document do
 
       it 'generates an error message' do
         document.valid?
-        expect(document).errors.messages[:mime_type]).to include 'is invalid'
+        expect(document.errors.messages[:mime_type]).to include 'is invalid'
       end
     end
   end
