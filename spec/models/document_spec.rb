@@ -70,8 +70,8 @@ describe Document do
       it { is_expected.to be_invalid }
 
       it 'generates an error message' do
-        subject.valid?
-        expect(subject.errors.messages[:mime_type]).to include 'is invalid'
+        document.valid?
+        expect(document).errors.messages[:mime_type]).to include 'is invalid'
       end
     end
   end
