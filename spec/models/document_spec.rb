@@ -57,18 +57,22 @@ describe Document do
     end
   end
 
-  describe 'invalid?' do
-    subject(:document) { described_class.new(valid_params.merge(mime_type: 'text/not_a_valid_mime_type')) }
-
-    it 'returns true and sets an error message for invalid MIME type' do
-      expect(document.invalid?).to be true
-      expect(document.errors.messages[:mime_type]).to include 'is invalid'
-    end
-  end
-
   describe 'validations' do
     it { is_expected.to validate_presence_of(:path) }
     it { is_expected.to validate_presence_of(:language) }
     it { is_expected.to be_valid }
+
+    context 'when the MIME type is invalid' do
+      subject(:document) do
+        described_class.new(valid_params.merge(mime_type: 'text/not_a_valid_mime_type'))
+      end
+
+      it { is_expected.to be_invalid }
+
+      it 'generates an error message' do
+        subject.valid?
+        expect(subject.errors.messages[:mime_type]).to include 'is invalid'
+      end
+    end
   end
 end
