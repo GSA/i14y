@@ -347,6 +347,33 @@ describe Api::V1::Documents do
         expect { put_document }.not_to change { document_repository.find(id).created_at }
       end
     end
+
+    context 'invalid MIME type param' do
+      let(:update_params) { {mime_type: 'not_a_valid/mime_type'} }
+
+      before do
+        create_document({
+          id: id,
+          language: 'en',
+          title: 'hi there 4',
+          description: 'bigger desc 4',
+          content: 'huge content 4',
+          created: 2.hours.ago,
+          updated: Time.now,
+          promote: true,
+          path: 'http://www.gov.gov/url4.html'
+        }, document_repository)
+
+        put_document
+      end
+
+      it 'returns error message as JSON' do
+        expect(response.status).to eq(400)
+        expect(JSON.parse(response.body)).
+          to match(hash_including('status' => 400,
+                                  'developer_message' => 'mime_type is not a valid MIME type'))
+      end
+    end
   end
 
   describe 'DELETE /api/v1/documents/{document_id}' do

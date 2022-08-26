@@ -1,5 +1,16 @@
+require 'mini_mime'
+
 module Api
   module V1
+    class ValidMimeType < Grape::Validations::Base
+      def validate_param!(attr_name, params)
+        unless MiniMime.lookup_by_content_type(params[attr_name])
+          raise Grape::Exceptions::Validation.new params: [@scope.full_name(attr_name)],
+            message: "is not a valid MIME type"
+        end
+      end
+    end
+
     class Documents < Grape::API
       prefix 'api'
       version 'v1'
@@ -132,6 +143,7 @@ module Api
           optional :mime_type,
                    type: String,
                    allow_blank: false,
+                   valid_mime_type: true,
                    desc: 'Document MIME type'
           optional :changed,
                    type: DateTime,
