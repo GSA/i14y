@@ -348,8 +348,8 @@ describe Api::V1::Documents do
       end
     end
 
-    context 'invalid MIME type param' do
-      let(:update_params) { {mime_type: 'not_a_valid/mime_type'} }
+    context 'with invalid MIME type param' do
+      let(:update_params) { { mime_type: 'not_a_valid/mime_type' } }
 
       before do
         create_document({
