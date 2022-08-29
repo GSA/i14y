@@ -371,7 +371,7 @@ describe Api::V1::Documents do
         expect(response.status).to eq(400)
         expect(JSON.parse(response.body)).
           to match(hash_including('status' => 400,
-                                  'developer_message' => 'mime_type is not a valid MIME type'))
+                                  'developer_message' => 'Mime type is invalid'))
       end
     end
   end

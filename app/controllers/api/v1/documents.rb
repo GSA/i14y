@@ -1,18 +1,5 @@
-# frozen_string_literal: true
-
-require 'mini_mime'
-
 module Api
   module V1
-    class ValidMimeType < Grape::Validations::Base
-      def validate_param!(attr_name, params)
-        return if MiniMime.lookup_by_content_type(params[attr_name])
-
-        raise Grape::Exceptions::Validation.new(params: [@scope.full_name(attr_name)],
-                                                message: 'is not a valid MIME type')
-      end
-    end
-
     class Documents < Grape::API
       prefix 'api'
       version 'v1'
@@ -145,7 +132,6 @@ module Api
           optional :mime_type,
                    type: String,
                    allow_blank: false,
-                   valid_mime_type: true,
                    desc: 'Document MIME type'
           optional :changed,
                    type: DateTime,
@@ -174,9 +160,13 @@ module Api
         end
         put ':document_id', requirements: { document_id: /.*/ } do
           id = params.delete(:document_id)
-          document = document_repository.find(id, '_source': 'language')
-          params.merge!(id: id, language: document.language)
-          error!(document.errors.messages, 400) unless document_repository.update(params)
+          # return just enough attributes to ensure the document is valid
+          document = document_repository.find(id, '_source': %w[language path created_at])
+          document.attributes = document.attributes.merge(params)
+          if document.invalid?
+            error!({ developer_message: document.errors.full_messages.join(', '), status: 400 }, 400)
+          end
+          document_repository.update(document)
           ok("Your document was successfully updated.")
         end
 
