@@ -5,6 +5,10 @@ module Api
       version 'v1'
       default_format :json
       format :json
+
+      # Eventually, the validation logic should all be moved to the model classes,
+      # and the validation itself should happen during serialization:
+      # https://www.elastic.co/blog/activerecord-to-repository-changing-persistence-patterns-with-the-elasticsearch-rails-gem
       rescue_from Grape::Exceptions::ValidationErrors do |e|
         rack_response({ developer_message: e.message, status: 400 }.to_json, 400)
       end
