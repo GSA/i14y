@@ -21,7 +21,6 @@ group :development, :test do
   gem 'rspec-rails', '~> 3.7'
   gem 'pry-byebug', '~> 3.4'
   gem 'pry-rails', '~> 0.3'
-  gem 'faker', '~> 1.7'
   gem 'awesome_print', '~> 1.8' #To enable in Pry: https://github.com/awesome-print/awesome_print#pry-integration
   gem 'listen'
   gem 'puma',  '~> 5.0'
