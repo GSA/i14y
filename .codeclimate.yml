@@ -17,6 +17,8 @@ plugins:
     config:
       languages:
       - ruby
+    exclude_patterns:
+    - "spec/"
   eslint:
     enabled: true
   fixme:

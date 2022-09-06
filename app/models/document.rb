@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'mini_mime'
+
 class Document
   include Virtus.model
   include ActiveModel::Validations
@@ -11,6 +13,7 @@ class Document
   attribute :title, String
   attribute :description, String
   attribute :content, String
+  attribute :mime_type, String
   attribute :updated, DateTime
   attribute :changed, DateTime, default: ->(doc, _attr) { doc.created }
   attribute :promote, Boolean
@@ -21,4 +24,14 @@ class Document
 
   validates :language, presence: true
   validates :path, presence: true
+
+  validate :mime_type_is_valid
+
+  private
+
+  def mime_type_is_valid
+    return unless mime_type
+
+    errors.add(:mime_type, 'is invalid') unless MiniMime.lookup_by_content_type(mime_type)
+  end
 end
