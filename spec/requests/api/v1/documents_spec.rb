@@ -43,14 +43,17 @@ describe Api::V1::Documents do
     end
 
     let(:valid_params) do
-      { document_id: id,
-        title:       'my title',
-        path:        'http://www.gov.gov/goo.html',
+      {
+        document_id: id,
+        title: 'my title',
+        path: 'http://www.gov.gov/goo.html',
         description: 'my desc',
-        promote:     true,
-        language:    'hy',
-        content:     'my content',
-        tags:        'Foo, Bar blat' }
+        promote: true,
+        language: 'hy',
+        content: 'my content',
+        tags: 'Foo, Bar blat',
+        mime_type: 'text/html'
+      }
     end
     let(:document_params) { valid_params }
 
@@ -81,6 +84,7 @@ describe Api::V1::Documents do
         expect(document.tags).to match_array(['bar blat', 'foo'])
         expect(document.created_at).to be_an_instance_of(Time)
         expect(document.updated_at).to be_an_instance_of(Time)
+        expect(document.mime_type).to eq('text/html')
       end
 
       context 'when a "created" value is provided but not "changed"' do
@@ -246,6 +250,19 @@ describe Api::V1::Documents do
       end
     end
 
+    context 'with invalid MIME type param' do
+      let(:document_params) { valid_params.merge(mime_type: 'not_a_valid/mime_type') }
+
+      before { post_document }
+
+      it 'returns failure message as JSON' do
+        expect(response.status).to eq(400)
+        expect(JSON.parse(response.body)).
+          to match(hash_including('status' => 400,
+                                  'developer_message' => 'Mime type is invalid'))
+      end
+    end
+
   end
 
   describe 'PUT /api/v1/documents/{document_id}' do
@@ -258,14 +275,15 @@ describe Api::V1::Documents do
 
     let(:update_params) do
       {
-        title:       'new title',
+        title: 'new title',
         description: 'new desc',
-        content:     'new content',
-        path:        'http://www.next.gov/updated.html',
-        promote:     false,
-        tags:        'new category',
-        changed:     '2016-01-01T10:00:01Z',
-        click_count: 1000
+        content: 'new content',
+        path: 'http://www.next.gov/updated.html',
+        promote: false,
+        tags: 'new category',
+        changed: '2016-01-01T10:00:01Z',
+        click_count: 1000,
+        mime_type: 'text/plain'
       }
     end
 
@@ -302,6 +320,7 @@ describe Api::V1::Documents do
         expect(document.tags).to match_array(['new category'])
         expect(document.changed).to eq('2016-01-01T10:00:01Z')
         expect(document.click_count).to eq(1000)
+        expect(document.mime_type).to eq('text/plain')
       end
 
       it_behaves_like 'a data modifying request made during read-only mode'
@@ -339,6 +358,33 @@ describe Api::V1::Documents do
 
       it 'does not update the created_at timestamp' do
         expect { put_document }.not_to change { document_repository.find(id).created_at }
+      end
+    end
+
+    context 'with invalid MIME type param' do
+      let(:update_params) { { mime_type: 'not_a_valid/mime_type' } }
+
+      before do
+        create_document({
+          id: id,
+          language: 'en',
+          title: 'hi there 4',
+          description: 'bigger desc 4',
+          content: 'huge content 4',
+          created: 2.hours.ago,
+          updated: Time.now,
+          promote: true,
+          path: 'http://www.gov.gov/url4.html'
+        }, document_repository)
+
+        put_document
+      end
+
+      it 'returns error message as JSON' do
+        expect(response.status).to eq(400)
+        expect(JSON.parse(response.body)).
+          to match(hash_including('status' => 400,
+                                  'developer_message' => 'Mime type is invalid'))
       end
     end
   end
