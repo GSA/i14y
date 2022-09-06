@@ -250,6 +250,19 @@ describe Api::V1::Documents do
       end
     end
 
+    context 'with invalid MIME type param' do
+      let(:document_params) { valid_params.merge(mime_type: 'not_a_valid/mime_type') }
+
+      before { post_document }
+
+      it 'returns failure message as JSON' do
+        expect(response.status).to eq(400)
+        expect(JSON.parse(response.body)).
+          to match(hash_including('status' => 400,
+                                  'developer_message' => 'Mime type is invalid'))
+      end
+    end
+
   end
 
   describe 'PUT /api/v1/documents/{document_id}' do

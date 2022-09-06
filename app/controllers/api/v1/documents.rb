@@ -104,7 +104,11 @@ module Api
         post do
           id = params.delete(:document_id)
           document = Document.new(params.merge(id: id))
-          error!(document.errors.messages, 400) unless document.valid?
+          if document.invalid?
+            error!({developer_message: document.errors.full_messages.join(', '),
+                    status: 400},
+                   400)
+          end
           document_repository.save(document, op_type: :create)
           ok("Your document was successfully created.")
         end
