@@ -18,7 +18,7 @@ describe Api::V1::Documents do
   let(:document_repository) { DocumentRepository.new(index_name: documents_index_name) }
 
   before(:all) do
-    yaml = YAML.load_file("#{Rails.root}/config/secrets.yml")
+    yaml = YAML.load_file(Rails.root.join('config/secrets.yml'))
     env_secrets = yaml[Rails.env]
     credentials = ActionController::HttpAuthentication::Basic.encode_credentials env_secrets['admin_user'], env_secrets['admin_password']
     valid_collection_session = { HTTP_AUTHORIZATION: credentials }
@@ -62,7 +62,7 @@ describe Api::V1::Documents do
     end
     let(:document_params) { valid_params }
 
-    context 'success case' do
+    context 'when successful' do
       before do
         post_document
       end
@@ -71,8 +71,8 @@ describe Api::V1::Documents do
         expect(response.status).to eq(201)
         expect(JSON.parse(response.body)).
           to match(hash_including('status' => 200,
-                                     'developer_message' => 'OK',
-                                     'user_message' => 'Your document was successfully created.'))
+                                  'developer_message' => 'OK',
+                                  'user_message' => 'Your document was successfully created.'))
       end
 
       it 'uses the collection handle and the document_id in the Elasticsearch ID' do
@@ -101,12 +101,12 @@ describe Api::V1::Documents do
       context 'when a "created" value is provided but not "changed"' do
         let(:valid_params) do
           { document_id: id,
-            title:       'my title',
-            path:        'http://www.gov.gov/goo.html',
+            title: 'my title',
+            path: 'http://www.gov.gov/goo.html',
             description: 'my desc',
-            language:    'hy',
-            content:     'my content',
-            created:     '2020-01-01T10:00:00Z' }
+            language: 'hy',
+            content: 'my content',
+            created: '2020-01-01T10:00:00Z' }
         end
 
         it 'sets "changed" to be the same as "created"' do
@@ -118,7 +118,7 @@ describe Api::V1::Documents do
       it_behaves_like 'a data modifying request made during read-only mode'
     end
 
-    context 'trying to create an existing document' do
+    context 'when attepmting to create an existing document' do
       let(:document_params) { valid_params.merge(document_id: 'its_a_dupe') }
 
       before do
@@ -130,11 +130,11 @@ describe Api::V1::Documents do
         expect(response.status).to eq(422)
         expect(JSON.parse(response.body)).
           to match(hash_including('status' => 422,
-                                     'developer_message' => 'Document already exists with that ID'))
+                                  'developer_message' => 'Document already exists with that ID'))
       end
     end
 
-    context 'invalid language param' do
+    context 'when language param is invalid' do
       let(:document_params) { valid_params.merge(language: 'qq') }
 
       before { post_document }
@@ -143,11 +143,11 @@ describe Api::V1::Documents do
         expect(response.status).to eq(400)
         expect(JSON.parse(response.body)).
           to match(hash_including('status' => 400,
-                                     'developer_message' => 'language does not have a valid value'))
+                                  'developer_message' => 'language does not have a valid value'))
       end
     end
 
-    context 'slash in id' do
+    context 'when id contains a slash' do
       let(:document_params) { valid_params.merge(document_id: 'a1/234') }
 
       before { post_document }
@@ -156,14 +156,14 @@ describe Api::V1::Documents do
         expect(response.status).to eq(400)
         expect(JSON.parse(response.body)).
           to match(hash_including('status' => 400,
-                                     'developer_message' => "document_id cannot contain any of the following characters: ['/']"))
+                                  'developer_message' => "document_id cannot contain any of the following characters: ['/']"))
       end
     end
 
-    context 'id larger than 512 bytes' do
+    context 'when an id is larger than 512 bytes' do
       let(:string_with_513_bytes_but_only_257_characters) do
         two_byte_character = '\u00b5'
-        'x' + two_byte_character * 256
+        "x#{two_byte_character * 256}"
       end
 
       let(:document_params) do
@@ -176,11 +176,11 @@ describe Api::V1::Documents do
         expect(response.status).to eq(400)
         expect(JSON.parse(response.body)).
           to match(hash_including('status' => 400,
-                                     'developer_message' => 'document_id cannot be more than 512 bytes long'))
+                                  'developer_message' => 'document_id cannot be more than 512 bytes long'))
       end
     end
 
-    context 'missing language param' do
+    context 'when a language param is missing' do
       let(:document_params) { valid_params.except(:language) }
 
       before { post_document }
@@ -190,7 +190,7 @@ describe Api::V1::Documents do
       end
     end
 
-    context 'a required parameter is empty/blank' do
+    context 'when a required parameter is empty/blank' do
       let(:document_params) { valid_params.merge(title: ' ') }
 
       before { post_document }
@@ -199,7 +199,7 @@ describe Api::V1::Documents do
         expect(response.status).to eq(400)
         expect(JSON.parse(response.body)).
           to match(hash_including('status' => 400,
-                                     'developer_message' => 'title is empty'))
+                                  'developer_message' => 'title is empty'))
       end
     end
 
@@ -212,11 +212,11 @@ describe Api::V1::Documents do
         expect(response.status).to eq(400)
         expect(JSON.parse(response.body)).
           to match(hash_including('status' => 400,
-                                     'developer_message' => 'path is invalid'))
+                                  'developer_message' => 'path is invalid'))
       end
     end
 
-    context 'failed authentication/authorization' do
+    context 'when authentication/authorization fails' do
       let(:credentials) do
         ActionController::HttpAuthentication::Basic.encode_credentials('test_index',
                                                                        'bad_key')
@@ -228,11 +228,11 @@ describe Api::V1::Documents do
         expect(response.status).to eq(400)
         expect(JSON.parse(response.body)).
           to match(hash_including('status' => 400,
-                                     'developer_message' => 'Unauthorized'))
+                                  'developer_message' => 'Unauthorized'))
       end
     end
 
-    context 'something terrible happens during authentication' do
+    context 'when something terrible happens during authentication' do
       before do
         allow(ES).to receive(:collection_repository).
           and_raise(Elasticsearch::Transport::Transport::Errors::BadRequest)
@@ -243,11 +243,11 @@ describe Api::V1::Documents do
         expect(response.status).to eq(400)
         expect(JSON.parse(response.body)).
           to match(hash_including('status' => 400,
-                                     'developer_message' => 'Unauthorized'))
+                                  'developer_message' => 'Unauthorized'))
       end
     end
 
-    context 'something terrible happens creating the document' do
+    context 'when something terrible happens creating the document' do
       before do
         allow(Document).to receive(:new) { raise_error(Exception) }
         post_document
@@ -257,7 +257,7 @@ describe Api::V1::Documents do
         expect(response.status).to eq(500)
         expect(JSON.parse(response.body)).
           to match(hash_including('status' => 500,
-                                     'developer_message' => "Something unexpected happened and we've been alerted."))
+                                  'developer_message' => "Something unexpected happened and we've been alerted."))
       end
     end
 
@@ -273,14 +273,13 @@ describe Api::V1::Documents do
                                   'developer_message' => 'Mime type is invalid'))
       end
     end
-
   end
 
   describe 'PUT /api/v1/documents/{document_id}' do
     subject(:put_document) do
       put "/api/v1/documents/#{URI.encode(id)}",
-        params: update_params,
-        headers: valid_session
+          params: update_params,
+          headers: valid_session
       document_repository.refresh_index!
     end
 
@@ -304,17 +303,17 @@ describe Api::V1::Documents do
       }
     end
 
-    context 'success case' do
+    context 'when successful' do
       before do
-        create_document({id:           id,
-                         language:    'en',
-                         title:       'hi there 4',
-                         description: 'bigger desc 4',
-                         content:     'huge content 4',
-                         created:     2.hours.ago,
-                         updated:     Time.now,
-                         promote:     true,
-                         path:        'http://www.gov.gov/url4.html'}, document_repository)
+        create_document({ id: id,
+                          language: 'en',
+                          title: 'hi there 4',
+                          description: 'bigger desc 4',
+                          content: 'huge content 4',
+                          created: 2.hours.ago,
+                          updated: Time.zone.now,
+                          promote: true,
+                          path: 'http://www.gov.gov/url4.html' }, document_repository)
 
         put_document
       end
@@ -323,8 +322,8 @@ describe Api::V1::Documents do
         expect(response.status).to eq(200)
         expect(JSON.parse(response.body)).
           to match(hash_including('status' => 200,
-                                     'developer_message' => 'OK',
-                                     'user_message' => 'Your document was successfully updated.'))
+                                  'developer_message' => 'OK',
+                                  'user_message' => 'Your document was successfully updated.'))
       end
 
       it 'updates the document' do
@@ -347,13 +346,13 @@ describe Api::V1::Documents do
     context 'when time has passed since the document was created' do
       before do
         create_document({
-          id:           id,
-          language:    'en',
-          title:       'hi there 4',
-          description: 'bigger desc 4',
-          content:     'huge content 4',
-          path:        'http://www.gov.gov/url4.html'
-        }, document_repository)
+                          id: id,
+                          language: 'en',
+                          title: 'hi there 4',
+                          description: 'bigger desc 4',
+                          content: 'huge content 4',
+                          path: 'http://www.gov.gov/url4.html'
+                        }, document_repository)
         # Force-update the timestamps to avoid fooling the specs with any
         # automagic trickery
         ES.client.update(
@@ -384,16 +383,16 @@ describe Api::V1::Documents do
 
       before do
         create_document({
-          id: id,
-          language: 'en',
-          title: 'hi there 4',
-          description: 'bigger desc 4',
-          content: 'huge content 4',
-          created: 2.hours.ago,
-          updated: Time.now,
-          promote: true,
-          path: 'http://www.gov.gov/url4.html'
-        }, document_repository)
+                          id: id,
+                          language: 'en',
+                          title: 'hi there 4',
+                          description: 'bigger desc 4',
+                          content: 'huge content 4',
+                          created: 2.hours.ago,
+                          updated: Time.zone.now,
+                          promote: true,
+                          path: 'http://www.gov.gov/url4.html'
+                        }, document_repository)
 
         put_document
       end
@@ -412,19 +411,19 @@ describe Api::V1::Documents do
       delete "/api/v1/documents/#{URI.encode(id)}", headers: valid_session
     end
 
-    context 'success case' do
+    context 'when successful' do
       before do
         create_document({
-          id:          id,
-          language:    'en',
-          title:       'hi there 4',
-          description: 'bigger desc 4',
-          content:     'huge content 4',
-          created:     2.hours.ago,
-          updated:     Time.now,
-          promote:     true,
-          path:        'http://www.gov.gov/url4.html'
-        }, document_repository)
+                          id: id,
+                          language: 'en',
+                          title: 'hi there 4',
+                          description: 'bigger desc 4',
+                          content: 'huge content 4',
+                          created: 2.hours.ago,
+                          updated: Time.zone.now,
+                          promote: true,
+                          path: 'http://www.gov.gov/url4.html'
+                        }, document_repository)
 
         delete_document
       end
@@ -433,8 +432,8 @@ describe Api::V1::Documents do
         expect(response.status).to eq(200)
         expect(JSON.parse(response.body)).
           to match(hash_including('status' => 200,
-                                     'developer_message' => 'OK',
-                                     'user_message' => 'Your document was successfully deleted.'))
+                                  'developer_message' => 'OK',
+                                  'user_message' => 'Your document was successfully deleted.'))
       end
 
       it 'deletes the document' do
@@ -444,16 +443,16 @@ describe Api::V1::Documents do
       it_behaves_like 'a data modifying request made during read-only mode'
     end
 
-    context 'deleting a non-existent document' do
+    context 'when document does not exist' do
       let(:id) { 'nonexistent' }
 
       before { delete_document }
 
-      it 'returns error message as JSON' do
+      it 'delete returns an error message as JSON' do
         expect(response.status).to eq(400)
         expect(JSON.parse(response.body)).
           to match(hash_including('status' => 400,
-                                     'developer_message' => 'Resource could not be found.'))
+                                  'developer_message' => 'Resource could not be found.'))
       end
     end
   end

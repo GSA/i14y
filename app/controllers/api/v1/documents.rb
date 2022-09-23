@@ -17,7 +17,7 @@ module Api
       end
 
       http_basic do |collection_handle, token|
-        error_hash = { developer_message: "Unauthorized", status: 400 }
+        error_hash = { developer_message: 'Unauthorized', status: 400 }
         error!(error_hash, 400) unless auth?(collection_handle, token)
         @collection_handle = collection_handle
         true
@@ -27,7 +27,7 @@ module Api
 
       helpers do
         def ok(user_message)
-          { status: 200, developer_message: "OK", user_message: user_message }
+          { status: 200, developer_message: 'OK', user_message: user_message }
         end
 
         def auth?(collection_handle, token)
@@ -128,7 +128,7 @@ module Api
             error!({ developer_message: document.errors.full_messages.join(', '), status: 400 }, 400)
           end
           document_repository.save(document, op_type: :create)
-          ok("Your document was successfully created.")
+          ok('Your document was successfully created.')
         end
 
         desc 'Update a document'
@@ -224,20 +224,20 @@ module Api
         put ':document_id', requirements: { document_id: /.*/ } do
           id = params.delete(:document_id)
           # return just enough attributes to ensure the document is valid
-          document = document_repository.find(id, '_source': %w[language path created_at])
+          document = document_repository.find(id, _source: %w[language path created_at])
           document.attributes = document.attributes.merge(params)
           if document.invalid?
             error!({ developer_message: document.errors.full_messages.join(', '), status: 400 }, 400)
           end
           document_repository.update(document)
-          ok("Your document was successfully updated.")
+          ok('Your document was successfully updated.')
         end
 
-        desc "Delete a document"
+        desc 'Delete a document'
         delete ':document_id', requirements: { document_id: /.*/ } do
           id = params[:document_id]
           error!(document.errors.messages, 400) unless document_repository.delete(id)
-          ok("Your document was successfully deleted.")
+          ok('Your document was successfully deleted.')
         end
       end
     end
