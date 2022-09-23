@@ -47,12 +47,17 @@ describe Api::V1::Documents do
         document_id: id,
         title: 'my title',
         path: 'http://www.gov.gov/goo.html',
-        description: 'my desc',
-        promote: true,
-        language: 'hy',
+        audience: 'Everyone',
         content: 'my content',
-        tags: 'Foo, Bar blat',
-        mime_type: 'text/html'
+        content_type: 'article',
+        description: 'my desc',
+        language: 'hy',
+        mime_type: 'text/html',
+        promote: true,
+        searchgov_custom1: 'custom content with spaces',
+        searchgov_custom2: 'comma, separated, custom, content',
+        searchgov_custom3: 123,
+        tags: 'Foo, Bar blat'
       }
     end
     let(:document_params) { valid_params }
@@ -76,15 +81,21 @@ describe Api::V1::Documents do
 
       it 'stores the appropriate fields in the Elasticsearch document' do
         document = document_repository.find(id)
-        expect(document.path).to eq('http://www.gov.gov/goo.html')
-        expect(document.promote).to be_truthy
         expect(document.title).to eq('my title')
-        expect(document.description).to eq('my desc')
+        expect(document.path).to eq('http://www.gov.gov/goo.html')
+        expect(document.audience).to eq('Everyone')
         expect(document.content).to eq('my content')
-        expect(document.tags).to match_array(['bar blat', 'foo'])
+        expect(document.content_type).to eq('article')
         expect(document.created_at).to be_an_instance_of(Time)
-        expect(document.updated_at).to be_an_instance_of(Time)
+        expect(document.description).to eq('my desc')
+        expect(document.language).to eq('hy')
         expect(document.mime_type).to eq('text/html')
+        expect(document.promote).to be_truthy
+        expect(document.searchgov_custom1).to eq('custom content with spaces')
+        expect(document.searchgov_custom2).to eq('comma, separated, custom, content')
+        expect(document.searchgov_custom3).to eq('123')
+        expect(document.tags).to match_array(['bar blat', 'foo'])
+        expect(document.updated_at).to be_an_instance_of(Time)
       end
 
       context 'when a "created" value is provided but not "changed"' do
@@ -192,7 +203,7 @@ describe Api::V1::Documents do
       end
     end
 
-    context 'path URL is poorly formatted' do
+    context 'when the path URL is poorly formatted' do
       let(:document_params) { valid_params.merge(path: 'http://www.gov.gov/ goo.html') }
 
       before { post_document }
@@ -276,14 +287,20 @@ describe Api::V1::Documents do
     let(:update_params) do
       {
         title: 'new title',
-        description: 'new desc',
-        content: 'new content',
         path: 'http://www.next.gov/updated.html',
-        promote: false,
-        tags: 'new category',
+        audience: 'Everyone',
         changed: '2016-01-01T10:00:01Z',
         click_count: 1000,
-        mime_type: 'text/plain'
+        content: 'new content',
+        content_type: 'website',
+        description: 'new desc',
+        language: 'hy',
+        mime_type: 'text/plain',
+        promote: false,
+        searchgov_custom1: 'custom content with spaces',
+        searchgov_custom2: 'comma, separated, custom, content',
+        searchgov_custom3: 123,
+        tags: 'new category'
       }
     end
 
@@ -317,6 +334,7 @@ describe Api::V1::Documents do
         expect(document.title).to eq('new title')
         expect(document.description).to eq('new desc')
         expect(document.content).to eq('new content')
+        expect(document.content_type).to eq('website')
         expect(document.tags).to match_array(['new category'])
         expect(document.changed).to eq('2016-01-01T10:00:01Z')
         expect(document.click_count).to eq(1000)
