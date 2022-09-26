@@ -774,20 +774,20 @@ describe DocumentSearch do
     ]
     languages.each do |lang|
       lang_code, lang_name, content, query = lang.values_at(:lang_code, :lang_name, :content, :query)
-      
+
       before do
         create_documents([
-          {
-            language: lang[:lang_code],
-            created: DateTime.now,
-            path: "https://vote.gov/#{lang_code}",
-            title: "title #{lang_name}",
-            description: "description #{lang_name}",
-            content: content
-          }
+                           {
+                             language: lang[:lang_code],
+                             created: DateTime.now,
+                             path: "https://vote.gov/#{lang_code}",
+                             title: "title #{lang_name}",
+                             description: "description #{lang_name}",
+                             content: content
+                           }
         ])
       end
-    
+
       it "gets results for #{lang_name}" do
         document_search_results = described_class.new(search_options.merge(query: query, language: lang_code)).search
         expect(document_search_results.total).to eq 1
@@ -796,6 +796,4 @@ describe DocumentSearch do
       end
     end
   end
-
-      
 end
