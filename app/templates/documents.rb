@@ -2,8 +2,22 @@
 
 class Documents
   include Templatable
-  LIGHT_STEMMERS = { fr: 'french', de: 'german', es: 'spanish', it: 'italian', pt: 'portuguese' }
-  STANDARD_STEMMERS = { en: 'english', fi: 'finnish', hu: 'hungarian', ru: 'russian', sv: 'swedish', hi: 'hindi', bn: 'bengali' }
+  LIGHT_STEMMERS = {
+    de: 'german',
+    es: 'spanish',
+    fr: 'french',
+    it: 'italian',
+    pt: 'portuguese'
+  }.freeze
+  STANDARD_STEMMERS = {
+    bn: 'bengali',
+    en: 'english',
+    fi: 'finnish',
+    hi: 'hindi',
+    hu: 'hungarian',
+    ru: 'russian',
+    sv: 'swedish'
+  }.freeze
 
   def initialize
     @synonym_filter_locales = Set.new

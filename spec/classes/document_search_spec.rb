@@ -749,50 +749,41 @@ describe DocumentSearch do
     languages = [
       {
         lang_code: 'en',
-        lang_name: 'English',
         content: 'Select your state or territory from the dropdown menu to find the rules that apply to you.',
         query: 'territory'
       },
       {
         lang_code: 'es',
-        lang_name: 'Spanish',
         content: 'Seleccione su estado o territorio en el menú desplegable y encontrará las normas a seguir.',
         query: 'territorio'
       },
       {
         lang_code: 'hi',
-        lang_name: 'Hindi',
         content: 'आप पर लागू होने वाले नियमों को जानने के लिए ड्रॉपडाउन मेनू से अपना राज्य या क्षेत्र चुनें।',
         query: 'क्षेत्र'
       },
       {
         lang_code: 'bn',
-        lang_name: 'Bengali',
         content: 'আপনার ক্ষেত্রে প্রযোজ্য নিয়মগুলি খুঁজে পেতে ড্রপডাউন মেনু থেকে আপনার রাজ্য বা অঞ্চল নির্বাচন করুন৷',
         query: 'অঞ্চল'
       }
     ]
     languages.each do |lang|
-      lang_code, lang_name, content, query = lang.values_at(:lang_code, :lang_name, :content, :query)
-
+      lang_code, content, query = lang.values_at(:lang_code, :content, :query)
       before do
         create_documents([
                            {
-                             language: lang[:lang_code],
-                             created: DateTime.now,
+                             language: lang_code,
                              path: "https://vote.gov/#{lang_code}",
-                             title: "title #{lang_name}",
-                             description: "description #{lang_name}",
                              content: content
                            }
-        ])
+                         ])
       end
 
-      it "gets results for #{lang_name}" do
+      it "gets results for #{lang_code}" do
         document_search_results = described_class.new(search_options.merge(query: query, language: lang_code)).search
-        expect(document_search_results.total).to eq 1
         expect(document_search_results.results.first['language']).to eq lang_code
-        expect(document_search_results.results.first['content']).to match(/#{lang[:query]}/)
+        expect(document_search_results.results.first['content']).to match(/#{query}/)
       end
     end
   end
