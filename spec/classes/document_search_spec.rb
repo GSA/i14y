@@ -782,7 +782,6 @@ describe DocumentSearch do
 
       it "gets results for #{lang_code}" do
         document_search_results = described_class.new(search_options.merge(query: query, language: lang_code)).search
-        expect(document_search_results.results.first['language']).to eq lang_code
         expect(document_search_results.results.first['content']).to match(/#{query}/)
       end
     end
