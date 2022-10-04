@@ -8,17 +8,22 @@ describe Document do
   let(:valid_params) do
     {
       id: 'a123',
-      language: 'en',
-      path: 'http://www.agency.gov/page1.html',
       title: 'My Title',
-      created: DateTime.new(2020, 1, 1),
+      path: 'http://www.agency.gov/page1.html',
+      audience: 'Everyone',
       changed: DateTime.new(2020, 1, 2),
-      description: 'My Description',
+      click_count: 5,
       content: 'some content',
+      content_type: 'article',
+      created: DateTime.new(2020, 1, 1),
+      description: 'My Description',
+      language: 'en',
       mime_type: 'text/html',
       promote: true,
-      tags: 'this,that',
-      click_count: 5
+      searchgov_custom1: 'custom content with spaces',
+      searchgov_custom2: 'comma, separated, custom, content',
+      searchgov_custom3: '',
+      tags: 'this,that'
     }
   end
 
@@ -26,17 +31,22 @@ describe Document do
     it do
       is_expected.to have_attributes(
         id: 'a123',
-        language: 'en',
-        path: 'http://www.agency.gov/page1.html',
         title: 'My Title',
-        created: DateTime.new(2020, 1, 1),
+        path: 'http://www.agency.gov/page1.html',
+        audience: 'Everyone',
         changed: DateTime.new(2020, 1, 2),
-        description: 'My Description',
+        click_count: 5,
         content: 'some content',
+        content_type: 'article',
+        created: DateTime.new(2020, 1, 1),
+        description: 'My Description',
+        language: 'en',
         mime_type: 'text/html',
         promote: true,
-        tags: 'this,that',
-        click_count: 5
+        searchgov_custom1: 'custom content with spaces',
+        searchgov_custom2: 'comma, separated, custom, content',
+        searchgov_custom3: '',
+        tags: 'this,that'
       )
     end
 
@@ -51,9 +61,9 @@ describe Document do
           language: 'en',
           path: 'https://foo.gov'
         )
-
-        it { is_expected.to be_valid }
       end
+
+      it { is_expected.to be_valid }
     end
   end
 
