@@ -24,6 +24,7 @@ group :development, :test do
   gem 'awesome_print', '~> 1.8' #To enable in Pry: https://github.com/awesome-print/awesome_print#pry-integration
   gem 'listen'
   gem 'puma',  '~> 5.0'
+  gem 'debug'
 end
 
 group :development do
