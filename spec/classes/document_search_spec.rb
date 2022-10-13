@@ -743,4 +743,47 @@ describe DocumentSearch do
       expect(document_search_results.results.first['content']).to eq 'renew passport'
     end
   end
+
+  describe 'language support' do
+    # Create documents for each supported language
+    languages = [
+      {
+        lang_code: 'en',
+        content: 'Select your state or territory from the dropdown menu to find the rules that apply to you.',
+        query: 'territory'
+      },
+      {
+        lang_code: 'es',
+        content: 'Seleccione su estado o territorio en el menú desplegable y encontrará las normas a seguir.',
+        query: 'territorio'
+      },
+      {
+        lang_code: 'hi',
+        content: 'आप पर लागू होने वाले नियमों को जानने के लिए ड्रॉपडाउन मेनू से अपना राज्य या क्षेत्र चुनें।',
+        query: 'क्षेत्र'
+      },
+      {
+        lang_code: 'bn',
+        content: 'আপনার ক্ষেত্রে প্রযোজ্য নিয়মগুলি খুঁজে পেতে ড্রপডাউন মেনু থেকে আপনার রাজ্য বা অঞ্চল নির্বাচন করুন৷',
+        query: 'অঞ্চল'
+      }
+    ]
+    languages.each do |lang|
+      lang_code, content, query = lang.values_at(:lang_code, :content, :query)
+      before do
+        create_documents([
+                           {
+                             language: lang_code,
+                             path: "https://vote.gov/#{lang_code}",
+                             content: content
+                           }
+                         ])
+      end
+
+      it "gets results for #{lang_code}" do
+        document_search_results = described_class.new(search_options.merge(query: query, language: lang_code)).search
+        expect(document_search_results.results.first['content']).to match(/#{query}/)
+      end
+    end
+  end
 end
