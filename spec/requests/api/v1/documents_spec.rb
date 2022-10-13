@@ -91,9 +91,9 @@ describe Api::V1::Documents do
         expect(document.language).to eq('hy')
         expect(document.mime_type).to eq('text/html')
         expect(document.promote).to be_truthy
-        expect(document.searchgov_custom1).to eq('custom content with spaces')
-        expect(document.searchgov_custom2).to eq('comma, separated, custom, content')
-        expect(document.searchgov_custom3).to eq('123')
+        expect(document.searchgov_custom1).to eq(['custom content with spaces'])
+        expect(document.searchgov_custom2).to eq(['comma', 'separated', 'custom', 'content'])
+        expect(document.searchgov_custom3).to eq(['123'])
         expect(document.tags).to match_array(['bar blat', 'foo'])
         expect(document.updated_at).to be_an_instance_of(Time)
       end

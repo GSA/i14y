@@ -16,6 +16,9 @@ describe Serde do
           'path' => 'http://www.foo.gov/bar.html',
           'promote' => false,
           'tags' => 'this that',
+          'searchgov_custom1' => 'this, custom, content',
+          'searchgov_custom2' => 'that custom, content',
+          'searchgov_custom3' => '123',
           'created' => '2018-01-01T12:00:00Z',
           'changed' => '2018-02-01T12:00:00Z',
           'created_at' => '2018-01-01T12:00:00Z',
@@ -25,19 +28,23 @@ describe Serde do
 
     it 'stores the language fields with the language suffix' do
       expect(serialize_hash).to match(hash_including(
-        { 'path' => 'http://www.foo.gov/bar.html',
-          'promote' => false,
-          'tags' => ['this that'],
-          'created' => '2018-01-01T12:00:00Z',
-          'changed' => '2018-02-01T12:00:00Z',
-          'title_en' => 'my title',
+        { 'title_en' => 'my title',
           'description_en' => 'my description',
-          'content_en' => 'my content',
-          'basename' => 'bar',
-          'extension' => 'html',
-          'url_path' => '/bar.html',
-          'domain_name' => 'www.foo.gov'
-        }
+          'content_en' => 'my content' }
+      ))
+    end
+
+    it 'stores tags as an array' do
+      expect(serialize_hash).to match(hash_including(
+        { 'tags' => ['this that'] }
+      ))
+    end
+
+    it 'stores searchgov_custom fields as arrays' do
+      expect(serialize_hash).to match(hash_including(
+        { 'searchgov_custom1' => ['this', 'custom', 'content'],
+          'searchgov_custom2' => ['that custom', 'content'],
+          'searchgov_custom3' => ['123'] }
       ))
     end
 
@@ -103,8 +110,7 @@ describe Serde do
           'basename' => 'bar',
           'extension' => 'html',
           'url_path' => '/bar.html',
-          'domain_name' => 'www.foo.gov'
-        }
+          'domain_name' => 'www.foo.gov' }
       )
     end
     let(:language_field_keys) { %i[title description content] }
@@ -122,13 +128,12 @@ describe Serde do
           'updated' => '2018-08-09T14:36:50.087-07:00',
           'changed' => '2018-08-09T14:36:50.087-07:00',
           'promote' => true,
-          'tags' => 'this that'
-        }
+          'tags' => 'this that' }
       )
     end
   end
 
-  context '.uri_params_hash' do
+  describe '.uri_params_hash' do
     subject(:result) { described_class.uri_params_hash(path) }
 
     let(:path) { 'https://www.agency.gov/directory/page1.html' }
