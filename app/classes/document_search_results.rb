@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 class DocumentSearchResults
-  attr_reader :total, :offset, :results, :suggestion
+  attr_reader :total, :offset, :results, :suggestion, :aggregations
 
   def initialize(result, offset = 0)
     @total = result['hits']['total']
     @offset = offset
     @results = extract_hits(result['hits']['hits'])
     @suggestion = extract_suggestion(result['suggest'])
+    @aggregations = extract_aggregations(result['aggregations'])
   end
 
   def override_suggestion(suggestion)
@@ -39,6 +40,23 @@ class DocumentSearchResults
         source[date] = Time.parse(source[date]).utc.to_s if source[date].present?
       end
       source
+    end
+  end
+
+  def extract_aggregations(aggregations)
+    return unless aggregations
+
+    aggregations.filter_map do |field, data|
+      if data['buckets'].present?
+        { "#{field}": extract_aggregation_rows(data['buckets']) }
+      end
+    end
+  end
+
+  def extract_aggregation_rows(rows)
+    rows.map do |term_hash|
+      { value: term_hash['key'],
+        doc_count: term_hash['doc_count'] }
     end
   end
 

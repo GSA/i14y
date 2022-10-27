@@ -19,5 +19,24 @@ describe DocumentQuery do
         expect(suggestion_hash[:text]).to eq 'document about theater'
       end
     end
+
+    it 'contains aggregations' do
+      expect(body[:aggregations]).to match(
+        hash_including(:audience,
+                       :content_type,
+                       :mime_type,
+                       :searchgov_custom1,
+                       :searchgov_custom2,
+                       :searchgov_custom3,
+                       :tags))
+    end
+
+    context 'when the query is blank' do
+      let(:query) { '' }
+
+      it 'does not contain aggregations' do
+        expect(body[:aggregations]).to be_nil
+      end
+    end
   end
 end

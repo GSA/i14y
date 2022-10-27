@@ -123,7 +123,6 @@ describe Api::V1::Collections do
         )
       end
     end
-
   end
 
   describe 'DELETE /api/v1/collections/{handle}' do
@@ -199,132 +198,184 @@ describe Api::V1::Collections do
                                            'updated_at' => an_instance_of(String) })
         )
       end
-
     end
   end
 
   describe 'GET /api/v1/collections/search' do
-    context 'success case' do
+    before do
+      clear_index(collections_index_name)
+      post '/api/v1/collections', params: valid_params, headers: valid_session
+      clear_index(documents_index_name)
+    end
+
+    it 'uses the appropriate parameters for the DocumentSearch' do
+      valid_params = {
+        language: 'en',
+        query: 'common content',
+        handles: 'agency_blogs',
+        sort_by_date: 1,
+        min_timestamp: '2013-02-27T10:00:00Z',
+        max_timestamp: '2013-02-27T10:01:00Z',
+        offset: 2**32,
+        size: 3,
+        tags: 'Foo, Bar blat',
+        ignore_tags: 'ignored',
+        include: 'title,description'
+      }
+      expected_params = Hashie::Mash.new(
+        'language' => :en,
+        'query' => 'common content',
+        'handles' => %w[agency_blogs],
+        'offset' => 2**32,
+        'size' => 3,
+        'sort_by_date' => true,
+        'min_timestamp' => DateTime.parse('2013-02-27T10:00:00Z'),
+        'max_timestamp' => DateTime.parse('2013-02-27T10:01:00Z'),
+        'tags' => ['foo', 'bar blat'],
+        'ignore_tags' => ['ignored'],
+        'include' => ['title', 'description']
+      )
+      allow(DocumentSearch).to receive(:new)
+      get '/api/v1/collections/search', params: valid_params, headers: valid_session
+      expect(DocumentSearch).to have_received(:new).with(expected_params)
+    end
+
+    context 'when results exist' do
       before do
-        clear_index(collections_index_name)
-        post '/api/v1/collections', params: valid_params, headers: valid_session
-        clear_index(documents_index_name)
-      end
-
-      let(:datetime) { DateTime.now.utc.to_s }
-      let(:hash1) { { _id: 'a1',
-                      language: 'en',
-                      title: 'title 1 common content',
-                      description: 'description 1 common content',
-                      content: 'content 1 common content',
-                      created: datetime,
-                      path: 'http://www.agency.gov/page1.html',
-                      promote: true, updated: datetime,
-                      updated_at: datetime } }
-      let(:hash2) { { _id: 'a2',
-                      language: 'en',
-                      title: 'title 2 common content',
-                      description: 'description 2 common content',
-                      content: 'other unrelated stuff',
-                      created: datetime.to_s,
-                      path: 'http://www.agency.gov/page2.html',
-                      promote: false, tags: 'tag1, tag2',
-                      updated_at: datetime } }
-
-      it 'returns highlighted JSON search results' do
         document_repository.save(Document.new(hash1))
         document_repository.save(Document.new(hash2))
         document_repository.refresh_index!
         valid_params = { language: 'en', query: 'common contentx', handles: 'agency_blogs' }
         get '/api/v1/collections/search', params: valid_params, headers: valid_session
-        expect(response.status).to eq(200)
-        metadata_hash = {
-                          'total' => 2,
-                          'offset' => 0,
-                          'suggestion' => { 'text' => 'common content',
-                                            'highlighted' => 'common content' }
-                        }
-        result1 = {
-                    'language' => 'en',
-                    'created' => datetime,
-                    'path' => 'http://www.agency.gov/page1.html',
-                    'title' => 'title 1 common content',
-                    'description' => 'description 1 common content',
-                    'content' => 'content 1 common content',
-                    'changed' => datetime
-                  }
-        result2 = {
-                    'language' => 'en',
-                    'created' => datetime,
-                    'path' => 'http://www.agency.gov/page2.html',
-                    'title' => 'title 2 common content',
-                    'description' => 'description 2 common content',
-                    'changed' => datetime
-                  }
-        results_array = [result1, result2]
-        expect(JSON.parse(response.body)).to match(
-          hash_including('status' => 200,
-                         'developer_message' => 'OK',
-                         'metadata' => metadata_hash,
-                         'results' => results_array)
-        )
       end
 
-      it 'uses the appropriate parameters for the DocumentSearch' do
-        valid_params = {
-                         language: 'en',
-                         query: 'common content',
-                         handles: 'agency_blogs',
-                         sort_by_date: 1,
-                         min_timestamp: '2013-02-27T10:00:00Z',
-                         max_timestamp: '2013-02-27T10:01:00Z',
-                         offset: 2**32,
-                         size: 3,
-                         tags: 'Foo, Bar blat',
-                         ignore_tags: 'ignored',
-                         include: 'title,description'
-                       }
-        expected_params = Hashie::Mash.new('language' => :en,
-                                           'query' => 'common content',
-                                           'handles' => %w[agency_blogs],
-                                           'offset' => 2**32,
-                                           'size' => 3,
-                                           'sort_by_date' => true,
-                                           'min_timestamp' => DateTime.parse('2013-02-27T10:00:00Z'),
-                                           'max_timestamp' => DateTime.parse('2013-02-27T10:01:00Z'),
-                                           'tags' => ['foo', 'bar blat'],
-                                           'ignore_tags' => ['ignored'],
-                                           'include' => ['title', 'description']
-        )
-        expect(DocumentSearch).to receive(:new).with(expected_params)
-        get '/api/v1/collections/search', params: valid_params, headers: valid_session
+      let(:datetime) { DateTime.now.utc.to_s }
+      let(:hash1) do
+        { _id: 'a1',
+          language: 'en',
+          title: 'title 1 common content',
+          description: 'description 1 common content',
+          content: 'content 1 common content',
+          created: datetime,
+          path: 'http://www.agency.gov/page1.html',
+          promote: true, updated: datetime,
+          updated_at: datetime }
+      end
+      let(:hash2) do
+        { _id: 'a2',
+          language: 'en',
+          title: 'title 2 common content',
+          description: 'description 2 common content',
+          content: 'other unrelated stuff',
+          created: datetime.to_s,
+          path: 'http://www.agency.gov/page2.html',
+          promote: false, tags: 'tag1, tag2',
+          updated_at: datetime }
+      end
+
+      describe 'status' do
+        subject { response.status }
+
+        it { is_expected.to eq(200) }
+      end
+
+      describe 'body' do
+        let(:body) { JSON.parse(response.body) }
+        let(:result1) do
+          {
+            'language' => 'en',
+            'created' => datetime,
+            'path' => 'http://www.agency.gov/page1.html',
+            'title' => 'title 1 common content',
+            'description' => 'description 1 common content',
+            'content' => 'content 1 common content',
+            'changed' => datetime
+          }
+        end
+        let(:result2) do
+          {
+            'language' => 'en',
+            'created' => datetime,
+            'path' => 'http://www.agency.gov/page2.html',
+            'title' => 'title 2 common content',
+            'description' => 'description 2 common content',
+            'changed' => datetime
+          }
+        end
+
+        it 'returns highlighted JSON search results' do
+          expect(body).to match(hash_including('results' => [result1, result2]))
+        end
+
+        describe 'metadata' do
+          let(:metadata) { body['metadata'] }
+          let(:suggestion_hash) do
+            { 'text' => 'common content',
+              'highlighted' => 'common content' }
+          end
+
+          it 'returns highlighted JSON suggestion' do
+            expect(metadata['suggestion']).to match(hash_including(suggestion_hash))
+          end
+
+          it 'returns a non-zero results total' do
+            expect(metadata['total']).to be > 0
+          end
+
+          context 'when aggregation field is not present in the documents' do
+            it 'does not return an aggregation for that field' do
+              expect(metadata['aggregations'].pluck('audience')).to eq([nil])
+            end
+          end
+
+          context 'when aggregation field is present in the documents' do
+            it 'returns aggregations for that field' do
+              expect(metadata['aggregations'].pluck('tags')).not_to eq([nil])
+            end
+          end
+        end
       end
     end
 
-    context 'no results' do
+    context 'when no results exist' do
       before do
-        clear_index(collections_index_name)
-        post '/api/v1/collections', params: valid_params, headers: valid_session
-        clear_index(documents_index_name)
-      end
-
-      it 'returns JSON no hits results' do
         valid_params = { language: 'en', query: 'no hits', handles: 'agency_blogs' }
         get '/api/v1/collections/search', params: valid_params, headers: valid_session
-        expect(response.status).to eq(200)
-        metadata_hash = { 'total' => 0, 'offset' => 0, 'suggestion' => nil }
-        results_array = []
-        expect(JSON.parse(response.body)).to match(
-          hash_including('status' => 200,
-                         'developer_message' => 'OK',
-                         'metadata' => metadata_hash,
-                         'results' => results_array)
-        )
       end
 
+      describe 'status' do
+        subject { response.status }
+
+        it { is_expected.to eq(200) }
+      end
+
+      describe 'body' do
+        let(:body) { JSON.parse(response.body) }
+
+        it 'returns an empty results array' do
+          expect(body).to match(hash_including('results' => []))
+        end
+
+        describe 'metadata' do
+          let(:metadata) { body['metadata'] }
+
+          it 'returns zero results total' do
+            expect(metadata['total']).to eq(0)
+          end
+
+          it 'returns nil suggestion' do
+            expect(metadata['suggestion']).to be_nil
+          end
+
+          it 'returns only empty buckets for JSON aggregations' do
+            buckets = metadata['aggregations'].flatten.filter_map { |f| f['buckets'] }
+            expect(buckets.flatten).to eq([])
+          end
+        end
+      end
     end
 
-    context 'missing required params' do
+    context 'when missing required params' do
       before do
         invalid_params = {}
         get '/api/v1/collections/search', params: invalid_params, headers: valid_session
@@ -339,7 +390,7 @@ describe Api::V1::Collections do
       end
     end
 
-    context 'searching across one or more collection handles that do not exist' do
+    context 'when searching across one or more collection handles that do not exist' do
       let(:bad_handle_params) do
         { language: 'en', query: 'foo', handles: 'agency_blogs,missing' }
       end

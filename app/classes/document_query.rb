@@ -14,6 +14,14 @@ class DocumentQuery
     they this to was will with
   ]
 
+  FACET_FIELDS = %i[audience
+                    content_type
+                    mime_type
+                    searchgov_custom1
+                    searchgov_custom2
+                    searchgov_custom3
+                    tags].freeze
+
   attr_reader :language, :site_filters, :tags, :ignore_tags, :date_range,
               :included_sites, :excluded_sites
   attr_accessor :query, :search
@@ -33,12 +41,27 @@ class DocumentQuery
     search.source source_fields
     search.sort { by :changed, order: 'desc' } if @options[:sort_by_date]
     if query.present?
-      set_highlight_options
-      search.suggest(:suggestion, suggestion_hash)
+      query_options
     end
     build_search_query
     search.explain true if Rails.logger.debug? #scoring details
     search
+  end
+
+  def query_options
+    set_highlight_options
+    search.suggest(:suggestion, suggestion_hash)
+    FACET_FIELDS.each do |facet|
+      search.aggregation(facet, aggregation_hash(facet))
+    end
+  end
+
+  def aggregation_hash(facet_field)
+    {
+      terms: {
+        field: facet_field
+      }
+    }
   end
 
   def suggestion_hash
