@@ -28,7 +28,8 @@ describe DocumentQuery do
                        :searchgov_custom1,
                        :searchgov_custom2,
                        :searchgov_custom3,
-                       :tags))
+                       :tags)
+      )
     end
 
     context 'when the query is blank' do

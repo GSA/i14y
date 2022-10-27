@@ -31,12 +31,12 @@ class DocumentSearchResults
       source =  deserialized(hit)
       if highlight.present?
         source['title'] = highlight["title_#{source['language']}"].first if highlight["title_#{source['language']}"]
-        %w(description content).each do |optional_field|
+        %w[description content].each do |optional_field|
           language_field = "#{optional_field}_#{source['language']}"
           source[optional_field] = highlight[language_field].join('...') if highlight[language_field]
         end
       end
-      %w(created_at created changed updated_at updated).each do |date|
+      %w[created_at created changed updated_at updated].each do |date|
         source[date] = Time.parse(source[date]).utc.to_s if source[date].present?
       end
       source

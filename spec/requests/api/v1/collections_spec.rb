@@ -30,7 +30,7 @@ describe Api::V1::Collections do
   end
 
   describe 'POST /api/v1/collections' do
-    context 'success case' do
+    context 'when successful' do
       before do
         clear_index(collections_index_name)
         post '/api/v1/collections', params: valid_params, headers: valid_session
@@ -59,7 +59,7 @@ describe Api::V1::Collections do
       it_behaves_like 'a data modifying request made during read-only mode'
     end
 
-    context 'a required parameter is empty/blank' do
+    context 'when a required parameter is empty/blank' do
       before do
         invalid_params = {}
         post '/api/v1/collections', params: invalid_params, headers: valid_session
@@ -74,7 +74,7 @@ describe Api::V1::Collections do
       end
     end
 
-    context 'handle uses illegal characters' do
+    context 'when handle uses illegal characters' do
       let(:invalid_params) do
         { handle: 'agency-blogs', token: 'secret' }
       end
@@ -92,7 +92,7 @@ describe Api::V1::Collections do
       end
     end
 
-    context 'failed authentication/authorization' do
+    context 'when authentication/authorization fails' do
       before do
         bad_credentials = ActionController::HttpAuthentication::Basic.encode_credentials 'nope', 'wrong'
 
@@ -109,7 +109,7 @@ describe Api::V1::Collections do
       end
     end
 
-    context 'something terrible happens' do
+    context 'when something terrible happens' do
       before do
         allow(Collection).to receive(:new) { raise_error(Exception) }
         post '/api/v1/collections', params: valid_params, headers: valid_session
@@ -126,7 +126,7 @@ describe Api::V1::Collections do
   end
 
   describe 'DELETE /api/v1/collections/{handle}' do
-    context 'success case' do
+    context 'when successful' do
       before do
         clear_index(collections_index_name)
         collection = Collection.new(id: 'agency_blogs', token: 'secret')
@@ -152,7 +152,7 @@ describe Api::V1::Collections do
   end
 
   describe 'GET /api/v1/collections/{handle}' do
-    context 'success case' do
+    context 'when successful' do
       before do
         clear_index(collections_index_name)
         post '/api/v1/collections', params: valid_params, headers: valid_session
@@ -166,7 +166,7 @@ describe Api::V1::Collections do
           language: 'en',
           title: 'title 1 common content',
           description: 'description 1 common content',
-          created: Time.now,
+          created: Time.zone.now,
           path: 'http://www.agency.gov/page1.html'
         }
       end
@@ -176,7 +176,7 @@ describe Api::V1::Collections do
           language: 'en',
           title: 'title 2 common content',
           description: 'description 2 common content',
-          created: Time.now,
+          created: Time.zone.now,
           path: 'http://www.agency.gov/page2.html'
         }
       end
