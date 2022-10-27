@@ -22,6 +22,9 @@ class DocumentQuery
                           searchgov_custom3
                           tags].freeze
 
+  DATE_AGGREGATION_FIELDS = %i[created
+                               changed].freeze
+
   attr_reader :language, :site_filters, :tags, :ignore_tags, :date_range,
               :included_sites, :excluded_sites
   attr_accessor :query, :search
@@ -55,12 +58,41 @@ class DocumentQuery
     AGGREGATION_FIELDS.each do |facet|
       search.aggregation(facet, aggregation_hash(facet))
     end
+    DATE_AGGREGATION_FIELDS.each do |date_facet|
+      search.aggregation(date_facet, date_aggregation_hash(date_facet))
+    end
   end
 
   def aggregation_hash(facet_field)
     {
       terms: {
         field: facet_field
+      }
+    }
+  end
+
+  def date_aggregation_hash(date_facet_field)
+    {
+      date_range: {
+        field: date_facet_field,
+        format: '8M/d/u',
+        ranges: [
+          {
+            key: 'Last Week',
+            from: 'now-1w/w',
+            to: 'now/m'
+          },
+          {
+            key: 'Last Month',
+            from: 'now-1M/M',
+            to: 'now-1w/w'
+          },
+          {
+            key: 'Last Year',
+            from: 'now-12M/M',
+            to: 'now-1M/M'
+          }
+        ]
       }
     }
   end

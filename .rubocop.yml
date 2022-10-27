@@ -7,6 +7,13 @@ inherit_mode:
   merge:
     - Exclude
 
+Metrics/ClassLength:
+  Exclude:
+    # Much of this class is made up of a long #body method which mimics the structure
+    # of a complex Elasticsearch query using the Elasticsearch DSL. (Method/Block ength cops are already
+    # disabled inline for that specific method.)
+    - app/classes/document_query.rb
+
 Style/MethodCallWithArgsParentheses:
   Exclude:
     # Methods in this file uses the the Elasticsearch DSL and, as such, they fall under the rule "Always omit

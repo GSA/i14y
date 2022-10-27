@@ -47,16 +47,22 @@ class DocumentSearchResults
     return unless aggregations
 
     aggregations.filter_map do |field, data|
-      if data['buckets'].present?
+      if data['buckets'].present? && !data['buckets'].all? { |b| b['doc_count'].zero? }
         { "#{field}": extract_aggregation_rows(data['buckets']) }
       end
     end
   end
 
   def extract_aggregation_rows(rows)
-    rows.map do |term_hash|
+    rows.filter_map do |term_hash|
+      next if term_hash['doc_count'].zero?
+
       { agg_key: term_hash['key'],
-        doc_count: term_hash['doc_count'] }
+        doc_count: term_hash['doc_count'],
+        to: term_hash['to'] || nil,
+        from: term_hash['from'] || nil,
+        to_as_string: term_hash['to_as_string'] || nil,
+        from_as_string: term_hash['from_as_string'] || nil }.compact
     end
   end
 
