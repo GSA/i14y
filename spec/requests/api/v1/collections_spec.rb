@@ -367,9 +367,8 @@ describe Api::V1::Collections do
             expect(metadata['suggestion']).to be_nil
           end
 
-          it 'returns only empty buckets for JSON aggregations' do
-            buckets = metadata['aggregations'].flatten.filter_map { |f| f['buckets'] }
-            expect(buckets.flatten).to eq([])
+          it 'returns empty aggregations' do
+            expect(metadata['aggregations']).to be_empty
           end
         end
       end
