@@ -233,7 +233,7 @@ describe Api::V1::Collections do
         'max_timestamp' => DateTime.parse('2013-02-27T10:01:00Z'),
         'tags' => ['foo', 'bar blat'],
         'ignore_tags' => ['ignored'],
-        'include' => ['title', 'description']
+        'include' => %w[title description]
       )
       allow(DocumentSearch).to receive(:new)
       get '/api/v1/collections/search', params: valid_params, headers: valid_session
@@ -331,6 +331,19 @@ describe Api::V1::Collections do
           context 'when aggregation field is present in the documents' do
             it 'returns aggregations for that field' do
               expect(metadata['aggregations'].pluck('tags')).not_to eq([nil])
+            end
+
+            it 'returns the same number of hashes as bucket values' do
+              tags = metadata['aggregations'].first['tags']
+              expect(tags.count).to eq(2)
+            end
+
+            it 'returns a hash of doc_count and value for each bucket' do
+              tags = metadata['aggregations'].first['tags']
+              expect(tags).to match(array_including({ 'doc_count' => 1,
+                                                      'value' => 'tag1' },
+                                                    { 'doc_count' => 1,
+                                                      'value' => 'tag2' }))
             end
           end
         end
