@@ -15,12 +15,12 @@ class DocumentQuery
   ].freeze
 
   AGGREGATION_FIELDS = %i[audience
-                    content_type
-                    mime_type
-                    searchgov_custom1
-                    searchgov_custom2
-                    searchgov_custom3
-                    tags].freeze
+                          content_type
+                          mime_type
+                          searchgov_custom1
+                          searchgov_custom2
+                          searchgov_custom3
+                          tags].freeze
 
   attr_reader :language, :site_filters, :tags, :ignore_tags, :date_range,
               :included_sites, :excluded_sites
