@@ -80,7 +80,7 @@ describe DocumentSearchResults do
                       'buckets' => [] } }
       end
 
-      it { is_expected.to match(array_including({ content_type: [{ value: 'article', doc_count: 1 }] })) }
+      it { is_expected.to match(array_including({ content_type: [{ agg_key: 'article', doc_count: 1 }] })) }
 
       it { is_expected.not_to include(hash_including(:tags)) }
     end

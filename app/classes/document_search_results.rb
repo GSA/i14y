@@ -55,7 +55,7 @@ class DocumentSearchResults
 
   def extract_aggregation_rows(rows)
     rows.map do |term_hash|
-      { value: term_hash['key'],
+      { agg_key: term_hash['key'],
         doc_count: term_hash['doc_count'] }
     end
   end

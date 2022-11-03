@@ -333,17 +333,17 @@ describe Api::V1::Collections do
               expect(metadata['aggregations'].pluck('tags')).not_to eq([nil])
             end
 
-            it 'returns the same number of hashes as bucket values' do
+            it 'returns the same number of hashes as aggregation keys' do
               tags = metadata['aggregations'].first['tags']
               expect(tags.count).to eq(2)
             end
 
-            it 'returns a hash of doc_count and value for each bucket' do
+            it 'returns a hash of doc_count and agg_key for each bucket' do
               tags = metadata['aggregations'].first['tags']
               expect(tags).to match(array_including({ 'doc_count' => 1,
-                                                      'value' => 'tag1' },
+                                                      'agg_key' => 'tag1' },
                                                     { 'doc_count' => 1,
-                                                      'value' => 'tag2' }))
+                                                      'agg_key' => 'tag2' }))
             end
           end
         end
