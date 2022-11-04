@@ -249,7 +249,7 @@ describe Api::V1::Collections do
         get '/api/v1/collections/search', params: valid_params, headers: valid_session
       end
 
-      let(:datetime) { (DateTime.now.utc - 1.day).to_s }
+      let(:datetime) { DateTime.now.utc.to_s }
       let(:hash1) do
         { _id: 'a1',
           language: 'en',
@@ -258,7 +258,8 @@ describe Api::V1::Collections do
           content: 'content 1 common content',
           created: datetime,
           path: 'http://www.agency.gov/page1.html',
-          promote: true, updated: datetime,
+          promote: true,
+          updated: datetime,
           updated_at: datetime }
       end
       let(:hash2) do
@@ -269,7 +270,8 @@ describe Api::V1::Collections do
           content: 'other unrelated stuff',
           created: datetime,
           path: 'http://www.agency.gov/page2.html',
-          promote: false, tags: 'tag1, tag2',
+          promote: false,
+          tags: 'tag1, tag2',
           updated_at: datetime }
       end
 
@@ -322,49 +324,8 @@ describe Api::V1::Collections do
             expect(metadata['total']).to be > 0
           end
 
-          context 'when aggregation field is not present in the documents' do
-            xit 'does not return an aggregation for that field' do
-              expect(metadata['aggregations'].pluck('audience')).to eq([nil])
-            end
-          end
-
-          context 'when aggregation field is present in the documents' do
-            it 'returns aggregations for that field' do
-              expect(metadata['aggregations'].pluck('tags')).not_to eq([nil])
-            end
-
-            xit 'returns the same number of hashes as aggregation keys' do
-              tags = metadata['aggregations'].first['tags']
-              expect(tags.count).to eq(2)
-            end
-
-            xit 'returns a hash of doc_count and agg_key for each bucket' do
-              tags = metadata['aggregations'].first['tags']
-              expect(tags).to match(array_including({ 'doc_count' => 1,
-                                                      'agg_key' => 'tag1' },
-                                                    { 'doc_count' => 1,
-                                                      'agg_key' => 'tag2' }))
-            end
-          end
-
-          context 'when date aggregation fields are present in the documents' do
-            let(:changed) { metadata['aggregations'].detect { |a| a['changed'] }['changed'] }
-            let(:created) { metadata['aggregations'].detect { |a| a['created'] }['created'] }
-
-            it 'returns aggregations for those fields' do
-              expect(changed).not_to be_nil
-              expect(created).not_to be_nil
-            end
-
-            it 'does not return values with zero doc_count' do
-              values = changed.map { |c| c['agg_key'] }
-              expect(values).not_to include('Last Year')
-            end
-
-            it 'does return values with non-zero doc_count' do
-              values = changed.map { |c| c['agg_key'] }
-              expect(values).to include('Last Week')
-            end
+          it 'returns aggregations' do
+            expect(metadata['aggregations']).not_to be_empty
           end
         end
       end

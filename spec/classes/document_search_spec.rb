@@ -65,15 +65,98 @@ describe DocumentSearch do
         expect(document_search_results.total).to eq(1)
       end
 
-      context 'searching without a query' do
+      it 'returns non-nil aggregations' do
+        expect(document_search_results.aggregations).not_to be_nil
+      end
+
+      context 'when those documents contain a text type aggregation field' do
+        before do
+          create_documents([
+                             {
+                               language: 'en',
+                               title: 'title 2 common content',
+                               description: 'description 2 common content',
+                               created: DateTime.now,
+                               tags: 'just, some, tags',
+                               path: 'http://www.agency.gov/page1.html'
+                             }
+                           ])
+        end
+
+        let(:tags_arr) { document_search_results.aggregations.find { |a| a[:tags] }[:tags] }
+
+        it 'returns a hash with doc_count and agg_key keys' do
+          expect(tags_arr.first.keys).to match(array_including(:agg_key,
+                                                               :doc_count))
+        end
+
+        it 'returns a hash of doc_count and agg_key values matching the document' do
+          expect(tags_arr).to match(array_including({ agg_key: 'just', doc_count: 1 },
+                                                    { agg_key: 'some', doc_count: 1 },
+                                                    { agg_key: 'tags', doc_count: 1 }))
+        end
+
+        it 'does not return an aggregation hash for fields not present in any result doucuments' do
+          audience_arr = document_search_results.aggregations.find { |a| a[:audience] }
+          expect(audience_arr).to be_nil
+        end
+      end
+
+      context 'when those documents contain a date type aggregation field' do
+        before do
+          create_documents([
+                             {
+                               language: 'en',
+                               title: 'title 3 common content',
+                               description: 'description 3 common content',
+                               changed: 1.day.ago.to_s,
+                               path: 'http://www.agency.gov/page1.html'
+                             }
+                           ])
+        end
+
+        let(:changed_arr) { document_search_results.aggregations.find { |a| a[:changed] }[:changed] }
+
+        it 'returns a hash with doc_count, agg_key, and date keys' do
+          expect(changed_arr.first.keys).to match(array_including(:agg_key,
+                                                                  :doc_count,
+                                                                  :to,
+                                                                  :from,
+                                                                  :to_as_string,
+                                                                  :from_as_string))
+        end
+
+        it 'returns a hash with doc_count, agg_key, and date values matching the document' do
+          expect(changed_arr.first).to match(hash_including(agg_key: 'Last Week',
+                                                            doc_count: 1,
+                                                            to_as_string: DateTime.now.strftime('%-m/%-d/%Y'),
+                                                            from_as_string: 1.week.ago.strftime('%-m/%-d/%Y')))
+        end
+
+        it 'does not return keys with zero corresponding documents' do
+          changed_keys = changed_arr.pluck(:agg_key)
+          expect(changed_keys).not_to include('Last Year')
+        end
+
+        it 'does return keys with at least one corresponding document' do
+          changed_keys = changed_arr.pluck(:agg_key)
+          expect(changed_keys).to include('Last Week')
+        end
+      end
+
+      context 'when searching without a query' do
         let(:document_search) { described_class.new(search_options.except(:query)) }
 
         it 'returns results' do
           expect(document_search_results.total).to eq(1)
         end
+
+        it 'returns nil aggregations' do
+          expect(document_search_results.aggregations).to be_nil
+        end
       end
 
-      context 'searching without a language' do
+      context 'when searching without a language' do
         let(:document_search) { described_class.new(search_options.except(:language)) }
 
         it 'defaults to English' do
@@ -106,13 +189,17 @@ describe DocumentSearch do
       end
     end
 
-    context 'no matching documents exist' do
+    context 'when no matching documents exist' do
       it 'returns no results ' do
         expect(document_search_results.total).to eq(0)
       end
+
+      it 'returns non-nil aggregations' do
+        expect(document_search_results.aggregations).not_to be_nil
+      end
     end
 
-    context 'something terrible happens during the search' do
+    context 'when something terrible happens during the search' do
       let(:query) { 'uh oh' }
       let(:error) { StandardError.new('something went wrong') }
 
@@ -130,7 +217,7 @@ describe DocumentSearch do
 
       it 'sends the error to NewRelic' do
         expect(NewRelic::Agent).to receive(:notice_error).with(
-          error, options: { custom_params: { indices: ['test-i14y-documents-agency_blogs'] }}
+          error, options: { custom_params: { indices: ['test-i14y-documents-agency_blogs'] } }
         )
         document_search.search
       end

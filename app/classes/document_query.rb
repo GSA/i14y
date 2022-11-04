@@ -79,18 +79,18 @@ class DocumentQuery
         ranges: [
           {
             key: 'Last Week',
-            from: 'now-1w/w',
+            from: 'now-1w/m',
             to: 'now/m'
           },
           {
             key: 'Last Month',
-            from: 'now-1M/M',
-            to: 'now-1w/w'
+            from: 'now-1M/m',
+            to: 'now-1w/m'
           },
           {
             key: 'Last Year',
-            from: 'now-12M/M',
-            to: 'now-1M/M'
+            from: 'now-12M/m',
+            to: 'now-1M/m'
           }
         ]
       }
