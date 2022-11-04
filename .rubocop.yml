@@ -6,3 +6,10 @@ inherit_from:
 inherit_mode:
   merge:
     - Exclude
+
+Style/MethodCallWithArgsParentheses:
+  Exclude:
+    # Methods in this file uses the the Elasticsearch DSL and, as such, they fall under the rule "Always omit
+    # parentheses for methods that are part of an internal DSL":
+    # https://rubystyle.guide/#methods-that-are-part-of-an-internal-dsl
+    - app/classes/document_query.rb

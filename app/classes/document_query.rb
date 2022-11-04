@@ -6,13 +6,21 @@ class DocumentQuery
   HIGHLIGHT_OPTIONS = {
     pre_tags: ["\ue000"],
     post_tags: ["\ue001"]
-  }
+  }.freeze
 
   DEFAULT_STOPWORDS = %w[
     a an and are as at be but by for if in into is it
     no not of on or such that the their then there these
     they this to was will with
-  ]
+  ].freeze
+
+  AGGREGATION_FIELDS = %i[audience
+                          content_type
+                          mime_type
+                          searchgov_custom1
+                          searchgov_custom2
+                          searchgov_custom3
+                          tags].freeze
 
   attr_reader :language, :site_filters, :tags, :ignore_tags, :date_range,
               :included_sites, :excluded_sites
@@ -25,7 +33,8 @@ class DocumentQuery
     @ignore_tags = options[:ignore_tags]
     @date_range = { gte: @options[:min_timestamp], lt: @options[:max_timestamp] }
     @search = Search.new
-    @included_sites, @excluded_sites = [], []
+    @included_sites = []
+    @excluded_sites = []
     parse_query(options[:query]) if options[:query]
   end
 
@@ -33,12 +42,27 @@ class DocumentQuery
     search.source source_fields
     search.sort { by :changed, order: 'desc' } if @options[:sort_by_date]
     if query.present?
-      set_highlight_options
-      search.suggest(:suggestion, suggestion_hash)
+      query_options
     end
     build_search_query
     search.explain true if Rails.logger.debug? #scoring details
     search
+  end
+
+  def query_options
+    set_highlight_options
+    search.suggest(:suggestion, suggestion_hash)
+    AGGREGATION_FIELDS.each do |facet|
+      search.aggregation(facet, aggregation_hash(facet))
+    end
+  end
+
+  def aggregation_hash(facet_field)
+    {
+      terms: {
+        field: facet_field
+      }
+    }
   end
 
   def suggestion_hash
@@ -47,12 +71,10 @@ class DocumentQuery
         field: 'bigrams',
         size: 1,
         highlight: suggestion_highlight,
-        collate: { query: { source: { multi_match: { query: "{{suggestion}}",
-                                                     type:   "phrase",
-                                                     fields: "*_#{language}" } } }
-        }
-      }
-    }
+        collate: { query: { source: { multi_match: { query: '{{suggestion}}',
+                                                     type: 'phrase',
+                                                     fields: "*_#{language}" } } } }
+      } }
   end
 
   def full_text_fields
@@ -65,14 +87,14 @@ class DocumentQuery
     {
       query: query,
       cutoff_frequency: 0.05,
-      minimum_should_match: { low_freq: '3<90%', high_freq: '2<90%' },
+      minimum_should_match: { low_freq: '3<90%', high_freq: '2<90%' }
     }
   end
 
   def source_fields
     default_fields = %w[title path created changed]
     fields = (@options[:include] || default_fields).push('language')
-    fields.map{ |field| full_text_fields[field] || field }
+    fields.map { |field| full_text_fields[field] || field }
   end
 
   def timestamp_filters_present?
@@ -104,7 +126,7 @@ class DocumentQuery
       {
         filter: {
           terms: {
-            extension: %w(doc docx pdf ppt pptx xls xlsx)
+            extension: %w[doc docx pdf ppt pptx xls xlsx]
           }
         },
         weight: '.75'
@@ -122,7 +144,7 @@ class DocumentQuery
   private
 
   def suffixed(field)
-    [field,language].compact.join('_')
+    [field, language].compact.join('_')
   end
 
   def parse_query(query)
@@ -164,11 +186,11 @@ class DocumentQuery
   def suggestion_highlight
     {
       pre_tag: HIGHLIGHT_OPTIONS[:pre_tags].first,
-      post_tag: HIGHLIGHT_OPTIONS[:post_tags].first,
+      post_tag: HIGHLIGHT_OPTIONS[:post_tags].first
     }
   end
 
-  #Temporary fix for https://github.com/elastic/elasticsearch/issues/34282
+  # Temporary fix for https://github.com/elastic/elasticsearch/issues/34282
   def query_without_stopwords
     (query.downcase.split(/ +/) - DEFAULT_STOPWORDS).join(' ')
   end
@@ -189,11 +211,11 @@ class DocumentQuery
             if doc_query.query.present?
               must do
                 bool do
-                  #prefer bigram matches
+                  # prefer bigram matches
                   should { match bigrams: { operator: 'and', query: doc_query.query } }
                   should { term  promote: true }
 
-                  #prefer_word_form_matches
+                  # prefer_word_form_matches
                   must do
                     bool do
                       should do
