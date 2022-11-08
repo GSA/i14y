@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 class DocumentSearchResults
-  attr_reader :total, :offset, :results, :suggestion
+  attr_reader :total, :offset, :results, :suggestion, :aggregations
 
   def initialize(result, offset = 0)
     @total = result['hits']['total']
     @offset = offset
     @results = extract_hits(result['hits']['hits'])
     @suggestion = extract_suggestion(result['suggest'])
+    @aggregations = extract_aggregations(result['aggregations'])
   end
 
   def override_suggestion(suggestion)
@@ -30,15 +31,32 @@ class DocumentSearchResults
       source =  deserialized(hit)
       if highlight.present?
         source['title'] = highlight["title_#{source['language']}"].first if highlight["title_#{source['language']}"]
-        %w(description content).each do |optional_field|
+        %w[description content].each do |optional_field|
           language_field = "#{optional_field}_#{source['language']}"
           source[optional_field] = highlight[language_field].join('...') if highlight[language_field]
         end
       end
-      %w(created_at created changed updated_at updated).each do |date|
+      %w[created_at created changed updated_at updated].each do |date|
         source[date] = Time.parse(source[date]).utc.to_s if source[date].present?
       end
       source
+    end
+  end
+
+  def extract_aggregations(aggregations)
+    return unless aggregations
+
+    aggregations.filter_map do |field, data|
+      if data['buckets'].present?
+        { "#{field}": extract_aggregation_rows(data['buckets']) }
+      end
+    end
+  end
+
+  def extract_aggregation_rows(rows)
+    rows.map do |term_hash|
+      { agg_key: term_hash['key'],
+        doc_count: term_hash['doc_count'] }
     end
   end
 
