@@ -109,7 +109,7 @@ describe DocumentSearch do
                                language: 'en',
                                title: 'title 3 common content',
                                description: 'description 3 common content',
-                               changed: 1.day.ago.to_s,
+                               changed: 6.months.ago.to_s,
                                path: 'http://www.agency.gov/page1.html'
                              }
                            ])
@@ -127,20 +127,20 @@ describe DocumentSearch do
         end
 
         it 'returns a hash with doc_count, agg_key, and date values matching the document' do
-          expect(changed_arr.first).to match(hash_including(agg_key: 'Last Week',
+          expect(changed_arr.first).to match(hash_including(agg_key: 'Last Year',
                                                             doc_count: 1,
                                                             to_as_string: DateTime.now.strftime('%-m/%-d/%Y'),
-                                                            from_as_string: 1.week.ago.strftime('%-m/%-d/%Y')))
+                                                            from_as_string: 1.year.ago.strftime('%-m/%-d/%Y')))
         end
 
         it 'does not return keys with zero corresponding documents' do
           changed_keys = changed_arr.pluck(:agg_key)
-          expect(changed_keys).not_to include('Last Year')
+          expect(changed_keys).not_to include('Last Week', 'Last Month')
         end
 
         it 'does return keys with at least one corresponding document' do
           changed_keys = changed_arr.pluck(:agg_key)
-          expect(changed_keys).to include('Last Week')
+          expect(changed_keys).to include('Last Year')
         end
       end
 

@@ -85,12 +85,12 @@ class DocumentQuery
           {
             key: 'Last Month',
             from: 'now-1M/m',
-            to: 'now-1w/m'
+            to: 'now/m'
           },
           {
             key: 'Last Year',
             from: 'now-12M/m',
-            to: 'now-1M/m'
+            to: 'now/m'
           }
         ]
       }
