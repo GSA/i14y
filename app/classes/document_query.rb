@@ -25,19 +25,30 @@ class DocumentQuery
   DATE_AGGREGATION_FIELDS = %i[created
                                changed].freeze
 
-  attr_reader :language, :site_filters, :tags, :ignore_tags, :date_range,
-              :included_sites, :excluded_sites
-  attr_accessor :query, :search
+  attr_reader :audience,
+              :content_type,
+              :date_range,
+              :excluded_sites,
+              :ignore_tags,
+              :included_sites,
+              :language,
+              :mime_type,
+              :searchgov_custom1,
+              :searchgov_custom2,
+              :searchgov_custom3,
+              :site_filters,
+              :tags
+  attr_accessor :query,
+                :search
 
   def initialize(options)
     @options = options
-    @language = options[:language] || 'en'
-    @tags = options[:tags]
-    @ignore_tags = options[:ignore_tags]
     @date_range = { gte: @options[:min_timestamp], lt: @options[:max_timestamp] }
-    @search = Search.new
-    @included_sites = []
     @excluded_sites = []
+    @ignore_tags = options[:ignore_tags]
+    @included_sites = []
+    @search = Search.new
+    parse_filters(options)
     parse_query(options[:query]) if options[:query]
   end
 
@@ -48,7 +59,7 @@ class DocumentQuery
       query_options
     end
     build_search_query
-    search.explain true if Rails.logger.debug? #scoring details
+    search.explain true if Rails.logger.debug? # scoring details
     search
   end
 
@@ -65,7 +76,7 @@ class DocumentQuery
 
   def full_text_fields
     @full_text_fields ||= begin
-      Hash[%w(title description content).map{ |field| [field, suffixed(field)] }]
+      %w[title description content].index_with { |field| suffixed(field) }
     end
   end
 
@@ -139,6 +150,17 @@ class DocumentQuery
     @included_sites = @site_filters[:included_sites]
     @excluded_sites = @site_filters[:excluded_sites]
     @query = site_params_parser.stripped_query
+  end
+
+  def parse_filters(options)
+    @audience = options[:audience]
+    @content_type = options[:content_type]
+    @language = options[:language] || 'en'
+    @mime_type = options[:mime_type]
+    @searchgov_custom1 = options[:searchgov_custom1]
+    @searchgov_custom2 = options[:searchgov_custom2]
+    @searchgov_custom3 = options[:searchgov_custom3]
+    @tags = options[:tags]
   end
 
   def set_highlight_options
@@ -281,7 +303,10 @@ class DocumentQuery
 
             filter do
               bool do
+                must { term audience: doc_query.audience } if doc_query.audience.present?
+                must { term content_type: doc_query.content_type } if doc_query.content_type.present?
                 must { term language: doc_query.language } if doc_query.language.present?
+                must { term mime_type: doc_query.mime_type } if doc_query.mime_type.present?
 
                 if doc_query.included_sites.any?
                   minimum_should_match 1
@@ -296,6 +321,9 @@ class DocumentQuery
                   end
                 end
 
+                doc_query.searchgov_custom1.each { |sgc1| must { term searchgov_custom1: sgc1 } } if doc_query.searchgov_custom1.present?
+                doc_query.searchgov_custom2.each { |sgc2| must { term searchgov_custom2: sgc2 } } if doc_query.searchgov_custom2.present?
+                doc_query.searchgov_custom3.each { |sgc3| must { term searchgov_custom3: sgc3 } } if doc_query.searchgov_custom3.present?
                 doc_query.tags.each { |tag| must { term tags: tag } } if doc_query.tags.present?
 
                 must { range changed: doc_query.date_range } if doc_query.timestamp_filters_present?
