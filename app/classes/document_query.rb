@@ -80,17 +80,17 @@ class DocumentQuery
           {
             key: 'Last Week',
             from: 'now-1w/m',
-            to: 'now/m'
+            to: 'now'
           },
           {
             key: 'Last Month',
             from: 'now-1M/m',
-            to: 'now/m'
+            to: 'now'
           },
           {
             key: 'Last Year',
             from: 'now-12M/m',
-            to: 'now/m'
+            to: 'now'
           }
         ]
       }

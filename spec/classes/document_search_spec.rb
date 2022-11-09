@@ -107,8 +107,8 @@ describe DocumentSearch do
           create_documents([
                              {
                                language: 'en',
-                               title: 'title 3 common content',
-                               description: 'description 3 common content',
+                               title: 'title with date agg',
+                               description: 'description common content',
                                changed: 6.months.ago.to_s,
                                path: 'http://www.agency.gov/page1.html'
                              }
@@ -116,6 +116,7 @@ describe DocumentSearch do
         end
 
         let(:changed_arr) { document_search_results.aggregations.find { |a| a[:changed] }[:changed] }
+        let(:query) { 'date agg' }
 
         it 'returns a hash with doc_count, agg_key, and date keys' do
           expect(changed_arr.first.keys).to match(array_including(:agg_key,
