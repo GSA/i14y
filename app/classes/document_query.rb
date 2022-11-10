@@ -63,52 +63,6 @@ class DocumentQuery
     end
   end
 
-  def aggregation_hash(facet_field)
-    {
-      terms: {
-        field: facet_field
-      }
-    }
-  end
-
-  def date_aggregation_hash(date_facet_field)
-    {
-      date_range: {
-        field: date_facet_field,
-        format: '8M/d/u',
-        ranges: [
-          {
-            key: 'Last Week',
-            from: 'now-1w',
-            to: 'now'
-          },
-          {
-            key: 'Last Month',
-            from: 'now-1M',
-            to: 'now'
-          },
-          {
-            key: 'Last Year',
-            from: 'now-12M',
-            to: 'now'
-          }
-        ]
-      }
-    }
-  end
-
-  def suggestion_hash
-    { text: query_without_stopwords,
-      phrase: {
-        field: 'bigrams',
-        size: 1,
-        highlight: suggestion_highlight,
-        collate: { query: { source: { multi_match: { query: '{{suggestion}}',
-                                                     type: 'phrase',
-                                                     fields: "*_#{language}" } } } }
-      } }
-  end
-
   def full_text_fields
     @full_text_fields ||= begin
       Hash[%w(title description content).map{ |field| [field, suffixed(field)] }]
@@ -194,6 +148,52 @@ class DocumentQuery
       post_tags HIGHLIGHT_OPTIONS[:post_tags]
       fields highlight_fields
     end
+  end
+
+  def aggregation_hash(facet_field)
+    {
+      terms: {
+        field: facet_field
+      }
+    }
+  end
+
+  def date_aggregation_hash(date_facet_field)
+    {
+      date_range: {
+        field: date_facet_field,
+        format: '8M/d/u',
+        ranges: [
+          {
+            key: 'Last Week',
+            from: 'now-1w',
+            to: 'now'
+          },
+          {
+            key: 'Last Month',
+            from: 'now-1M',
+            to: 'now'
+          },
+          {
+            key: 'Last Year',
+            from: 'now-12M',
+            to: 'now'
+          }
+        ]
+      }
+    }
+  end
+
+  def suggestion_hash
+    { text: query_without_stopwords,
+      phrase: {
+        field: 'bigrams',
+        size: 1,
+        highlight: suggestion_highlight,
+        collate: { query: { source: { multi_match: { query: '{{suggestion}}',
+                                                     type: 'phrase',
+                                                     fields: "*_#{language}" } } } }
+      } }
   end
 
   def highlight_fields_hash
