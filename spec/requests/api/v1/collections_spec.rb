@@ -258,7 +258,8 @@ describe Api::V1::Collections do
           content: 'content 1 common content',
           created: datetime,
           path: 'http://www.agency.gov/page1.html',
-          promote: true, updated: datetime,
+          promote: true,
+          updated: datetime,
           updated_at: datetime }
       end
       let(:hash2) do
@@ -267,9 +268,10 @@ describe Api::V1::Collections do
           title: 'title 2 common content',
           description: 'description 2 common content',
           content: 'other unrelated stuff',
-          created: datetime.to_s,
+          created: datetime,
           path: 'http://www.agency.gov/page2.html',
-          promote: false, tags: 'tag1, tag2',
+          promote: false,
+          tags: 'tag1, tag2',
           updated_at: datetime }
       end
 
@@ -322,29 +324,8 @@ describe Api::V1::Collections do
             expect(metadata['total']).to be > 0
           end
 
-          context 'when aggregation field is not present in the documents' do
-            it 'does not return an aggregation for that field' do
-              expect(metadata['aggregations'].pluck('audience')).to eq([nil])
-            end
-          end
-
-          context 'when aggregation field is present in the documents' do
-            it 'returns aggregations for that field' do
-              expect(metadata['aggregations'].pluck('tags')).not_to eq([nil])
-            end
-
-            it 'returns the same number of hashes as aggregation keys' do
-              tags = metadata['aggregations'].first['tags']
-              expect(tags.count).to eq(2)
-            end
-
-            it 'returns a hash of doc_count and agg_key for each bucket' do
-              tags = metadata['aggregations'].first['tags']
-              expect(tags).to match(array_including({ 'doc_count' => 1,
-                                                      'agg_key' => 'tag1' },
-                                                    { 'doc_count' => 1,
-                                                      'agg_key' => 'tag2' }))
-            end
+          it 'returns aggregations' do
+            expect(metadata['aggregations']).not_to be_empty
           end
         end
       end

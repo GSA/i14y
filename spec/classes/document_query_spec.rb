@@ -23,7 +23,9 @@ describe DocumentQuery do
     it 'contains aggregations' do
       expect(body[:aggregations]).to match(
         hash_including(:audience,
+                       :changed,
                        :content_type,
+                       :created,
                        :mime_type,
                        :searchgov_custom1,
                        :searchgov_custom2,
