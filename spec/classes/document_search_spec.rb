@@ -770,7 +770,7 @@ describe DocumentSearch do
 
     it 'returns exact matches only' do
       expect(document_search_results.total).to eq 1
-      expect(document_search_results.results.first['content']).to eq 'amazing spiderman'
+      expect(document_search_results.results.first['content']).to eq 'amazing spiderman'
     end
 
     context 'when a result contains both exact and inexact matches' do
@@ -786,7 +786,7 @@ describe DocumentSearch do
 
       it 'only highlights exact matches' do
         expect(document_search_results.results.first['content']).
-          to eq 'match is not exact. This is an exact phrase match'
+          to eq 'This is an exact phrase match'
       end
 
       context 'when searching by exact and inexact phrases' do
@@ -794,7 +794,7 @@ describe DocumentSearch do
 
         it 'only highlights exact matches' do
           expect(document_search_results.results.first['content']).
-            to eq 'This phrase match is not exact. This is an exact phrase match'
+            to eq 'This phrase match is not exact. This is an exact phrase match'
         end
       end
     end
