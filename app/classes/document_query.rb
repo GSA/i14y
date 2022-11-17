@@ -48,7 +48,7 @@ class DocumentQuery
     @ignore_tags = options[:ignore_tags]
     @included_sites = []
     @search = Search.new
-    parse_filters(options)
+    parse_filters
     parse_query(options[:query]) if options[:query]
   end
 
@@ -152,15 +152,15 @@ class DocumentQuery
     @query = site_params_parser.stripped_query
   end
 
-  def parse_filters(options)
-    @audience = options[:audience]
-    @content_type = options[:content_type]
-    @language = options[:language] || 'en'
-    @mime_type = options[:mime_type]
-    @searchgov_custom1 = options[:searchgov_custom1]
-    @searchgov_custom2 = options[:searchgov_custom2]
-    @searchgov_custom3 = options[:searchgov_custom3]
-    @tags = options[:tags]
+  def parse_filters
+    @audience = @options[:audience]
+    @content_type = @options[:content_type]
+    @language = @options[:language] || 'en'
+    @mime_type = @options[:mime_type]
+    @searchgov_custom1 = @options[:searchgov_custom1]
+    @searchgov_custom2 = @options[:searchgov_custom2]
+    @searchgov_custom3 = @options[:searchgov_custom3]
+    @tags = @options[:tags]
   end
 
   def set_highlight_options
