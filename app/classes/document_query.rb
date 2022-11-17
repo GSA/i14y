@@ -199,18 +199,15 @@ class DocumentQuery
   def highlight_fields_hash
     {
       full_text_fields['title'] => {
-        number_of_fragments: 0,
-        type: 'fvh'
+        number_of_fragments: 0
       },
       full_text_fields['description'] => {
         fragment_size: 75,
-        number_of_fragments: 2,
-        type: 'fvh'
+        number_of_fragments: 2
       },
       full_text_fields['content'] => {
         fragment_size: 75,
-        number_of_fragments: 2,
-        type: 'fvh'
+        number_of_fragments: 2
       }
     }
   end
