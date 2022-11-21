@@ -111,6 +111,18 @@ module Api
           optional :sort_by_date,
                    type: Boolean,
                    desc: 'Whether to order documents by created date instead of relevance'
+          optional :searchgov_custom1,
+                   type: String,
+                   allow_blank: false,
+                   desc: 'Comma-separated list of custom content'
+          optional :searchgov_custom2,
+                   type: String,
+                   allow_blank: false,
+                   desc: 'Comma-separated list of custom content'
+          optional :searchgov_custom3,
+                   type: String,
+                   allow_blank: false,
+                   desc: 'Comma-separated list of custom content'
           optional :tags,
                    type: String,
                    allow_blank: false,
@@ -129,7 +141,9 @@ module Api
           handles = params.delete(:handles).split(',')
           valid_collections = ES.collection_repository.find(handles).compact
           error!('Could not find all the specified collection handles', 400) unless valid_collections.size == handles.size
-          %i[tags ignore_tags include].each { |key| params[key] = params[key].extract_array if params[key].present? }
+          %i[tags ignore_tags include searchgov_custom1 searchgov_custom2 searchgov_custom3].each do |key|
+            params[key] = params[key].extract_array if params[key].present?
+          end
           document_search = DocumentSearch.new(params.merge(handles: valid_collections.collect(&:id)))
           document_search_results = document_search.search
           metadata_hash = { total: document_search_results.total,

@@ -51,14 +51,14 @@ describe DocumentSearch do
     context 'when matching documents exist' do
       before do
         create_documents([
-          {
-            language: 'en',
-            title: 'title 1 common content',
-            description: 'description 1 common content',
-            created: DateTime.now,
-            path: 'http://www.agency.gov/page1.html'
-          }
-        ])
+                           {
+                             language: 'en',
+                             title: 'title 1 common content',
+                             description: 'description 1 common content',
+                             created: DateTime.now,
+                             path: 'http://www.agency.gov/page1.html'
+                           }
+                         ])
       end
 
       it 'returns results' do
@@ -191,7 +191,7 @@ describe DocumentSearch do
     end
 
     context 'when no matching documents exist' do
-      it 'returns no results ' do
+      it 'returns no results' do
         expect(document_search_results.total).to eq(0)
       end
 
@@ -212,7 +212,7 @@ describe DocumentSearch do
       end
 
       it 'logs details about the query' do
-        expect(Rails.logger).to receive(:error).with(%r{"query":"uh oh"})
+        expect(Rails.logger).to receive(:error).with(/"query":"uh oh"/)
         document_search.search
       end
 
@@ -249,7 +249,6 @@ describe DocumentSearch do
         expect(result['title']).to start_with('title')
       end
     end
-
   end
 
   context 'searching across multiple indexes' do
@@ -278,8 +277,8 @@ describe DocumentSearch do
     context 'matches on all query terms in URL basename' do
       before do
         create_documents([
-          common_params.merge(path: 'http://www.agency.gov/obama-visits-hud.html')
-        ])
+                           common_params.merge(path: 'http://www.agency.gov/obama-visits-hud.html')
+                         ])
       end
 
       it 'matches' do
@@ -322,9 +321,9 @@ describe DocumentSearch do
     context 'exact phrase matches' do
       before do
         create_documents([
-          common_params.merge(title: 'jefferson township Petitions and Memorials'),
-          common_params.merge(title: 'jefferson Memorial and township Petitions')
-        ])
+                           common_params.merge(title: 'jefferson township Petitions and Memorials'),
+                           common_params.merge(title: 'jefferson Memorial and township Petitions')
+                         ])
       end
 
       it 'ranks those higher' do
@@ -339,10 +338,10 @@ describe DocumentSearch do
 
       before do
         create_documents([
-          common_params.merge(title: 'other', description: 'other', content: 'Rutabagas'),
-          common_params.merge(title: 'other', description: 'Rutabagas', content: 'other'),
-          common_params.merge(title: 'Rutabagas', description: 'other', content: 'other')
-        ])
+                           common_params.merge(title: 'other', description: 'other', content: 'Rutabagas'),
+                           common_params.merge(title: 'other', description: 'Rutabagas', content: 'other'),
+                           common_params.merge(title: 'Rutabagas', description: 'other', content: 'other')
+                         ])
       end
 
       it 'prioritizes matches in the title, then description, then content' do
@@ -352,16 +351,15 @@ describe DocumentSearch do
       end
     end
 
-
     %w[doc docx pdf ppt pptx xls xlsx].each do |ext|
       context 'when the results contain demoted and non-demoted file types' do
         before do
           create_documents([
-            common_params.merge(path: "http://www.agency.gov/dir1/page1.#{ext}"),
-            common_params.merge(path: 'http://www.agency.gov/dir1/page1.html'),
-            common_params.merge(path: 'http://www.agency.gov/dir1/page1'),
-            common_params.merge(path: 'http://www.agency.gov/dir1/page1.txt')
-          ])
+                             common_params.merge(path: "http://www.agency.gov/dir1/page1.#{ext}"),
+                             common_params.merge(path: 'http://www.agency.gov/dir1/page1.html'),
+                             common_params.merge(path: 'http://www.agency.gov/dir1/page1'),
+                             common_params.merge(path: 'http://www.agency.gov/dir1/page1.txt')
+                           ])
         end
 
         it "docs ending in .#{ext} appear after non-demoted docs" do
@@ -376,9 +374,9 @@ describe DocumentSearch do
                           title: 'I would prefer a document about seasons than seasoning if I am on a weather site',
                           description: %q(Some people, when confronted with an information retrieval problem, think "I know, I'll use a stemmer." Now they have two problems.) }
         create_documents([
-          common_params.merge(description: 'jefferson township Memorial new'),
-          common_params.merge(description: 'jefferson township memorials news')
-        ])
+                           common_params.merge(description: 'jefferson township Memorial new'),
+                           common_params.merge(description: 'jefferson township memorials news')
+                         ])
       end
 
       it 'ranks those higher' do
@@ -392,15 +390,16 @@ describe DocumentSearch do
       let(:document_search) do
         described_class.new(search_options.merge(query: 'Stats', include: ['tags']))
       end
+
       before do
         common_params = { language: 'en', created: DateTime.now, path: 'http://www.agency.gov/page1.html',
                           title: 'This mentions stats in the title',
                           description: %q(Some people, when confronted with an information retrieval problem, think "I know, I'll use a stemmer." Now they have two problems.) }
         create_documents([
-          common_params,
-          common_params.merge(tags: 'stats'),
-          common_params.merge(tags: 'unimportant stats')
-        ])
+                           common_params,
+                           common_params.merge(tags: 'stats'),
+                           common_params.merge(tags: 'unimportant stats')
+                         ])
       end
 
       it 'ranks those higher' do
@@ -412,15 +411,15 @@ describe DocumentSearch do
     context 'when documents include click counts' do
       before do
         create_documents([
-          common_params.merge(path: 'http://agency.gov/popular'),
-          common_params.merge(path: 'http://agency.gov/most_popular', click_count: 10),
-          common_params.merge(path: 'http://agency.gov/more_popular', click_count: 5)
-        ])
+                           common_params.merge(path: 'http://agency.gov/popular'),
+                           common_params.merge(path: 'http://agency.gov/most_popular', click_count: 10),
+                           common_params.merge(path: 'http://agency.gov/more_popular', click_count: 5)
+                         ])
       end
 
       it 'ranks documents with higher click counts higher' do
-        paths = document_search_results.results.map { |doc| doc[:path] }
-        expect(paths).to eq (
+        paths = document_search_results.results.pluck(:path)
+        expect(paths).to eq(
           %w[http://agency.gov/most_popular
              http://agency.gov/more_popular
              http://agency.gov/popular]
@@ -432,18 +431,18 @@ describe DocumentSearch do
   describe 'sorting by date' do
     before do
       create_documents([
-        common_params.merge(changed: 2.months.ago,
-                            path: 'http://www.agency.gov/2months.html'),
-        common_params.merge(changed: nil,
-                            created: nil,
-                            path: 'http://www.agency.gov/nodate.html'),
-        common_params.merge(changed: 6.months.ago,
-                            path: 'http://www.agency.gov/6months.html'),
-        common_params.merge(changed: 1.minute.ago,
-                            path: 'http://www.agency.gov/1minute.html'),
-        common_params.merge(changed: 3.years.ago,
-                            path: 'http://www.agency.gov/3years.html')
-      ])
+                         common_params.merge(changed: 2.months.ago,
+                                             path: 'http://www.agency.gov/2months.html'),
+                         common_params.merge(changed: nil,
+                                             created: nil,
+                                             path: 'http://www.agency.gov/nodate.html'),
+                         common_params.merge(changed: 6.months.ago,
+                                             path: 'http://www.agency.gov/6months.html'),
+                         common_params.merge(changed: 1.minute.ago,
+                                             path: 'http://www.agency.gov/1minute.html'),
+                         common_params.merge(changed: 3.years.ago,
+                                             path: 'http://www.agency.gov/3years.html')
+                       ])
     end
 
     context 'by default' do
@@ -453,14 +452,14 @@ describe DocumentSearch do
 
       it 'returns results in reverse chronological order based on changed timestamp' do
         expect(document_search_results.results.map { |r| r['path'] }).
-          to eq (
+          to eq(
             %w[
-                http://www.agency.gov/nodate.html
-                http://www.agency.gov/1minute.html
-                http://www.agency.gov/2months.html
-                http://www.agency.gov/6months.html
-                http://www.agency.gov/3years.html
-              ]
+              http://www.agency.gov/nodate.html
+              http://www.agency.gov/1minute.html
+              http://www.agency.gov/2months.html
+              http://www.agency.gov/6months.html
+              http://www.agency.gov/3years.html
+            ]
           )
       end
     end
@@ -472,15 +471,105 @@ describe DocumentSearch do
 
       it 'returns results in reverse chronological order based on changed timestamp' do
         expect(document_search_results.results.map { |r| r['path'] }).
-          to eq (
+          to eq(
             %w[
-                http://www.agency.gov/1minute.html
-                http://www.agency.gov/2months.html
-                http://www.agency.gov/6months.html
-                http://www.agency.gov/3years.html
-                http://www.agency.gov/nodate.html
-              ]
+              http://www.agency.gov/1minute.html
+              http://www.agency.gov/2months.html
+              http://www.agency.gov/6months.html
+              http://www.agency.gov/3years.html
+              http://www.agency.gov/nodate.html
+            ]
           )
+      end
+    end
+  end
+
+  context 'when documents contain text type facet field data' do
+    { 'audience' => 'everyone',
+      'content_type' => 'article',
+      'mime_type' => 'text/html' }.each do |field, content|
+      before do
+        create_documents([
+                           common_params,
+                           common_params.merge("#{field}": content)
+                         ])
+      end
+
+      context "when filtering by #{field}" do
+        let(:document_search) do
+          described_class.new(search_options.merge("#{field}": content,
+                                                   include: %w[audience
+                                                               content_type
+                                                               mime_type]))
+        end
+
+        it 'returns matches' do
+          expect(document_search_results.total).to eq(1)
+          expect(document_search_results.results.first[field]).to eq(content)
+        end
+      end
+
+      context "when filtering by a partial #{field} term" do
+        let(:document_search) { described_class.new(search_options.merge("#{field}": content.chop)) }
+
+        it 'does not return partially matching results' do
+          expect(document_search_results.total).to eq(0)
+        end
+      end
+    end
+  end
+
+  context 'when documents contain array type facet field data' do
+    { 'searchgov_custom1' => 'something, like, this',
+      'searchgov_custom2' => 'this or that',
+      'searchgov_custom3' => '100',
+      'tags' => 'some, tags' }.each do |field, content|
+      before do
+        create_documents([
+                           common_params,
+                           common_params.merge("#{field}": content)
+                         ])
+      end
+
+      context "when filtering by one #{field} term" do
+        let(:filter_value) { content.split(', ').sample(1) }
+        let(:document_search) do
+          described_class.new(search_options.merge("#{field}": filter_value,
+                                                   include: %w[searchgov_custom1
+                                                               searchgov_custom2
+                                                               searchgov_custom3
+                                                               tags]))
+        end
+
+        it 'returns results matching that single term' do
+          expect(document_search_results.total).to eq(1)
+          expect(document_search_results.results.first[field]).to match(array_including(filter_value))
+        end
+      end
+
+      context "when filtering by a partial #{field} term" do
+        let(:filter_value) { [content.split(', ').sample(1).first.chop] }
+        let(:document_search) { described_class.new(search_options.merge("#{field}": filter_value)) }
+
+        it 'does not return partially matching results' do
+          expect(document_search_results.total).to eq(0)
+        end
+      end
+
+      context "when filtering by the entire #{field} array" do
+        let(:filter_value) { content.split(', ') }
+        let(:document_search) do
+          described_class.new(search_options.merge("#{field}": filter_value,
+                                                   include: %w[searchgov_custom1
+                                                               searchgov_custom2
+                                                               searchgov_custom3
+                                                               tags]))
+        end
+
+        it 'returns results matching the entire array' do
+          expect(document_search_results.total).to eq(1)
+          expect(document_search_results.results.first[field]).to eq(filter_value)
+        end
       end
     end
   end
@@ -488,13 +577,13 @@ describe DocumentSearch do
   describe 'filtering on language' do
     before do
       create_documents([
-        common_params.merge(language: 'en',
-                            title: 'america',
-                            path: 'http://www.agency.gov/page1.html'),
-        common_params.merge(language: 'fr',
-                            title: 'america',
-                            path: 'http://fr.agency.gov/page1.html')
-      ])
+                         common_params.merge(language: 'en',
+                                             title: 'america',
+                                             path: 'http://www.agency.gov/page1.html'),
+                         common_params.merge(language: 'fr',
+                                             title: 'america',
+                                             path: 'http://fr.agency.gov/page1.html')
+                       ])
     end
 
     it 'returns results from only that language' do
@@ -505,6 +594,10 @@ describe DocumentSearch do
     end
   end
 
+  # SRCH-3477: The tests below may likely be removed and/or pared down after MVP faceted search work is complete
+  # as they are now largely replicated above; however, since tag filtering still maintains some functionality
+  # not yet included in facet work (e.g. exclusive filtering, querying on tag content, etc.), I'm leaving these for
+  # the time being.
   describe 'filtering on tags' do
     let(:search_options) do
       { handles: handles, language: :en, query: query, size: 10, offset: 0, include: ['tags'] }
@@ -512,11 +605,11 @@ describe DocumentSearch do
 
     before do
       create_documents([
-        common_params.merge(tags: 'usa'),
-        common_params.merge(tags: 'york, usa'),
-        common_params.merge(tags: 'new york, usa'),
-        common_params.merge(tags: 'random tag')
-      ])
+                         common_params.merge(tags: 'usa'),
+                         common_params.merge(tags: 'york, usa'),
+                         common_params.merge(tags: 'new york, usa'),
+                         common_params.merge(tags: 'random tag')
+                       ])
     end
 
     context 'inclusive filtering' do
@@ -578,15 +671,15 @@ describe DocumentSearch do
 
     before do
       create_documents([
-        common_params.merge(changed: 1.month.ago,
-                            path: 'http://www.agency.gov/dir1/page1.html'),
-        common_params.merge(changed: 1.week.ago,
-                            path: 'http://www.agency.gov/dir1/page2.html'),
-        common_params.merge(changed: DateTime.now,
-                            path: 'http://www.agency.gov/dir1/page3.html'),
-        common_params.merge(changed: nil,
-                            path: 'http://www.agency.gov/dir1/page4.html')
-      ])
+                         common_params.merge(changed: 1.month.ago,
+                                             path: 'http://www.agency.gov/dir1/page1.html'),
+                         common_params.merge(changed: 1.week.ago,
+                                             path: 'http://www.agency.gov/dir1/page2.html'),
+                         common_params.merge(changed: DateTime.now,
+                                             path: 'http://www.agency.gov/dir1/page3.html'),
+                         common_params.merge(changed: nil,
+                                             path: 'http://www.agency.gov/dir1/page4.html')
+                       ])
     end
 
     it 'returns results from only that date range' do
@@ -598,20 +691,19 @@ describe DocumentSearch do
 
   describe 'filtering on site:' do
     let(:common_params) do
-      { language: 'en', title: 'america title 1', description: 'description 1' }#created?
+      { language: 'en', title: 'america title 1', description: 'description 1' } # created?
+    end
+    let(:base_search_params) do
+      { handles: %w[agency_blogs], language: :en, size: 10, offset: 0 }
     end
 
     before do
       create_documents([
-        common_params.merge(path: 'http://www.agency.gov/dir1/page1.html'),
-        common_params.merge(path: 'http://www.agency.gov/dir1/dir2/page1.html'),
-        common_params.merge(path: 'http://www.other.gov/dir2/dir3/page1.html'),
-        common_params.merge(path: 'http://agency.gov/page1.html')
-      ])
-    end
-
-    let(:base_search_params) do
-      { handles: %w[agency_blogs], language: :en, size: 10, offset: 0 }
+                         common_params.merge(path: 'http://www.agency.gov/dir1/page1.html'),
+                         common_params.merge(path: 'http://www.agency.gov/dir1/dir2/page1.html'),
+                         common_params.merge(path: 'http://www.other.gov/dir2/dir3/page1.html'),
+                         common_params.merge(path: 'http://agency.gov/page1.html')
+                       ])
     end
 
     it 'returns results from only those sites' do
@@ -659,7 +751,7 @@ describe DocumentSearch do
 
       it 'excludes results from those domains' do
         expect(document_search_results.count).to eq(1)
-        expect(document_paths).not_to match(%r{agency.gov})
+        expect(document_paths).not_to match(/agency.gov/)
       end
 
       context 'when excluding a path' do
@@ -702,24 +794,24 @@ describe DocumentSearch do
   context 'when search term yields no results but a similar spelling does have results' do
     before do
       create_documents([
-        {
-          language: 'en',
-          title: '99 problems',
-          description: 'but speling aint one of the 99 problems',
-          path: 'http://en.agency.gov/page1.html',
-          content: 'Will I have to pay more if I have employees with health problems'
-        },
-        {
-          language: 'es',
-          title: '99 problemas',
-          description: 'pero la ortografía no es uno dello las 99 problemas',
-          path: 'http://es.agency.gov/page1.html',
-          content: '¿Tendré que pagar más si tengo empleados con problemas de la salud?'
-        }
-      ])
+                         {
+                           language: 'en',
+                           title: '99 problems',
+                           description: 'but speling aint one of the 99 problems',
+                           path: 'http://en.agency.gov/page1.html',
+                           content: 'Will I have to pay more if I have employees with health problems'
+                         },
+                         {
+                           language: 'es',
+                           title: '99 problemas',
+                           description: 'pero la ortografía no es uno dello las 99 problemas',
+                           path: 'http://es.agency.gov/page1.html',
+                           content: '¿Tendré que pagar más si tengo empleados con problemas de la salud?'
+                         }
+                       ])
     end
 
-    it 'should return results for the close spelling for English' do
+    it 'returns results for the close spelling for English' do
       document_search = described_class.new(handles: %w[agency_blogs], language: :en, query: '99 problemz', size: 10, offset: 0)
       document_search_results = document_search.search
       expect(document_search_results.total).to eq(1)
@@ -727,7 +819,7 @@ describe DocumentSearch do
       expect(document_search_results.suggestion['highlighted']).to eq('99 problems')
     end
 
-    it 'should return results for the close spelling for Spanish' do
+    it 'returns results for the close spelling for Spanish' do
       document_search = described_class.new(handles: %w[agency_blogs], language: :es, query: '99 problemz', size: 10, offset: 0)
       document_search_results = document_search.search
       expect(document_search_results.total).to eq(1)
@@ -747,14 +839,14 @@ describe DocumentSearch do
 
     before do
       create_documents([
-        common_params.merge(content: 'FSAND'),
-        common_params.merge(content: 'fund'),
-        common_params.merge(content: 'fraud')
-      ])
+                         common_params.merge(content: 'FSAND'),
+                         common_params.merge(content: 'fund'),
+                         common_params.merge(content: 'fraud')
+                       ])
     end
 
     it 'does not return a suggestion' do
-      expect(document_search_results.suggestion).to be nil
+      expect(document_search_results.suggestion).to be_nil
     end
   end
 
@@ -763,9 +855,9 @@ describe DocumentSearch do
 
     before do
       create_documents([
-        common_params.merge(content: 'amazing spiderman'),
-        common_params.merge(content: 'spiderman is amazing')
-      ])
+                         common_params.merge(content: 'amazing spiderman'),
+                         common_params.merge(content: 'spiderman is amazing')
+                       ])
     end
 
     it 'returns exact matches only' do
@@ -778,10 +870,10 @@ describe DocumentSearch do
 
       before do
         create_documents([
-          common_params.merge(
-            content: 'This phrase match is not exact. This is an exact phrase match'
-          )
-        ])
+                           common_params.merge(
+                             content: 'This phrase match is not exact. This is an exact phrase match'
+                           )
+                         ])
       end
 
       it 'only highlights exact matches' do
@@ -803,10 +895,10 @@ describe DocumentSearch do
   context 'when a document has been promoted' do
     before do
       create_documents([
-        common_params.merge(title: 'no', promote: false),
-        common_params.merge(title: 'yes', promote: true),
-        common_params.merge(title: 'no', promote: false)
-      ])
+                         common_params.merge(title: 'no', promote: false),
+                         common_params.merge(title: 'yes', promote: true),
+                         common_params.merge(title: 'no', promote: false)
+                       ])
     end
 
     it 'prioritizes promoted documents' do
@@ -820,10 +912,10 @@ describe DocumentSearch do
 
     before do
       create_documents([
-        common_params.merge(content: 'passport renewal'),
-        common_params.merge(content: 'renew passport'),
-        common_params.merge(content: 'something unrelated')
-      ])
+                         common_params.merge(content: 'passport renewal'),
+                         common_params.merge(content: 'renew passport'),
+                         common_params.merge(content: 'something unrelated')
+                       ])
     end
 
     it 'finds similar similar by word stem' do
