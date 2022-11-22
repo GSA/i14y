@@ -662,30 +662,110 @@ describe DocumentSearch do
     end
   end
 
-  describe 'filtering on date' do
-    let(:date_filtered_options) do
-      search_options.merge(min_timestamp: 2.weeks.ago,
-                           max_timestamp: 1.day.ago)
-    end
+  context 'when filtering on dates' do
     let(:document_search) { described_class.new(date_filtered_options) }
 
     before do
       create_documents([
                          common_params.merge(changed: 1.month.ago,
+                                             created: nil,
                                              path: 'http://www.agency.gov/dir1/page1.html'),
                          common_params.merge(changed: 1.week.ago,
+                                             created: DateTime.now,
                                              path: 'http://www.agency.gov/dir1/page2.html'),
                          common_params.merge(changed: DateTime.now,
+                                             created: 1.week.ago,
                                              path: 'http://www.agency.gov/dir1/page3.html'),
                          common_params.merge(changed: nil,
+                                             created: 1.month.ago,
                                              path: 'http://www.agency.gov/dir1/page4.html')
                        ])
     end
 
-    it 'returns results from only that date range' do
-      expect(document_search_results.total).to eq(1)
-      expect(document_search_results.results.first['path']).
-        to eq('http://www.agency.gov/dir1/page2.html')
+    context 'when filtering on changed date range' do
+      let(:date_filtered_options) do
+        search_options.merge(min_timestamp: 2.weeks.ago,
+                             max_timestamp: 1.day.ago)
+      end
+
+      it 'returns results from only that date range' do
+        expect(document_search_results.total).to eq(1)
+        expect(document_search_results.results.first['path']).
+          to eq('http://www.agency.gov/dir1/page2.html')
+      end
+    end
+
+    context 'when filtering on minimum changed date' do
+      let(:date_filtered_options) { search_options.merge(min_timestamp: 2.weeks.ago) }
+
+      it 'returns results from only after that minimum date' do
+        expect(document_search_results.total).to eq(2)
+        expect(document_search_results.results.map { |r| r['path'] }).
+          to eq(
+            %w[
+              http://www.agency.gov/dir1/page2.html
+              http://www.agency.gov/dir1/page3.html
+            ]
+          )
+      end
+    end
+
+    context 'when filtering on maximum changed date' do
+      let(:date_filtered_options) { search_options.merge(max_timestamp: 1.day.ago) }
+
+      it 'returns results from only before that maxium date' do
+        expect(document_search_results.total).to eq(2)
+        expect(document_search_results.results.map { |r| r['path'] }).
+          to eq(
+            %w[
+              http://www.agency.gov/dir1/page2.html
+              http://www.agency.gov/dir1/page1.html
+            ]
+          )
+      end
+    end
+
+    context 'when filtering on created date range' do
+      let(:date_filtered_options) do
+        search_options.merge(min_timestamp_created: 2.weeks.ago,
+                             max_timestamp_created: 1.day.ago)
+      end
+
+      it 'returns results from only that date range' do
+        expect(document_search_results.total).to eq(1)
+        expect(document_search_results.results.first['path']).
+          to eq('http://www.agency.gov/dir1/page3.html')
+      end
+    end
+
+    context 'when filtering on minimum created date' do
+      let(:date_filtered_options) { search_options.merge(min_timestamp_created: 2.weeks.ago) }
+
+      it 'returns results from only after that minimum date' do
+        expect(document_search_results.total).to eq(2)
+        expect(document_search_results.results.map { |r| r['path'] }).
+          to eq(
+            %w[
+              http://www.agency.gov/dir1/page2.html
+              http://www.agency.gov/dir1/page3.html
+            ]
+          )
+      end
+    end
+
+    context 'when filtering on maximum created date' do
+      let(:date_filtered_options) { search_options.merge(max_timestamp_created: 1.day.ago) }
+
+      it 'returns results from only before that maxium date' do
+        expect(document_search_results.total).to eq(2)
+        expect(document_search_results.results.map { |r| r['path'] }).
+          to eq(
+            %w[
+              http://www.agency.gov/dir1/page3.html
+              http://www.agency.gov/dir1/page4.html
+            ]
+          )
+      end
     end
   end
 

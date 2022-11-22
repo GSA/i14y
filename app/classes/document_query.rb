@@ -28,6 +28,7 @@ class DocumentQuery
   attr_reader :audience,
               :content_type,
               :date_range,
+              :date_range_created,
               :excluded_sites,
               :ignore_tags,
               :included_sites,
@@ -44,6 +45,7 @@ class DocumentQuery
   def initialize(options)
     @options = options
     @date_range = { gte: @options[:min_timestamp], lt: @options[:max_timestamp] }
+    @date_range_created = { gte: @options[:min_timestamp_created], lt: @options[:max_timestamp_created] }
     @excluded_sites = []
     @ignore_tags = options[:ignore_tags]
     @included_sites = []
@@ -96,6 +98,10 @@ class DocumentQuery
 
   def timestamp_filters_present?
     @options[:min_timestamp].present? or @options[:max_timestamp].present?
+  end
+
+  def created_timestamp_filters_present?
+    @options[:min_timestamp_created].present? or @options[:max_timestamp_created].present?
   end
 
   def boosted_fields
@@ -327,6 +333,7 @@ class DocumentQuery
                 doc_query.tags.each { |tag| must { term tags: tag } } if doc_query.tags.present?
 
                 must { range changed: doc_query.date_range } if doc_query.timestamp_filters_present?
+                must { range created: doc_query.date_range_created } if doc_query.created_timestamp_filters_present?
 
                 if doc_query.ignore_tags.present?
                   must_not do

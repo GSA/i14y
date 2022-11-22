@@ -101,9 +101,19 @@ module Api
           optional :min_timestamp,
                    type: DateTime,
                    allow_blank: false,
-                   desc: 'Return documents that were created at or after this time',
+                   desc: 'Return documents that were changed at or after this time',
                    documentation: { example: '2013-02-27T10:00:00Z' }
           optional :max_timestamp,
+                   type: DateTime,
+                   allow_blank: false,
+                   desc: 'Return documents that were changed before this time',
+                   documentation: { example: '2013-02-27T10:01:00Z' }
+          optional :min_timestamp_created,
+                   type: DateTime,
+                   allow_blank: false,
+                   desc: 'Return documents that were created at or after this time',
+                   documentation: { example: '2013-02-27T10:00:00Z' }
+          optional :max_timestamp_created,
                    type: DateTime,
                    allow_blank: false,
                    desc: 'Return documents that were created before this time',
