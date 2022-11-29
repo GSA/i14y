@@ -32,6 +32,10 @@ class Document
 
   validate :mime_type_is_valid
 
+  def foo
+    'foo'
+  end
+
   private
 
   def mime_type_is_valid
