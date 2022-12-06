@@ -299,8 +299,12 @@ class DocumentQuery
                         end
                       end
 
-                      should { match basename: { operator: 'and', query: doc_query.query } }
-                      should { match tags:     { operator: 'and', query: doc_query.query.downcase } }
+                      should { match(audience: { operator: 'and', query: doc_query.query }) }
+                      should { match(basename: { operator: 'and', query: doc_query.query }) }
+                      should { match(searchgov_custom1: { operator: 'and', query: doc_query.query.downcase }) }
+                      should { match(searchgov_custom2: { operator: 'and', query: doc_query.query.downcase }) }
+                      should { match(searchgov_custom3: { operator: 'and', query: doc_query.query.downcase }) }
+                      should { match(tags: { operator: 'and', query: doc_query.query.downcase }) }
                     end
                   end
                 end
