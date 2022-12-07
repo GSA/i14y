@@ -737,7 +737,7 @@ describe DocumentSearch do
       it 'returns results from only after that minimum date' do
         expect(document_search_results.total).to eq(2)
         expect(document_search_results.results.map { |r| r['path'] }).
-          to eq(
+          to match_array(
             %w[
               http://www.agency.gov/dir1/page2.html
               http://www.agency.gov/dir1/page3.html
@@ -752,7 +752,7 @@ describe DocumentSearch do
       it 'returns results from only before that maxium date' do
         expect(document_search_results.total).to eq(2)
         expect(document_search_results.results.map { |r| r['path'] }).
-          to eq(
+          to match_array(
             %w[
               http://www.agency.gov/dir1/page2.html
               http://www.agency.gov/dir1/page1.html
@@ -780,7 +780,7 @@ describe DocumentSearch do
       it 'returns results from only after that minimum date' do
         expect(document_search_results.total).to eq(2)
         expect(document_search_results.results.map { |r| r['path'] }).
-          to eq(
+          to match_array(
             %w[
               http://www.agency.gov/dir1/page2.html
               http://www.agency.gov/dir1/page3.html
@@ -795,7 +795,7 @@ describe DocumentSearch do
       it 'returns results from only before that maxium date' do
         expect(document_search_results.total).to eq(2)
         expect(document_search_results.results.map { |r| r['path'] }).
-          to eq(
+          to match_array(
             %w[
               http://www.agency.gov/dir1/page3.html
               http://www.agency.gov/dir1/page4.html
