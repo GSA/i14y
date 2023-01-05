@@ -21,24 +21,24 @@ The Elasticsearch services provided by `searchgov-services` is configured to run
 
     ES_HOSTS=localhost:9207 bundle exec rspec spec
 
-Verify that Elasticsearch 6.8.x is running on the expected port (port 9200 by default):
+Verify that Elasticsearch 7.17.x is running on the expected port (port 9200 by default):
 
 ```
 $ curl localhost:9200
 {
-  "name" : "wp9TsCe",
-  "cluster_name" : "docker-cluster",
-  "cluster_uuid" : "WGf_peYTTZarT49AtEgc3g",
+  "name" : "002410188f61",
+  "cluster_name" : "es7-docker-cluster",
+  "cluster_uuid" : "l3cAhBd4Sqa3B4SkpUilPQ",
   "version" : {
-    "number" : "6.8.7",
+    "number" : "7.17.7",
     "build_flavor" : "default",
     "build_type" : "docker",
-    "build_hash" : "c63e621",
-    "build_date" : "2020-02-26T14:38:01.193138Z",
+    "build_hash" : "78dcaaa8cee33438b91eca7f5c7f56a70fec9e80",
+    "build_date" : "2022-10-17T15:29:54.167373105Z",
     "build_snapshot" : false,
-    "lucene_version" : "7.7.2",
-    "minimum_wire_compatibility_version" : "5.6.0",
-    "minimum_index_compatibility_version" : "5.0.0"
+    "lucene_version" : "8.11.1",
+    "minimum_wire_compatibility_version" : "6.8.0",
+    "minimum_index_compatibility_version" : "6.0.0-beta1"
   },
   "tagline" : "You Know, for Search"
 }
@@ -101,7 +101,7 @@ $ curl -u dev:devpwd http://localhost:8081/api/v1/collections/search?handles=tes
 
 ## Tests
 ```
-# Fire up Elasticsearch
+# Fire up Elasticsearch in search-services
 $ docker-compose up elasticsearch
 
 $ bundle exec rake i14y:setup
