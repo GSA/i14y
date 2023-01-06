@@ -102,7 +102,7 @@ $ curl -u dev:devpwd http://localhost:8081/api/v1/collections/search?handles=tes
 ## Tests
 ```
 # Fire up Elasticsearch in search-services
-$ docker-compose up elasticsearch
+$ docker-compose up elasticsearch7
 
 $ bundle exec rake i14y:setup
 $ rake
