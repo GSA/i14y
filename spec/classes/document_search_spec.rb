@@ -491,7 +491,8 @@ describe DocumentSearch do
       before do
         create_documents([
                            common_params,
-                           common_params.merge("#{field}": content)
+                           common_params.merge("#{field}": content),
+                           common_params.merge("#{field}": 'application/pdf')
                          ])
       end
 
@@ -502,16 +503,37 @@ describe DocumentSearch do
       end
 
       context "when filtering by #{field}" do
-        let(:document_search) { described_class.new(search_options.merge("#{field}": content)) }
+        let(:document_search) { described_class.new(search_options.merge("#{field}": [content])) }
 
         it 'returns matches' do
           expect(document_search_results.total).to eq(1)
-          expect(document_search_results.results.first[field]).to eq(content)
+          field_values = document_search_results.results.pluck(field)
+          expect(field_values).to all include(content)
+        end
+      end
+
+      context "when filtering by multiple #{field}s and at least one matches" do
+        let(:document_search) { described_class.new(search_options.merge("#{field}": [content, 'missing value'])) }
+
+        it 'returns matches' do
+          expect(document_search_results.total).to eq(1)
+          field_values = document_search_results.results.pluck(field)
+          expect(field_values).to all include(content)
+        end
+      end
+
+      context "when filtering by multiple #{field}s and both have matches" do
+        let(:document_search) { described_class.new(search_options.merge("#{field}": [content, 'application/pdf'])) }
+
+        it 'returns all matches' do
+          expect(document_search_results.total).to eq(2)
+          field_values = document_search_results.results.pluck(field)
+          expect(field_values).to all include(content).or include('application/pdf')
         end
       end
 
       context "when filtering by a partial #{field} term" do
-        let(:document_search) { described_class.new(search_options.merge("#{field}": content.chop)) }
+        let(:document_search) { described_class.new(search_options.merge("#{field}": [content.chop])) }
 
         it 'does not return partially matching results' do
           expect(document_search_results.total).to eq(0)
@@ -547,7 +569,8 @@ describe DocumentSearch do
       before do
         create_documents([
                            common_params,
-                           common_params.merge("#{field}": content)
+                           common_params.merge("#{field}": content),
+                           common_params.merge("#{field}": 'extra item')
                          ])
       end
 
@@ -567,6 +590,20 @@ describe DocumentSearch do
         it 'returns results matching that single term' do
           expect(document_search_results.total).to eq(1)
           expect(document_search_results.results.first[field]).to match(array_including(filter_value))
+        end
+      end
+
+      context "when filtering by multiple #{field} terms that both have matches" do
+        let(:sampled_value) { content.split(', ').sample(1) }
+        let(:filter_value) { sampled_value + ['extra item'] }
+        let(:document_search) do
+          described_class.new(search_options.merge("#{field}": filter_value))
+        end
+
+        it 'returns all matches' do
+          expect(document_search_results.total).to eq(2)
+          field_values = document_search_results.results.pluck(field)
+          expect(field_values).to all match(array_including(sampled_value)).or match(array_including('extra item'))
         end
       end
 
@@ -658,12 +695,13 @@ describe DocumentSearch do
         end
       end
 
-      context 'searching by multiple tags' do
+      context 'when searching by multiple tags' do
         let(:document_search) { described_class.new(search_options.merge(query: 'title', tags: %w[york usa])) }
 
-        it 'returns results matching all of those exact tags' do
-          expect(document_search_results.total).to eq(1)
-          expect(document_search_results.results.first['tags']).to match_array(%w[york usa])
+        it 'returns results matching either of those exact tags' do
+          expect(document_search_results.total).to eq(3)
+          tags = document_search_results.results.pluck('tags')
+          expect(tags).to all include('york').or include('usa')
         end
       end
 

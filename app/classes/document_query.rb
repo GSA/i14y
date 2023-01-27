@@ -14,16 +14,16 @@ class DocumentQuery
     they this to was will with
   ].freeze
 
-  AGGREGATION_FIELDS = %i[audience
-                          content_type
-                          mime_type
-                          searchgov_custom1
-                          searchgov_custom2
-                          searchgov_custom3
-                          tags].freeze
+  FILTERABLE_TEXT_FIELDS = %i[audience
+                              content_type
+                              mime_type
+                              searchgov_custom1
+                              searchgov_custom2
+                              searchgov_custom3
+                              tags].freeze
 
-  DATE_AGGREGATION_FIELDS = %i[created
-                               changed].freeze
+  FILTERABLE_DATE_FIELDS = %i[created
+                              changed].freeze
 
   attr_reader :audience,
               :content_type,
@@ -68,10 +68,10 @@ class DocumentQuery
   def query_options
     set_highlight_options
     search.suggest(:suggestion, suggestion_hash)
-    AGGREGATION_FIELDS.each do |facet|
+    FILTERABLE_TEXT_FIELDS.each do |facet|
       search.aggregation(facet, aggregation_hash(facet))
     end
-    DATE_AGGREGATION_FIELDS.each do |date_facet|
+    FILTERABLE_DATE_FIELDS.each do |date_facet|
       search.aggregation(date_facet, date_aggregation_hash(date_facet))
     end
   end
@@ -313,28 +313,38 @@ class DocumentQuery
 
             filter do
               bool do
-                must { term audience: doc_query.audience } if doc_query.audience.present?
-                must { term content_type: doc_query.content_type } if doc_query.content_type.present?
                 must { term language: doc_query.language } if doc_query.language.present?
-                must { term mime_type: doc_query.mime_type } if doc_query.mime_type.present?
 
-                if doc_query.included_sites.any?
-                  minimum_should_match 1
+                minimum_should_match '100%'
+                should do
+                  bool do
+                    if doc_query.included_sites.any?
+                      minimum_should_match 1
 
-                  doc_query.included_sites.each do |site_filter|
-                    should do
-                      bool do
-                        must { term domain_name: site_filter.domain_name }
-                        must { term url_path: site_filter.url_path } if site_filter.url_path.present?
+                      doc_query.included_sites.each do |site_filter|
+                        should do
+                          bool do
+                            must { term domain_name: site_filter.domain_name }
+                            must { term url_path: site_filter.url_path } if site_filter.url_path.present?
+                          end
+                        end
                       end
                     end
                   end
                 end
 
-                doc_query.searchgov_custom1.each { |sgc1| must { term searchgov_custom1: sgc1 } } if doc_query.searchgov_custom1.present?
-                doc_query.searchgov_custom2.each { |sgc2| must { term searchgov_custom2: sgc2 } } if doc_query.searchgov_custom2.present?
-                doc_query.searchgov_custom3.each { |sgc3| must { term searchgov_custom3: sgc3 } } if doc_query.searchgov_custom3.present?
-                doc_query.tags.each { |tag| must { term tags: tag } } if doc_query.tags.present?
+                FILTERABLE_TEXT_FIELDS.each do |field|
+                  next if doc_query.send(field).blank?
+
+                  should do
+                    bool do
+                      doc_query.send(field).each do |field_value|
+                        minimum_should_match 1
+                        should { term "#{field}": field_value }
+                      end
+                    end
+                  end
+                end
 
                 must { range changed: doc_query.date_range } if doc_query.timestamp_filters_present?
                 must { range created: doc_query.date_range_created } if doc_query.created_timestamp_filters_present?

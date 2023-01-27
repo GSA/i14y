@@ -37,7 +37,7 @@ describe Api::V1::Collections do
       end
 
       it 'returns success message as JSON' do
-        expect(response.status).to eq(201)
+        expect(response).to have_http_status(:created)
         expect(JSON.parse(response.body)).to match(
           hash_including('status' => 200,
                          'developer_message' => 'OK',
@@ -66,7 +66,7 @@ describe Api::V1::Collections do
       end
 
       it 'returns failure message as JSON' do
-        expect(response.status).to eq(400)
+        expect(response).to have_http_status(:bad_request)
         expect(JSON.parse(response.body)).to match(
           hash_including('status' => 400,
                          'developer_message' => 'handle is missing, handle is empty, token is missing, token is empty')
@@ -84,7 +84,7 @@ describe Api::V1::Collections do
       end
 
       it 'returns failure message as JSON' do
-        expect(response.status).to eq(400)
+        expect(response).to have_http_status(:bad_request)
         expect(JSON.parse(response.body)).to match(
           hash_including('status' => 400,
                          'developer_message' => 'handle is invalid')
@@ -101,7 +101,7 @@ describe Api::V1::Collections do
       end
 
       it 'returns error message as JSON' do
-        expect(response.status).to eq(400)
+        expect(response).to have_http_status(:bad_request)
         expect(JSON.parse(response.body)).to match(
           hash_including('status' => 400,
                          'developer_message' => 'Unauthorized')
@@ -116,7 +116,7 @@ describe Api::V1::Collections do
       end
 
       it 'returns failure message as JSON' do
-        expect(response.status).to eq(500)
+        expect(response).to have_http_status(:internal_server_error)
         expect(JSON.parse(response.body)).to match(
           hash_including('status' => 500,
                          'developer_message' => "Something unexpected happened and we've been alerted.")
@@ -135,7 +135,7 @@ describe Api::V1::Collections do
       end
 
       it 'returns success message as JSON' do
-        expect(response.status).to eq(200)
+        expect(response).to have_http_status(:ok)
         expect(JSON.parse(response.body)).to match(
           hash_including('status' => 200,
                          'developer_message' => 'OK',
@@ -144,7 +144,7 @@ describe Api::V1::Collections do
       end
 
       it 'deletes the collection' do
-        expect(ES.collection_repository.exists?('agency_blogs')).to be_falsey
+        expect(ES.collection_repository).not_to exist('agency_blogs')
       end
 
       it_behaves_like 'a data modifying request made during read-only mode'
@@ -186,7 +186,7 @@ describe Api::V1::Collections do
         document_repository.save(Document.new(hash2))
         document_repository.refresh_index!
         get '/api/v1/collections/agency_blogs', headers: valid_session
-        expect(response.status).to eq(200)
+        expect(response).to have_http_status(:ok)
         expect(JSON.parse(response.body)).to match(
           hash_including('status' => 200,
                          'developer_message' => 'OK',
@@ -208,36 +208,68 @@ describe Api::V1::Collections do
       clear_index(documents_index_name)
     end
 
-    it 'uses the appropriate parameters for the DocumentSearch' do
-      valid_params = {
-        language: 'en',
-        query: 'common content',
-        handles: 'agency_blogs',
-        sort_by_date: 1,
-        min_timestamp: '2013-02-27T10:00:00Z',
-        max_timestamp: '2013-02-27T10:01:00Z',
-        offset: 2**32,
-        size: 3,
-        tags: 'Foo, Bar blat',
-        ignore_tags: 'ignored',
-        include: 'title,description'
-      }
-      expected_params = Hashie::Mash.new(
-        'language' => :en,
-        'query' => 'common content',
-        'handles' => %w[agency_blogs],
-        'offset' => 2**32,
-        'size' => 3,
-        'sort_by_date' => true,
-        'min_timestamp' => DateTime.parse('2013-02-27T10:00:00Z'),
-        'max_timestamp' => DateTime.parse('2013-02-27T10:01:00Z'),
-        'tags' => ['foo', 'bar blat'],
-        'ignore_tags' => ['ignored'],
-        'include' => %w[title description]
-      )
-      allow(DocumentSearch).to receive(:new)
-      get '/api/v1/collections/search', params: valid_params, headers: valid_session
-      expect(DocumentSearch).to have_received(:new).with(expected_params)
+    context 'when valid search parameters are provided' do
+      let(:valid_search_params) do
+        {
+          audience: 'everyone',
+          content_type: 'article',
+          handles: 'agency_blogs',
+          ignore_tags: 'ignored',
+          include: 'title,description',
+          language: 'en',
+          max_timestamp: '2013-02-27T10:01:00Z',
+          mime_type: 'text/html',
+          min_timestamp: '2013-02-27T10:00:00Z',
+          offset: 2**32,
+          query: 'common content',
+          searchgov_custom1: 'custom, content',
+          searchgov_custom2: 'content with spaces',
+          searchgov_custom3: '123, content, 456',
+          size: 3,
+          sort_by_date: 1,
+          tags: 'Foo, Bar blat'
+        }
+      end
+
+      before do
+        allow(DocumentSearch).to receive(:new)
+        get '/api/v1/collections/search', params: valid_search_params, headers: valid_session
+      end
+
+      it 'symbolizes language' do
+        expect(DocumentSearch).to have_received(:new).with(hash_including(language: Symbol))
+      end
+
+      it 'sends the query as a string' do
+        expect(DocumentSearch).to have_received(:new).with(hash_including(query: String))
+      end
+
+      it 'arrayifies audience, content_type, handles, ignore_tags, include, mime_type, searchgov_customs, and tags' do
+        expect(DocumentSearch).to have_received(:new).with(hash_including(audience: Array,
+                                                                          content_type: Array,
+                                                                          handles: Array,
+                                                                          ignore_tags: Array,
+                                                                          include: Array,
+                                                                          mime_type: Array,
+                                                                          searchgov_custom1: Array,
+                                                                          searchgov_custom2: Array,
+                                                                          searchgov_custom3: Array,
+                                                                          tags: Array))
+      end
+
+      it 'sends offset and size as an integers' do
+        expect(DocumentSearch).to have_received(:new).with(hash_including(offset: Integer,
+                                                                          size: Integer))
+      end
+
+      it 'sends the sort_by_date as a boolean' do
+        expect(DocumentSearch).to have_received(:new).with(hash_including(sort_by_date: TrueClass))
+      end
+
+      it 'sends min_timestamp and max_timestamp as DateTime' do
+        expect(DocumentSearch).to have_received(:new).with(hash_including(min_timestamp: DateTime,
+                                                                          max_timestamp: DateTime))
+      end
     end
 
     context 'when results exist' do
@@ -375,7 +407,7 @@ describe Api::V1::Collections do
       end
 
       it 'returns error message as JSON' do
-        expect(response.status).to eq(400)
+        expect(response).to have_http_status(:bad_request)
         expect(JSON.parse(response.body)).to match(
           hash_including('status' => 400,
                          'developer_message' => 'handles is missing, handles is empty')
@@ -396,7 +428,7 @@ describe Api::V1::Collections do
       end
 
       it 'returns error message as JSON' do
-        expect(response.status).to eq(400)
+        expect(response).to have_http_status(:bad_request)
         expect(JSON.parse(response.body)).to match(
           hash_including('error' => 'Could not find all the specified collection handles')
         )

@@ -151,7 +151,8 @@ module Api
           handles = params.delete(:handles).split(',')
           valid_collections = ES.collection_repository.find(handles).compact
           error!('Could not find all the specified collection handles', 400) unless valid_collections.size == handles.size
-          %i[tags ignore_tags include searchgov_custom1 searchgov_custom2 searchgov_custom3].each do |key|
+          arr_params = %i[include ignore_tags] << DocumentQuery::FILTERABLE_TEXT_FIELDS
+          arr_params.flatten.compact.each do |key|
             params[key] = params[key].extract_array if params[key].present?
           end
           document_search = DocumentSearch.new(params.merge(handles: valid_collections.collect(&:id)))
