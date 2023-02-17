@@ -277,7 +277,7 @@ describe Api::V1::Documents do
 
   describe 'PUT /api/v1/documents/{document_id}' do
     subject(:put_document) do
-      put "/api/v1/documents/#{URI.encode(id)}",
+      put "/api/v1/documents/#{CGI.escape(id)}",
           params: update_params,
           headers: valid_session
       document_repository.refresh_index!
@@ -408,7 +408,7 @@ describe Api::V1::Documents do
 
   describe 'DELETE /api/v1/documents/{document_id}' do
     subject(:delete_document) do
-      delete "/api/v1/documents/#{URI.encode(id)}", headers: valid_session
+      delete "/api/v1/documents/#{CGI.escape(id)}", headers: valid_session
     end
 
     context 'when successful' do

@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 gem 'rails', ' ~> 6.1.0'
 
 gem 'rack-cors', '~> 1.0.5'
-gem 'grape', '~> 1.3.2'
+gem 'grape', '~> 1.7.0'
 gem 'jbuilder', '~> 2.7'
 # Virtus is no longer supported. Consider replacing with ActiveModel::Attributes
 gem 'virtus', '~> 1.0'
