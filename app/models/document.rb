@@ -15,6 +15,7 @@ class Document
   attribute :created, DateTime
   attribute :description, String
   attribute :id, String
+  attribute :thumbnail_url, String
   attribute :language, String, mapping: { type: 'keyword' }
   attribute :mime_type, String
   attribute :path, String, mapping: { type: 'keyword' }
