@@ -86,5 +86,18 @@ describe Document do
         expect(document.errors.messages[:mime_type]).to include 'is invalid'
       end
     end
+
+    context 'when the thumbnail_url is invalid' do
+      subject(:document) do
+        described_class.new(valid_params.merge(thumbnail_url: 'invalid thumbnail url'))
+      end
+
+      it { is_expected.to be_invalid }
+
+      it 'generates an error message' do
+        document.valid?
+        expect(document.errors.messages[:thumbnail_url]).to include 'is invalid'
+      end
+    end
   end
 end
