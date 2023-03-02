@@ -180,7 +180,7 @@ class Documents
   def properties(json)
     json.properties do
       %w[updated created changed].each { |field| date(json, field) }
-      %w[audience content_type document_id extension language mime_type path
+      %w[audience content_type document_id extension thumbnail_url language mime_type path
          searchgov_custom1 searchgov_custom2 searchgov_custom3 tags].each { |field| keyword(json, field) }
       basename(json)
       url_path(json)

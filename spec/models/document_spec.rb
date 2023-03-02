@@ -17,6 +17,7 @@ describe Document do
       content_type: 'article',
       created: DateTime.new(2020, 1, 1),
       description: 'My Description',
+      thumbnail_url: 'https://18f.gsa.gov/assets/img/logos/18F-Logo-M.png',
       language: 'en',
       mime_type: 'text/html',
       promote: true,
@@ -40,6 +41,7 @@ describe Document do
         content_type: 'article',
         created: DateTime.new(2020, 1, 1),
         description: 'My Description',
+        thumbnail_url: 'https://18f.gsa.gov/assets/img/logos/18F-Logo-M.png',
         language: 'en',
         mime_type: 'text/html',
         promote: true,
@@ -82,6 +84,19 @@ describe Document do
       it 'generates an error message' do
         document.valid?
         expect(document.errors.messages[:mime_type]).to include 'is invalid'
+      end
+    end
+
+    context 'when the thumbnail_url is invalid' do
+      subject(:document) do
+        described_class.new(valid_params.merge(thumbnail_url: 'invalid thumbnail url'))
+      end
+
+      it { is_expected.to be_invalid }
+
+      it 'generates an error message' do
+        document.valid?
+        expect(document.errors.messages[:thumbnail_url]).to include 'is invalid'
       end
     end
   end
