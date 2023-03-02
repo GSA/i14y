@@ -15,6 +15,7 @@ class Document
   attribute :created, DateTime
   attribute :description, String
   attribute :id, String
+  attribute :thumbnail_url, String
   attribute :language, String, mapping: { type: 'keyword' }
   attribute :mime_type, String
   attribute :path, String, mapping: { type: 'keyword' }
@@ -27,6 +28,7 @@ class Document
   attribute :updated_at, Time, default: proc { Time.now.utc }
   attribute :updated, DateTime
 
+  validates :thumbnail_url, format: { with: URI::DEFAULT_PARSER.make_regexp }, allow_blank: true
   validates :language, presence: true
   validates :path, presence: true
 

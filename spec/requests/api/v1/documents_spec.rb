@@ -51,6 +51,7 @@ describe Api::V1::Documents do
         content: 'my content',
         content_type: 'article',
         description: 'my desc',
+        thumbnail_url: 'https://18f.gsa.gov/assets/img/logos/18F-Logo-M.png',
         language: 'hy',
         mime_type: 'text/html',
         promote: true,
@@ -88,6 +89,7 @@ describe Api::V1::Documents do
         expect(document.content_type).to eq('article')
         expect(document.created_at).to be_an_instance_of(Time)
         expect(document.description).to eq('my desc')
+        expect(document.thumbnail_url).to eq('https://18f.gsa.gov/assets/img/logos/18F-Logo-M.png')
         expect(document.language).to eq('hy')
         expect(document.mime_type).to eq('text/html')
         expect(document.promote).to be_truthy
@@ -293,6 +295,7 @@ describe Api::V1::Documents do
         content: 'new content',
         content_type: 'website',
         description: 'new desc',
+        thumbnail_url: 'https://18f.gsa.gov/assets/img/logos/new/18F-Logo-M.png',
         language: 'hy',
         mime_type: 'text/plain',
         promote: false,
@@ -332,6 +335,7 @@ describe Api::V1::Documents do
         expect(document.promote).to be_falsey
         expect(document.title).to eq('new title')
         expect(document.description).to eq('new desc')
+        expect(document.thumbnail_url).to eq('https://18f.gsa.gov/assets/img/logos/new/18F-Logo-M.png')
         expect(document.content).to eq('new content')
         expect(document.content_type).to eq('website')
         expect(document.tags).to match_array(['new category'])
