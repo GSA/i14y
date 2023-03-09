@@ -289,6 +289,7 @@ describe Api::V1::Collections do
           description: 'description 1 common content',
           content: 'content 1 common content',
           created: datetime,
+          thumbnail_url: 'https://18f.gsa.gov/assets/img/logos/18F-Logo-M.png',
           path: 'http://www.agency.gov/page1.html',
           promote: true,
           updated: datetime,
@@ -300,6 +301,7 @@ describe Api::V1::Collections do
           title: 'title 2 common content',
           description: 'description 2 common content',
           content: 'other unrelated stuff',
+          thumbnail_url: 'https://search.gov/assets/img/logos/search.png',
           created: datetime,
           path: 'http://www.agency.gov/page2.html',
           promote: false,
@@ -323,6 +325,7 @@ describe Api::V1::Collections do
             'title' => 'title 1 common content',
             'description' => 'description 1 common content',
             'content' => 'content 1 common content',
+            'thumbnail_url' => 'https://18f.gsa.gov/assets/img/logos/18F-Logo-M.png',
             'changed' => datetime
           }
         end
@@ -333,6 +336,7 @@ describe Api::V1::Collections do
             'path' => 'http://www.agency.gov/page2.html',
             'title' => 'title 2 common content',
             'description' => 'description 2 common content',
+            'thumbnail_url' => 'https://search.gov/assets/img/logos/search.png',
             'changed' => datetime
           }
         end

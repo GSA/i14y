@@ -31,6 +31,7 @@ class DocumentQuery
               :date_range_created,
               :excluded_sites,
               :ignore_tags,
+              :thumbnail_url,
               :included_sites,
               :language,
               :mime_type,
@@ -91,7 +92,7 @@ class DocumentQuery
   end
 
   def source_fields
-    default_fields = %w[title path created changed]
+    default_fields = %w[title path created changed thumbnail_url]
     fields = (@options[:include] || default_fields).push('language')
     fields.map { |field| full_text_fields[field] || field }
   end
