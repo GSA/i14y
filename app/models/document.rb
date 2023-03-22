@@ -28,11 +28,11 @@ class Document
   attribute :updated_at, Time, default: proc { Time.now.utc }
   attribute :updated, DateTime
 
-  validates :thumbnail_url, format: { with: URI::DEFAULT_PARSER.make_regexp }, allow_blank: true
   validates :language, presence: true
   validates :path, presence: true
 
   validate :mime_type_is_valid
+  validate :thumbnail_url_is_valid
 
   private
 
@@ -40,5 +40,12 @@ class Document
     return unless mime_type
 
     errors.add(:mime_type, 'is invalid') unless MiniMime.lookup_by_content_type(mime_type)
+  end
+
+  def thumbnail_url_is_valid
+    unless thumbnail_url =~ URI::DEFAULT_PARSER.make_regexp
+      Rails.logger.info "#{thumbnail_url} is invalid format URL"
+      self.thumbnail_url = nil
+    end
   end
 end
