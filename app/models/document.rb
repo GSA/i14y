@@ -43,9 +43,9 @@ class Document
   end
 
   def thumbnail_url_is_valid
-    unless thumbnail_url =~ URI::DEFAULT_PARSER.make_regexp
-      Rails.logger.info "#{thumbnail_url} is invalid format URL"
-      self.thumbnail_url = nil
-    end
+    return if thumbnail_url&.match?(URI::DEFAULT_PARSER.make_regexp)
+
+    Rails.logger.info "#{thumbnail_url} is invalid format URL"
+    self.thumbnail_url = nil
   end
 end
