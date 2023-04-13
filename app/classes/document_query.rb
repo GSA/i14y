@@ -341,7 +341,7 @@ class DocumentQuery
                     bool do
                       doc_query.send(field).each do |field_value|
                         minimum_should_match 1
-                        should { term "#{field}": field_value }
+                        should { term "#{field}": field_value.downcase }
                       end
                     end
                   end

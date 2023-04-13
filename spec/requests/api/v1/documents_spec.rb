@@ -84,7 +84,7 @@ describe Api::V1::Documents do
         document = document_repository.find(id)
         expect(document.title).to eq('my title')
         expect(document.path).to eq('http://www.gov.gov/goo.html')
-        expect(document.audience).to eq('Everyone')
+        expect(document.audience).to eq('everyone')
         expect(document.content).to eq('my content')
         expect(document.content_type).to eq('article')
         expect(document.created_at).to be_an_instance_of(Time)
