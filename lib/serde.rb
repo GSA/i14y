@@ -6,8 +6,11 @@ module Serde
   def self.serialize_hash(hash, language)
     serialize_language(hash, language)
     hash.merge!(uri_params_hash(hash[:path])) if hash[:path].present?
-    %i[tags searchgov_custom1 searchgov_custom2 searchgov_custom3].each do |field|
+    %i[searchgov_custom1 searchgov_custom2 searchgov_custom3 tags].each do |field|
       hash[field] = hash[field].extract_array if hash[field].present?
+    end
+    %i[audience content_type].each do |field|
+      hash[field] = hash[field].downcase if hash[field].present?
     end
     hash[:updated_at] = Time.now.utc
     hash
