@@ -15,9 +15,11 @@ describe Serde do
           'content' => 'my content',
           'path' => 'http://www.foo.gov/bar.html',
           'promote' => false,
+          'audience' => 'Everyone',
+          'content_type' => 'EVENT',
           'tags' => 'this that',
-          'searchgov_custom1' => 'this, custom, content',
-          'searchgov_custom2' => 'that custom, content',
+          'searchgov_custom1' => 'this, Custom, CONTENT',
+          'searchgov_custom2' => 'That custom, Content',
           'searchgov_custom3' => '123',
           'created' => '2018-01-01T12:00:00Z',
           'changed' => '2018-02-01T12:00:00Z',
@@ -28,24 +30,36 @@ describe Serde do
 
     it 'stores the language fields with the language suffix' do
       expect(serialize_hash).to match(hash_including(
-        { 'title_en' => 'my title',
-          'description_en' => 'my description',
-          'content_en' => 'my content' }
-      ))
+                                        { 'title_en' => 'my title',
+                                          'description_en' => 'my description',
+                                          'content_en' => 'my content' }
+                                      ))
     end
 
-    it 'stores tags as an array' do
+    it 'stores downcased audience' do
       expect(serialize_hash).to match(hash_including(
-        { 'tags' => ['this that'] }
-      ))
+                                        { 'audience' => 'everyone' }
+                                      ))
     end
 
-    it 'stores searchgov_custom fields as arrays' do
+    it 'stores downcased content_type' do
       expect(serialize_hash).to match(hash_including(
-        { 'searchgov_custom1' => ['this', 'custom', 'content'],
-          'searchgov_custom2' => ['that custom', 'content'],
-          'searchgov_custom3' => ['123'] }
-      ))
+                                        { 'content_type' => 'event' }
+                                      ))
+    end
+
+    it 'stores tags as a downcased array' do
+      expect(serialize_hash).to match(hash_including(
+                                        { 'tags' => ['this that'] }
+                                      ))
+    end
+
+    it 'stores searchgov_custom fields as downcased arrays' do
+      expect(serialize_hash).to match(hash_including(
+                                        { 'searchgov_custom1' => %w[this custom content],
+                                          'searchgov_custom2' => ['that custom', 'content'],
+                                          'searchgov_custom3' => ['123'] }
+                                      ))
     end
 
     it 'updates the updated_at value' do
@@ -70,10 +84,10 @@ describe Serde do
 
       it 'sanitizes the language fields' do
         expect(serialize_hash).to match(hash_including(
-          title_en: 'foo',
-          description_en: 'hello & goodbye!',
-          content_en: 'this is html'
-        ))
+                                          title_en: 'foo',
+                                          description_en: 'hello & goodbye!',
+                                          content_en: 'this is html'
+                                        ))
       end
     end
 
