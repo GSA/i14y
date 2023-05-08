@@ -1,6 +1,6 @@
 FROM ruby:3.0.6
 WORKDIR /usr/src/app
-EXPOSE 3000
+EXPOSE 3200
 
 RUN apt install -y curl
 
