@@ -13,9 +13,20 @@ Search engine for agencies' published content
 
 Use [rvm](https://rvm.io/) to install the version of Ruby specified in `.ruby-version`.
 
-### Docker Services
+### Docker
 
-The required services (MySQL, Elasticsearch, etc.) can be run using Docker. Please refer to [searchgov-services](https://github.com/GSA/search-services) for detailed instructions on centralized configuration for services.
+Docker can be used to: 1) run just the required services (MySQL, Elasticsearch, etc.) while [running the i14y application in your local machine](https://github.com/GSA/i14y#development), and/or 2) run the entire `i14y` application in a Docker container.  Please refer to [searchgov-services](https://github.com/GSA/search-services) for detailed instructions on centralized configuration for the services.
+
+When running in a Docker container (option 2 above), the `i14y` application is configured to run on port [3200](http://localhost:3200/). Required dependencies - ([Ruby](https://github.com/GSA/i14y#dependenciesprerequisites), and Gems) - are installed using Docker. However, other data or configuration may need to be setup manually, which can be done in the running container using `bash`.
+
+Using bash to perform any operations on i14y application running in Docker container, below command needs to be run in `search-services`.
+
+    $ docker compose run i14y bash
+
+For example, to setup DB in Docker:
+
+    $ docker compose run i14y bash
+    $ bin/rails i14y:setup
 
 The Elasticsearch services provided by `searchgov-services` is configured to run on the default port, [9200](http://localhost:9200/). To use a different host (with or without port) or set of hosts, set the `ES_HOSTS` environment variable. For example, use following command to run the specs using Elasticsearch running on `localhost:9207`:
 
