@@ -11,7 +11,7 @@ gem "elasticsearch-persistence", '~> 6.0'
 gem 'elasticsearch', '~> 6.0'
 gem 'elasticsearch-dsl', '~> 0.1.9'
 
-gem 'newrelic_rpm', '~> 6.15.0'
+gem 'newrelic_rpm', '~> 8.12.0'
 
 gem 'typhoeus', '~> 1.4.0'
 
