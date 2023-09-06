@@ -4,21 +4,11 @@ module ES
   DEFAULT_CONFIG = Rails.application.config_for(:elasticsearch).freeze
 
   def self.client
-    Elasticsearch::Client.new(DEFAULT_CONFIG.merge(config))
+    Elasticsearch::Client.new(DEFAULT_CONFIG.merge({randomize_hosts: true, retry_on_failure: true, reload_connections: true}))
   end
 
   def self.collection_repository
     CollectionRepository.new
-  end
-
-  private
-
-  def config
-    {
-      randomize_hosts: true,
-      retry_on_failure: true,
-      reload_connections: true
-    }
   end
 end
 
