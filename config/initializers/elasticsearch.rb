@@ -1,16 +1,10 @@
 # frozen_string_literal: true
 
 module ES
-  CONFIG = Rails.application.config_for(:elasticsearch).freeze
+  ES_CONFIG = Rails.application.config_for(:elasticsearch).freeze
 
   def self.client
-    Elasticsearch::Client.new(log: Rails.env.development?,
-                              hosts: CONFIG[:hosts],
-                              user: CONFIG[:user],
-                              password: CONFIG[:password],
-                              randomize_hosts: true,
-                              retry_on_failure: true,
-                              reload_connections: true)
+    Elasticsearch::Client.new(ES_CONFIG.merge({randomize_hosts: true, retry_on_failure: true, reload_connections: false, reload_on_failure: false}))
   end
 
   def self.collection_repository
