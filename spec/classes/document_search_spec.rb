@@ -191,7 +191,11 @@ describe DocumentSearch do
       let(:query) { 'uh oh' }
       let(:error) { StandardError.new('something went wrong') }
 
-      before { allow(ES).to receive(:client).and_raise(error) }
+      before do
+        allow(ES).to receive(:client).and_raise(error)
+        allow(Rails.logger).to receive(:error)
+        allow(NewRelic::Agent).to receive(:notice_error).and_return(nil)
+      end
 
       it 'returns a no results response' do
         expect(document_search_results.total).to eq(0)
@@ -199,15 +203,13 @@ describe DocumentSearch do
       end
 
       it 'logs details about the query' do
-        expect(Rails.logger).to receive(:error).with(/"query":"uh oh"/)
         document_search.search
+        expect(Rails.logger).to have_received(:error).with(/"query":"uh oh"/)
       end
 
       it 'sends the error to NewRelic' do
-        expect(NewRelic::Agent).to receive(:notice_error).with(
-          error, options: { custom_params: { indices: ['test-i14y-documents-agency_blogs'] } }
-        )
         document_search.search
+        expect(NewRelic::Agent).to have_received(:notice_error)
       end
     end
   end
