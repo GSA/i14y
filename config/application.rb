@@ -29,15 +29,11 @@ module I14y
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     # config.autoload_lib(ignore: %w(assets tasks))
 
-    # Set default cache format
-    config.active_support.cache_format_version = 7.0
-
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
-
-
+    #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
     config.eager_load_paths += Dir[config.root.join('lib', '**/')]
