@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-gem 'rails', '~> 7.0.0', '>= 7.0.1'
+gem 'rails', '~> 7.0.8'
 
 gem 'rack-cors', '~> 1.0.5'
 gem 'grape', '~> 1.7.0'
@@ -23,7 +23,7 @@ group :development, :test do
   gem 'pry-rails', '~> 0.3'
   gem 'awesome_print', '~> 1.8' #To enable in Pry: https://github.com/awesome-print/awesome_print#pry-integration
   gem 'listen'
-  gem 'puma',  '~> 5.0'
+  gem 'puma',  '~> 5.6'
   gem 'debug'
 end
 
