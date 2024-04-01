@@ -20,7 +20,8 @@ RUN gem install bundler -v 2.4.7
 
 COPY Gemfile Gemfile.lock ./
 
-RUN bundle config set --local without 'development test' && bundle install
+RUN bundle config set --local without 'development test' && bundle install && \
+    rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git
 
 COPY . .
 
@@ -30,8 +31,11 @@ COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
 
 RUN groupadd --system --gid 1000 rails && \
-    useradd --uid 1000 --gid 1000 --create-home --shell /bin/bash rails && \
-    chown -R rails:rails /rails
+    useradd --uid 1000 --gid 1000 --create-home --shell /bin/bash rails
+
+RUN mkdir -p /rails/log /rails/tmp && \
+    chown -R rails:rails /rails/log /rails/tmp
+
 
 USER 1000:1000
 
