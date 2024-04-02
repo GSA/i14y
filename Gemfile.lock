@@ -219,7 +219,7 @@ GEM
       pry (>= 0.13, < 0.15)
     pry-rails (0.3.9)
       pry (>= 0.10.4)
-    psych (5.1.1.1)
+    psych (5.1.2)
       stringio
     puma (5.6.8)
       nio4r (~> 2.0)
@@ -264,7 +264,7 @@ GEM
     rb-fsevent (0.11.2)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
-    rdoc (6.6.1)
+    rdoc (6.6.3.1)
       psych (>= 4.0.0)
     regexp_parser (2.8.3)
     reline (0.4.1)
