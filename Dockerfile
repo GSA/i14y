@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-
 ARG RUBY_VERSION=3.0.6
 FROM public.ecr.aws/docker/library/ruby:$RUBY_VERSION-slim as base
 
@@ -40,10 +38,5 @@ RUN bin/secure_docker
 
 USER 1000:1000
 
-ENV PATH="${PATH}:/home/ruby/.local/bin"
-
 EXPOSE 8081
 CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0", "-p", "8081"]
-
-
-
