@@ -36,8 +36,6 @@ RUN groupadd --system --gid 1000 rails && \
 RUN mkdir -p /rails/log /rails/tmp && \
     chown -R rails:rails /rails/log /rails/tmp
 
-RUN chmod +x /rails/bin/secure_docker
-
 RUN bin/secure_docker
 
 USER 1000:1000
