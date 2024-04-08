@@ -18,7 +18,7 @@ RUN gem install bundler -v 2.4.7
 
 COPY Gemfile Gemfile.lock ./
 
-RUN bundle config set --local without 'development test' && bundle install && \
+RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git
 
 COPY . .
@@ -38,5 +38,5 @@ RUN bin/secure_docker
 
 USER 1000:1000
 
-EXPOSE 8081
-CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0", "-p", "8081"]
+EXPOSE 3200
+CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0", "-p", "3200"]
