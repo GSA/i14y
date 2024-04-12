@@ -11,5 +11,7 @@ test:
   <<: *DEFAULT
 
 production:
-# This file is overwritten by Chef during a deploy. Any production
-# changes should be made in the cookbooks.
+  hosts:
+    - <%= ENV['ES_HOSTS'] %>
+  user: <%= ENV['ES_USERNAME'] %>
+  password: <%= ENV['ES_PASSWORD'] %>
