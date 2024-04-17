@@ -1,0 +1,70 @@
+version: 2.1
+
+orbs:
+  ruby: circleci/ruby@1.4.0
+
+jobs:
+  build_and_test:
+    parameters:
+      ruby_version:
+        type: string
+      elasticsearch_version:
+        type: string
+
+    docker:
+      - image: cimg/ruby:<< parameters.ruby_version >>
+        # Using custom Docker images including required Elasticsearch plugins.
+        # See Dockerfile.elasticsearch* for details
+      - image: searchgov/elasticsearch:<< parameters.elasticsearch_version >>
+        environment:
+          - bootstrap.memory_lock=true
+          - discovery.type=single-node
+          - xpack.security.enabled=false
+          - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+
+    working_directory: ~/app
+
+    steps:
+      - checkout
+      - run: cp -p config/secrets_example.yml config/secrets.yml
+      # Install gems with Bundler
+      - ruby/install-deps:
+          # Need to clear the gem cache? Set or bump the CACHE_VERSION in your
+          # CircleCi project: Project Settings > Environment Variables
+          key: gems-ruby-<< parameters.ruby_version >>-v{{ .Environment.CACHE_VERSION }}
+      - run:
+          name: Setup Code Climate test-reporter
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+      - run:
+          name: Wait for Elasticsearch
+          command: dockerize -wait tcp://localhost:9200 -timeout 1m
+      - run:
+          name: RSpec
+          environment:
+            CC_TEST_REPORTER_ID: 09d5a7d453407f367679c8f86c4c582ec3583bed3c7a06286d61d16e89290bd1
+          command: |
+            bundle exec rake i14y:setup
+            ./cc-test-reporter before-build
+            bundle exec rspec spec
+            ./cc-test-reporter after-build --exit-code $?
+      - store_artifacts:
+          path: coverage
+          destination: ~/coverage
+
+workflows:
+  build_and_test:
+    jobs:
+      - build_and_test:
+          name: "Ruby << matrix.ruby_version >>, ES << matrix.elasticsearch_version >>"
+          matrix:
+            parameters:
+              ruby_version:
+                - 3.0.5
+                - 3.0.6
+                - 3.1.3
+                - 3.2.1
+              elasticsearch_version:
+                - 7.17.7
+                # not yet compatible with Elasticsearch 8
