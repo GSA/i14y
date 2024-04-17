@@ -689,6 +689,8 @@ test:
 # staging:
 #   <<: *default_settings
 #   app_name: i14y (Staging)
+staging:
+  <<: *default_settings
 
 production:
   <<: *default_settings
