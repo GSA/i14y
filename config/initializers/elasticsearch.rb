@@ -4,7 +4,7 @@ module ES
   ES_CONFIG = Rails.application.config_for(:elasticsearch).freeze
 
   def self.client
-    Elasticsearch::Client.new(ES_CONFIG.merge({randomize_hosts: true, retry_on_failure: true, reload_connections: false, reload_on_failure: false, reload_on_failure: false, transport_options: { ssl: { verify: ENV.fetch("SSL_VERIFY") }}}))
+    Elasticsearch::Client.new(ES_CONFIG.merge({randomize_hosts: true, retry_on_failure: true, reload_connections: false, reload_on_failure: false, reload_on_failure: false, transport_options: { ssl: { verify: false }}}))
   end
 
   def self.collection_repository
