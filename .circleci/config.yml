@@ -13,7 +13,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - aws-cli/setup:
-          aws-region: "us-east-2"
+          aws-region: STAGING_AWS_REGION
           aws-access-key-id: CIRCLE_CI_USER_ACCESS_KEY_ID # added in circle ci org settings 
           aws-secret-access-key: CIRCLE_CI_USER_SECRET_ACCESS_KEY
       - run: docker build -t i14y .
