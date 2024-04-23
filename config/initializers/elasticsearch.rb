@@ -10,7 +10,7 @@ module ES
                                                reload_on_failure: false,
                                                transport_options: {
                                                  ssl: {
-                                                   verify: ENV['SSL_VERIFY'] || 'false'
+                                                   verify: false
                                                  }
                                                } }))
   end
