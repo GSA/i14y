@@ -232,8 +232,20 @@ module Api
 
         put ':document_id', requirements: { document_id: /.*/ } do
           id = params.delete(:document_id)
-          # return just enough attributes to ensure the document is valid
-          document = document_repository.find(id, _source: %w[language path created_at])
+          # SRCH-5096 Ensure that existing attributes are not overwritten on put or else the weekly
+          # searchgov ClickMonitorJob and (infrequent) `searchgov:promote` task will delete metadata
+          document = document_repository.find(id, _source: %w[audience
+                                                              changed
+                                                              content_type
+                                                              created
+                                                              created_at
+                                                              language
+                                                              mime_type
+                                                              path
+                                                              searchgov_custom1
+                                                              searchgov_custom2
+                                                              searchgov_custom3
+                                                              tags])
           document.attributes = document.attributes.merge(params)
           if document.invalid?
             error!({ developer_message: document.errors.full_messages.join(', '), status: 400 }, 400)
