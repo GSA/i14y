@@ -69,8 +69,8 @@ describe Api::V1::Documents do
       end
 
       it 'returns success message as JSON' do
-        expect(response.status).to eq(201)
-        expect(JSON.parse(response.body)).
+        expect(response).to have_http_status(:created)
+        expect(response.parsed_body).
           to match(hash_including('status' => 200,
                                   'developer_message' => 'OK',
                                   'user_message' => 'Your document was successfully created.'))
@@ -94,9 +94,9 @@ describe Api::V1::Documents do
         expect(document.mime_type).to eq('text/html')
         expect(document.promote).to be_truthy
         expect(document.searchgov_custom1).to eq(['custom content with spaces'])
-        expect(document.searchgov_custom2).to eq(['comma', 'separated', 'custom', 'content'])
+        expect(document.searchgov_custom2).to eq(%w[comma separated custom content])
         expect(document.searchgov_custom3).to eq(['123'])
-        expect(document.tags).to match_array(['bar blat', 'foo'])
+        expect(document.tags).to contain_exactly('bar blat', 'foo')
         expect(document.updated_at).to be_an_instance_of(Time)
       end
 
@@ -129,8 +129,8 @@ describe Api::V1::Documents do
       end
 
       it 'returns failure message as JSON' do
-        expect(response.status).to eq(422)
-        expect(JSON.parse(response.body)).
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body).
           to match(hash_including('status' => 422,
                                   'developer_message' => 'Document already exists with that ID'))
       end
@@ -142,8 +142,8 @@ describe Api::V1::Documents do
       before { post_document }
 
       it 'returns failure message as JSON' do
-        expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).
+        expect(response).to have_http_status(:bad_request)
+        expect(response.parsed_body).
           to match(hash_including('status' => 400,
                                   'developer_message' => 'language does not have a valid value'))
       end
@@ -155,8 +155,8 @@ describe Api::V1::Documents do
       before { post_document }
 
       it 'returns failure message as JSON' do
-        expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).
+        expect(response).to have_http_status(:bad_request)
+        expect(response.parsed_body).
           to match(hash_including('status' => 400,
                                   'developer_message' => "document_id cannot contain any of the following characters: ['/']"))
       end
@@ -175,8 +175,8 @@ describe Api::V1::Documents do
       before { post_document }
 
       it 'returns failure message as JSON' do
-        expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).
+        expect(response).to have_http_status(:bad_request)
+        expect(response.parsed_body).
           to match(hash_including('status' => 400,
                                   'developer_message' => 'document_id cannot be more than 512 bytes long'))
       end
@@ -198,8 +198,8 @@ describe Api::V1::Documents do
       before { post_document }
 
       it 'returns failure message as JSON' do
-        expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).
+        expect(response).to have_http_status(:bad_request)
+        expect(response.parsed_body).
           to match(hash_including('status' => 400,
                                   'developer_message' => 'title is empty'))
       end
@@ -211,8 +211,8 @@ describe Api::V1::Documents do
       before { post_document }
 
       it 'returns failure message as JSON' do
-        expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).
+        expect(response).to have_http_status(:bad_request)
+        expect(response.parsed_body).
           to match(hash_including('status' => 400,
                                   'developer_message' => 'path is invalid'))
       end
@@ -227,8 +227,8 @@ describe Api::V1::Documents do
       before { post_document }
 
       it 'returns error message as JSON' do
-        expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).
+        expect(response).to have_http_status(:bad_request)
+        expect(response.parsed_body).
           to match(hash_including('status' => 400,
                                   'developer_message' => 'Unauthorized'))
       end
@@ -242,8 +242,8 @@ describe Api::V1::Documents do
       end
 
       it 'returns error message as JSON' do
-        expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).
+        expect(response).to have_http_status(:bad_request)
+        expect(response.parsed_body).
           to match(hash_including('status' => 400,
                                   'developer_message' => 'Unauthorized'))
       end
@@ -256,8 +256,8 @@ describe Api::V1::Documents do
       end
 
       it 'returns failure message as JSON' do
-        expect(response.status).to eq(500)
-        expect(JSON.parse(response.body)).
+        expect(response).to have_http_status(:internal_server_error)
+        expect(response.parsed_body).
           to match(hash_including('status' => 500,
                                   'developer_message' => "Something unexpected happened and we've been alerted."))
       end
@@ -269,8 +269,8 @@ describe Api::V1::Documents do
       before { post_document }
 
       it 'returns failure message as JSON' do
-        expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).
+        expect(response).to have_http_status(:bad_request)
+        expect(response.parsed_body).
           to match(hash_including('status' => 400,
                                   'developer_message' => 'Mime type is invalid'))
       end
@@ -287,43 +287,44 @@ describe Api::V1::Documents do
 
     let(:update_params) do
       {
-        title: 'new title',
-        path: 'http://www.next.gov/updated.html',
-        audience: 'Everyone',
         changed: '2016-01-01T10:00:01Z',
         click_count: 1000,
-        content: 'new content',
         content_type: 'website',
+        content: 'new content',
         description: 'new desc',
-        thumbnail_url: 'https://18f.gsa.gov/assets/img/logos/new/18F-Logo-M.png',
-        language: 'hy',
         mime_type: 'text/plain',
+        path: 'http://www.next.gov/updated.html',
         promote: false,
         searchgov_custom1: 'custom content with spaces',
-        searchgov_custom2: 'comma, separated, custom, content',
-        searchgov_custom3: 123,
-        tags: 'new category'
+        searchgov_custom2: 'new, comma, separated, custom, content',
+        tags: 'new category',
+        thumbnail_url: 'https://18f.gsa.gov/assets/img/logos/new/18F-Logo-M.png',
+        title: 'new title'
       }
     end
 
     context 'when successful' do
       before do
-        create_document({ id: id,
-                          language: 'en',
-                          title: 'hi there 4',
-                          description: 'bigger desc 4',
+        create_document({ audience: 'Everyone',
                           content: 'huge content 4',
                           created: 2.hours.ago,
-                          updated: Time.zone.now,
+                          description: 'bigger desc 4',
+                          language: 'en',
+                          path: 'http://www.gov.gov/url4.html',
                           promote: true,
-                          path: 'http://www.gov.gov/url4.html' }, document_repository)
+                          searchgov_custom2: 'comma, separated, custom, content',
+                          searchgov_custom3: 123,
+                          title: 'hi there 4',
+                          updated: Time.zone.now,
+                          id: id },
+                        document_repository)
 
         put_document
       end
 
       it 'returns success message as JSON' do
-        expect(response.status).to eq(200)
-        expect(JSON.parse(response.body)).
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body).
           to match(hash_including('status' => 200,
                                   'developer_message' => 'OK',
                                   'user_message' => 'Your document was successfully updated.'))
@@ -331,17 +332,26 @@ describe Api::V1::Documents do
 
       it 'updates the document' do
         document = document_repository.find(id)
-        expect(document.path).to eq('http://www.next.gov/updated.html')
-        expect(document.promote).to be_falsey
-        expect(document.title).to eq('new title')
-        expect(document.description).to eq('new desc')
-        expect(document.thumbnail_url).to eq('https://18f.gsa.gov/assets/img/logos/new/18F-Logo-M.png')
-        expect(document.content).to eq('new content')
-        expect(document.content_type).to eq('website')
-        expect(document.tags).to match_array(['new category'])
         expect(document.changed).to eq('2016-01-01T10:00:01Z')
         expect(document.click_count).to eq(1000)
+        expect(document.content_type).to eq('website')
+        expect(document.content).to eq('new content')
+        expect(document.description).to eq('new desc')
         expect(document.mime_type).to eq('text/plain')
+        expect(document.path).to eq('http://www.next.gov/updated.html')
+        expect(document.promote).to be_falsey
+        expect(document.searchgov_custom1).to contain_exactly('custom content with spaces')
+        expect(document.searchgov_custom2).to contain_exactly('new', 'comma', 'separated', 'custom', 'content')
+        expect(document.tags).to contain_exactly('new category')
+        expect(document.thumbnail_url).to eq('https://18f.gsa.gov/assets/img/logos/new/18F-Logo-M.png')
+        expect(document.title).to eq('new title')
+      end
+
+      it 'persists unchanged attributes' do
+        document = document_repository.find(id)
+        expect(document.audience).to eq('everyone')
+        expect(document.language).to eq('en')
+        expect(document.searchgov_custom3).to contain_exactly('123')
       end
 
       it_behaves_like 'a data modifying request made during read-only mode'
@@ -402,8 +412,8 @@ describe Api::V1::Documents do
       end
 
       it 'returns error message as JSON' do
-        expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).
+        expect(response).to have_http_status(:bad_request)
+        expect(response.parsed_body).
           to match(hash_including('status' => 400,
                                   'developer_message' => 'Mime type is invalid'))
       end
@@ -433,15 +443,15 @@ describe Api::V1::Documents do
       end
 
       it 'returns success message as JSON' do
-        expect(response.status).to eq(200)
-        expect(JSON.parse(response.body)).
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body).
           to match(hash_including('status' => 200,
                                   'developer_message' => 'OK',
                                   'user_message' => 'Your document was successfully deleted.'))
       end
 
       it 'deletes the document' do
-        expect(document_repository.exists?(id)).to be_falsey
+        expect(document_repository).not_to exist(id)
       end
 
       it_behaves_like 'a data modifying request made during read-only mode'
@@ -453,8 +463,8 @@ describe Api::V1::Documents do
       before { delete_document }
 
       it 'delete returns an error message as JSON' do
-        expect(response.status).to eq(400)
-        expect(JSON.parse(response.body)).
+        expect(response).to have_http_status(:bad_request)
+        expect(response.parsed_body).
           to match(hash_including('status' => 400,
                                   'developer_message' => 'Resource could not be found.'))
       end
