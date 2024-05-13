@@ -1,10 +1,10 @@
 # Be sure to restart your server when you modify this file.
 #
-# This file eases your Rails 7.0 framework defaults upgrade.
+# This file eases your Rails 7.1 framework defaults upgrade.
 #
 # Uncomment each configuration one by one to switch to the new default.
 # Once your application is ready to run with all new defaults, you can remove
-# this file and set the `config.load_defaults` to `7.0`.
+# this file and set the `config.load_defaults` to `7.1`.
 #
 # Read the Guide for Upgrading Ruby on Rails for more info on each option.
 # https://guides.rubyonrails.org/upgrading_ruby_on_rails.html
@@ -15,8 +15,9 @@
 #
 # This will reduce the size of the load path, making `require` faster if you don't use bootsnap, or reduce the size
 # of the bootsnap cache if you use it.
-#++
-# Rails.application.config.add_autoload_paths_to_load_path = false
+#
+# To set this configuration, add the following line to `config/application.rb` (NOT this file):
+#   config.add_autoload_paths_to_load_path = false
 
 ###
 # Remove the default X-Download-Options headers since it is used only by Internet Explorer.
@@ -38,7 +39,7 @@
 
 ###
 # Active Record Encryption now uses SHA-256 as its hash digest algorithm.
-# 
+#
 # There are 3 scenarios to consider.
 #
 # 1. If you have data encrypted with previous Rails versions, and you have
@@ -53,7 +54,7 @@
 # Rails.application.config.active_record.encryption.hash_digest_class = OpenSSL::Digest::SHA256
 #
 # 3. If you don't currently have data encrypted with Active Record encryption, you can disable this setting to
-# configure the default behavior starting 7.0+:
+# configure the default behavior starting 7.1+:
 #++
 # Rails.application.config.active_record.encryption.support_sha1_for_non_deterministic_encryption = false
 
@@ -87,10 +88,10 @@
 # roundtripping. Without this serializer, some queue adapters may serialize
 # `BigDecimal` arguments as simple (non-roundtrippable) strings.
 #
-# When deploying an application with multiple replicas, old (pre-Rails 7.0)
+# When deploying an application with multiple replicas, old (pre-Rails 7.1)
 # replicas will not be able to deserialize `BigDecimal` arguments from this
 # serializer. Therefore, this setting should only be enabled after all replicas
-# have been successfully upgraded to Rails 7.0.
+# have been successfully upgraded to Rails 7.1.
 #++
 # Rails.application.config.active_job.use_big_decimal_serializer = true
 
@@ -117,7 +118,7 @@
 # deserialization attacks in cases where a message signing secret has been
 # leaked.
 #
-# In Rails 7.0, the new default is `:json_allow_marshal` which serializes and
+# In Rails 7.1, the new default is `:json_allow_marshal` which serializes and
 # deserializes with `ActiveSupport::JSON`, but can fall back to deserializing
 # with `Marshal` so that legacy messages can still be read.
 #
@@ -130,9 +131,9 @@
 # improved performance, but it requires the `msgpack` gem.
 #
 # For more information, see
-# https://guides.rubyonrails.org/v7.0/configuring.html#config-active-support-message-serializer
+# https://guides.rubyonrails.org/v7.1/configuring.html#config-active-support-message-serializer
 #
-# If you are performing a rolling deploy of a Rails 7.0 upgrade, wherein servers
+# If you are performing a rolling deploy of a Rails 7.1 upgrade, wherein servers
 # that have not yet been upgraded must be able to read messages from upgraded
 # servers, first deploy without changing the serializer, then set the serializer
 # in a subsequent deploy.
@@ -145,7 +146,7 @@
 # cannot be read by older versions of Rails. However, messages that use the old
 # format can still be read, regardless of whether this optimization is enabled.
 #
-# To perform a rolling deploy of a Rails 7.0 upgrade, wherein servers that have
+# To perform a rolling deploy of a Rails 7.1 upgrade, wherein servers that have
 # not yet been upgraded must be able to read messages from upgraded servers,
 # leave this optimization off on the first deploy, then enable it on a
 # subsequent deploy.
@@ -155,7 +156,7 @@
 ###
 # Set the maximum size for Rails log files.
 #
-# `config.load_defaults 7.0` does not set this value for environments other than
+# `config.load_defaults 7.1` does not set this value for environments other than
 # development and test.
 #++
 # if Rails.env.local?
@@ -201,12 +202,12 @@
 # Enable a performance optimization that serializes Active Record models
 # in a faster and more compact way.
 #
-# To perform a rolling deploy of a Rails 7.0 upgrade, wherein servers that have
+# To perform a rolling deploy of a Rails 7.1 upgrade, wherein servers that have
 # not yet been upgraded must be able to read caches from upgraded servers,
 # leave this optimization off on the first deploy, then enable it on a
 # subsequent deploy.
 #++
-# Rails.application.config.active_record.marshalling_format_version = 7.0
+# Rails.application.config.active_record.marshalling_format_version = 7.1
 
 ###
 # Run `after_commit` and `after_*_commit` callbacks in the order they are defined in a model.
@@ -234,11 +235,11 @@
 # will have a different format that is not supported by Rails 7.0
 # applications.
 #
-# Only change this value after your application is fully deployed to Rails 7.0
+# Only change this value after your application is fully deployed to Rails 7.1
 # and you have no plans to rollback.
 # When you're ready to change format, add this to `config/application.rb` (NOT
 # this file):
-#   config.active_support.cache_format_version = 7.0
+#   config.active_support.cache_format_version = 7.1
 
 
 ###
