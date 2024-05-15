@@ -8,9 +8,8 @@ describe 'ActiveSupport::ParameterFilter' do
 
   it 'filters query from logs' do
     filter_contains_query = config.filter_parameters.any? do |param|
-      param.is_a?(Regexp) ? param.match?(/(?i:query)/) : param == :query
+      param.is_a?(Regexp) ? param.to_s.include?('(?i:query)') : param == :query
     end
     expect(filter_contains_query).to be true
   end
 end
-
