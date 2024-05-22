@@ -23,9 +23,13 @@ module Api
         end
 
         def auth?(admin_user, admin_password)
-          yaml = YAML.load_file("#{Rails.root}/config/secrets.yml")
-          env_secrets = yaml[Rails.env]
-          admin_user == env_secrets['admin_user'] && admin_password == env_secrets['admin_password']
+          if ENV['I14Y_ADMIN_USER']
+            admin_user == ENV['I14Y_ADMIN_USER'] && admin_password == ENV['I14Y_ADMIN_PASSWORD']
+          else
+            yaml = YAML.load_file("#{Rails.root}/config/secrets.yml")
+            env_secrets = yaml[Rails.env]
+            admin_user == env_secrets['admin_user'] && admin_password == env_secrets['admin_password']
+          end
         end
       end
 
