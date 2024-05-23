@@ -1,6 +1,9 @@
 module Api
   module V1
     class Collections < Grape::API
+      ADMIN_USER     = ENV['I14Y_ADMIN_USER']     || Rails.application.config_for(:secrets).admin_user
+      ADMIN_PASSWORD = ENV['I14Y_ADMIN_PASSWORD'] || Rails.application.config_for(:secrets).admin_password
+
       prefix 'api'
       version 'v1'
       default_format :json
@@ -23,13 +26,7 @@ module Api
         end
 
         def auth?(admin_user, admin_password)
-          if ENV['I14Y_ADMIN_USER']
-            admin_user == ENV['I14Y_ADMIN_USER'] && admin_password == ENV['I14Y_ADMIN_PASSWORD']
-          else
-            yaml = YAML.load_file("#{Rails.root}/config/secrets.yml")
-            env_secrets = yaml[Rails.env]
-            admin_user == env_secrets['admin_user'] && admin_password == env_secrets['admin_password']
-          end
+          admin_user == ADMIN_USER && admin_password == ADMIN_PASSWORD
         end
       end
 
