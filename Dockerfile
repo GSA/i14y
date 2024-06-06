@@ -1,4 +1,4 @@
-ARG RUBY_VERSION=3.0.6
+ARG RUBY_VERSION=3.1.4
 FROM public.ecr.aws/docker/library/ruby:$RUBY_VERSION-slim as base
 
 WORKDIR /rails
@@ -10,7 +10,8 @@ RUN apt-get update -qq && \
 
 ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
-    BUNDLE_PATH="/usr/local/bundle"
+    BUNDLE_PATH="/usr/local/bundle" \
+    RAILS_LOG_TO_STDOUT="1"
 
 FROM base as build
 

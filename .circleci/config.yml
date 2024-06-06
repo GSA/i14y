@@ -2,6 +2,11 @@ version: 2.1
 
 orbs:
   ruby: circleci/ruby@1.4.0
+  aws-ecr: circleci/aws-ecr@8.2.1
+  aws-eks: circleci/aws-eks@1.1.0
+  aws-cli: circleci/aws-cli@3.1.4
+  kubernetes: circleci/kubernetes@1.3.1
+  docker: circleci/docker@1.5.0
 
 jobs:
   build_and_test:
@@ -53,6 +58,56 @@ jobs:
           path: coverage
           destination: ~/coverage
 
+  update-staging:
+    docker:
+      - image: cimg/aws:2023.01
+    steps:
+      - checkout
+      - setup_remote_docker
+      - aws-cli/setup:
+          aws-region: STAGING_AWS_REGION
+          aws-access-key-id: CIRCLE_CI_USER_ACCESS_KEY_ID 
+          aws-secret-access-key: CIRCLE_CI_USER_SECRET_ACCESS_KEY
+      - run: docker build -t i14y .
+      - run: docker tag i14y:latest 213305845712.dkr.ecr.us-east-2.amazonaws.com/i14y:latest
+      - run: docker tag i14y:latest 213305845712.dkr.ecr.us-east-2.amazonaws.com/i14y:${CIRCLE_BUILD_NUM}
+      - run: aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 213305845712.dkr.ecr.us-east-2.amazonaws.com
+      - run: docker push 213305845712.dkr.ecr.us-east-2.amazonaws.com/i14y:latest
+      - run: docker push 213305845712.dkr.ecr.us-east-2.amazonaws.com/i14y:${CIRCLE_BUILD_NUM}
+      - run: 
+          name: update i14y k8s deployment
+          command: |
+            aws ssm send-command \
+            --document-name "searchgov-deployment-ssm-document" \
+            --targets "Key=tag:Name,Values=jumphost-staging-search-instance" \
+            --parameters '{"DeploymentName":["search-staging-i14y-deploy"], "Namespace":["search"]}' \
+            --comment "restart i14y staging deployment"
+  update-prod:
+    docker:
+      - image: cimg/aws:2023.01
+    steps:
+      - checkout
+      - setup_remote_docker
+      - aws-cli/setup:
+          aws-region: PROD_AWS_REGION
+          aws-access-key-id: CIRCLE_CI_USER_ACCESS_KEY_ID 
+          aws-secret-access-key: CIRCLE_CI_USER_SECRET_ACCESS_KEY
+      - run: docker build -t i14y .
+      - run: docker tag i14y:latest 213305845712.dkr.ecr.us-east-1.amazonaws.com/i14y:latest
+      - run: docker tag i14y:latest 213305845712.dkr.ecr.us-east-1.amazonaws.com/i14y:${CIRCLE_BUILD_NUM}
+      - run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 213305845712.dkr.ecr.us-east-1.amazonaws.com
+      - run: docker push 213305845712.dkr.ecr.us-east-1.amazonaws.com/i14y:latest
+      - run: docker push 213305845712.dkr.ecr.us-east-1.amazonaws.com/i14y:${CIRCLE_BUILD_NUM}
+      - run: 
+          name: update i14y k8s deployment
+          command: |
+            aws ssm send-command \
+            --document-name "searchgov-deployment-ssm-document" \
+            --targets "Key=tag:Name,Values=jumphost-prod-search-instance" \
+            --parameters '{"DeploymentName":["search-prod-i14y-deploy"], "Namespace":["search"]}' \
+            --comment "restart i14y prod deployment"
+  
+
 workflows:
   build_and_test:
     jobs:
@@ -66,3 +121,19 @@ workflows:
               elasticsearch_version:
                 - 7.17.7
                 # not yet compatible with Elasticsearch 8
+  build_image_and_deploy:
+    jobs:
+      - update-staging:
+          context:
+            - aws-client-keys
+          filters:
+            branches:
+              only:
+                - main
+      - update-prod:
+          context:
+            - aws-client-keys
+          filters:
+            branches:
+              only:
+                - production
