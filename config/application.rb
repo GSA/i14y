@@ -22,7 +22,7 @@ module I14y
   APP_NAME = 'i14y'
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 7.0
+    config.load_defaults 7.1
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
@@ -30,7 +30,7 @@ module I14y
     # config.autoload_lib(ignore: %w(assets tasks))
 
     # Set default cache format
-    config.active_support.cache_format_version = 7.0
+    config.active_support.cache_format_version = 7.1
 
     # Configuration for the application, engines, and railties goes here.
     #

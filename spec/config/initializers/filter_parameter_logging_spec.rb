@@ -7,6 +7,6 @@ describe 'ActiveSupport::ParameterFilter' do
   let(:parameter_filter) { ActiveSupport::ParameterFilter.new(config.filter_parameters) }
 
   it 'filters query from logs' do
-    expect(config.filter_parameters).to match(array_including(:query))
+    expect(config.filter_parameters.to_s).to match(/:query\b/)
   end
 end
