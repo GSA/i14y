@@ -182,11 +182,8 @@ workflows:
     jobs:
       - update-dev:
           name: "Update Dev Environment"
-          # requires:
-          #   - build_and_test
           parameters:
-            dev-namespace: select-a-namespace
-          #   trigger-update-dev: true
+            dev-namespace: giraffe
           filters:
             branches:
               ignore:
