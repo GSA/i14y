@@ -185,9 +185,9 @@ workflows:
           name: "Update Dev Environment"
           context:
             - aws-client-keys
-          # parameters:
-          #   namespace: << pipeline.parameters.namespace >>
           filters:
             branches:
-              ignore:
-                - /.*/
+              only:
+                - /^SRCH.*/
+          when:
+            equal: [<< pipeline.trigger_source >>, api]
