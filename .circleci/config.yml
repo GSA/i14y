@@ -186,5 +186,5 @@ workflows:
           #   dev-namespace: << pipeline.parameters.dev-namespace >>
           filters:
             branches:
-              ignore:
-                - /.*/
+              only:
+                - /^SRCH.*/
