@@ -185,7 +185,7 @@ workflows:
           # requires:
           #   - build_and_test
           parameters:
-            dev-namespace: << pipeline.parameters.dev-namespace >>
+            dev-namespace: select-a-namespace
           #   trigger-update-dev: true
           filters:
             branches:
