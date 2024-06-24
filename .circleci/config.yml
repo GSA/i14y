@@ -79,6 +79,7 @@ jobs:
     #       - porcupine
     docker:
       - image: cimg/aws:2023.01
+    resource_class: large
     steps:
       - checkout
       - setup_remote_docker
@@ -182,6 +183,8 @@ workflows:
     jobs:
       - update-dev:
           name: "Update Dev Environment"
+          context:
+            - aws-client-keys
           # parameters:
           #   dev-namespace: << pipeline.parameters.dev-namespace >>
           filters:
