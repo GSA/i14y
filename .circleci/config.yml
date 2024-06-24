@@ -69,14 +69,6 @@ jobs:
           destination: ~/coverage
           
   update-dev:
-    # parameters:
-    #   namespace:
-    #     type: enum
-    #     default: giraffe
-    #     enum:
-    #       - giraffe
-    #       - platypus
-    #       - porcupine
     docker:
       - image: cimg/aws:2023.01
     resource_class: large
@@ -180,7 +172,7 @@ workflows:
             branches:
               only:
                 - production
-  manual-trigger-<< pipeline.parameters.namespace >>:
+  manual-trigger:
     when:
         equal: [<< pipeline.trigger_source >>, api]
     jobs:
