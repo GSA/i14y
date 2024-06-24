@@ -72,7 +72,7 @@ jobs:
     parameters:
       dev-namespace:
         type: enum
-        default: "select-a-namespace"
+        # default: "select-a-namespace"
         enum:
           - giraffe
           - platypus
