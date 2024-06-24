@@ -95,9 +95,9 @@ jobs:
           command: |
             aws ssm send-command \
             --document-name "searchgov-deployment-ssm-document" \
-            --targets "Key=tag:Name,Values=jumphost-staging-search-instance" \
-            --parameters '{"DeploymentName":["search-<< parameters.dev-namespace >>-i14y-deploy"], "Namespace":["<< parameters.dev-namespace >>"]}' \
-            --comment "restart i14y deployment in << parameters.dev-namespace >> namespace"
+            --targets "Key=tag:Name,Values=jumphost-dev-search-instance" \
+            --parameters '{"DeploymentName":["search-<< pipeline.parameters.dev-namespace >>-i14y-deploy"], "Namespace":["<< pipeline.parameters.dev-namespace >>"]}' \
+            --comment "restart i14y deployment in << pipeline.parameters.dev-namespace >> namespace"
             
   update-staging:
     docker:
