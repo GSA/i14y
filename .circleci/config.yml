@@ -180,12 +180,12 @@ workflows:
             branches:
               only:
                 - production
-  manual-trigger:
+  manual-trigger-<< pipeline.parameters.namespace >>:
     when:
         equal: [<< pipeline.trigger_source >>, api]
     jobs:
       - update-dev:
-          name: "Update Dev Environment"
+          name: "update i14y for << pipeline.parameters.namespace >> namesapce"
           context:
             - aws-client-keys
           filters:
