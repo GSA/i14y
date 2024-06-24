@@ -11,7 +11,7 @@ orbs:
 parameters:
   namespace:
     type: enum
-    default: giraffe
+    default: select-a-namespace
     enum:
       - giraffe
       - platypus
@@ -172,6 +172,8 @@ workflows:
             branches:
               only:
                 - production
+                
+  # to build and deploy your dev image, all pipeline jobs must be triggered manually. This is to ensure that an acceptable namespace is selected
   manual-trigger:
     when:
         equal: [<< pipeline.trigger_source >>, api]
