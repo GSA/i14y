@@ -181,6 +181,8 @@ workflows:
               only:
                 - production
   manual-trigger:
+    when:
+        equal: [<< pipeline.trigger_source >>, api]
     jobs:
       - update-dev:
           name: "Update Dev Environment"
@@ -190,5 +192,4 @@ workflows:
             branches:
               only:
                 - /^SRCH.*/
-          when:
-            equal: [<< pipeline.trigger_source >>, api]
+          
