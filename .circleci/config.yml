@@ -179,15 +179,13 @@ workflows:
               only:
                 - production
   manual-trigger:
-    triggers:
-      - type: api
     jobs:
       - update-dev:
-          # name: "Update Dev Environment"
+          name: "Update Dev Environment"
           # requires:
           #   - build_and_test
-          # parameters:
-          #   dev-namespace: << pipeline.parameters.dev-namespace >>
+          parameters:
+            dev-namespace: << pipeline.parameters.dev-namespace >>
           #   trigger-update-dev: true
           filters:
             branches:
