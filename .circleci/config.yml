@@ -71,7 +71,7 @@ jobs:
   update-dev:
     dev-namespace:
       type: enum
-      default: no-namespace
+      default: "select-a-namespace"
       enum:
         - giraffe
         - platypus
