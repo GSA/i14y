@@ -69,7 +69,15 @@ jobs:
       - store_artifacts:
           path: coverage
           destination: ~/coverage
+          
   update-dev:
+    dev-namespace:
+      type: enum
+      default: no-namespace
+      enum:
+        - giraffe
+        - platypus
+        - porcupine
     docker:
       - image: cimg/aws:2023.01
     steps:
@@ -157,11 +165,6 @@ workflows:
                 # not yet compatible with Elasticsearch 8
   build_image_and_deploy:
     jobs:
-      - update-dev:
-          filters:
-            branches:
-              only:
-                - /^SRCH.*/
       - update-staging:
           context:
             - aws-client-keys
@@ -177,6 +180,8 @@ workflows:
               only:
                 - production
   manual-trigger:
+    triggers:
+      - type: api
     jobs:
       - update-dev:
           name: "Update Dev Environment"
