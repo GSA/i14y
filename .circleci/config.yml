@@ -189,5 +189,5 @@ workflows:
           #   namespace: << pipeline.parameters.namespace >>
           filters:
             branches:
-              only:
+              ignore:
                 - /.*/
