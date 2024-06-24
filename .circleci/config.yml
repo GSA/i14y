@@ -69,13 +69,14 @@ jobs:
           destination: ~/coverage
           
   update-dev:
-    dev-namespace:
-      type: enum
-      default: "select-a-namespace"
-      enum:
-        - giraffe
-        - platypus
-        - porcupine
+    parameters:
+      dev-namespace:
+        type: enum
+        default: "select-a-namespace"
+        enum:
+          - giraffe
+          - platypus
+          - porcupine
     docker:
       - image: cimg/aws:2023.01
     steps:
