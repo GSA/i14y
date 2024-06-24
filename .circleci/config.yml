@@ -8,14 +8,14 @@ orbs:
   kubernetes: circleci/kubernetes@1.3.1
   docker: circleci/docker@1.5.0
   
-# parameters:
-#   dev-namespace:
-#     type: enum
-#     default: "select-a-namespace"
-#     enum:
-#       - giraffe
-#       - platypus
-#       - porcupine
+parameters:
+  dev-namespace:
+    type: enum
+    default: giraffe
+    enum:
+      - giraffe
+      - platypus
+      - porcupine
 
   
 jobs:
@@ -69,14 +69,14 @@ jobs:
           destination: ~/coverage
           
   update-dev:
-    parameters:
-      dev-namespace:
-        type: enum
-        default: giraffe
-        enum:
-          - giraffe
-          - platypus
-          - porcupine
+    # parameters:
+    #   dev-namespace:
+    #     type: enum
+    #     default: giraffe
+    #     enum:
+    #       - giraffe
+    #       - platypus
+    #       - porcupine
     docker:
       - image: cimg/aws:2023.01
     steps:
@@ -87,9 +87,9 @@ jobs:
           aws-access-key-id: CIRCLE_CI_USER_ACCESS_KEY_ID 
           aws-secret-access-key: CIRCLE_CI_USER_SECRET_ACCESS_KEY
       - run: docker build -t dev_i14y .
-      - run: docker tag dev_i14y:<< parameters.dev-namespace >> 213305845712.dkr.ecr.us-west-1.amazonaws.com/dev_i14y:<< parameters.dev-namespace >>
+      - run: docker tag dev_i14y:latest 213305845712.dkr.ecr.us-west-1.amazonaws.com/dev_i14y:<< pipeline.parameters.dev-namespace >>
       - run: aws ecr get-login-password --region us-west-1 | docker login --username AWS --password-stdin 213305845712.dkr.ecr.us-west-1.amazonaws.com
-      - run: docker push 213305845712.dkr.ecr.us-west-1.amazonaws.com/dev_i14y:<< parameters.dev-namespace >>
+      - run: docker push 213305845712.dkr.ecr.us-west-1.amazonaws.com/dev_i14y:<< pipeline.parameters.dev-namespace >>
       - run: 
           name: update i14y k8s deployment
           command: |
@@ -182,8 +182,8 @@ workflows:
     jobs:
       - update-dev:
           name: "Update Dev Environment"
-          parameters:
-            dev-namespace: giraffe
+          # parameters:
+          #   dev-namespace: << pipeline.parameters.dev-namespace >>
           filters:
             branches:
               ignore:
