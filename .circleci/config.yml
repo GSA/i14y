@@ -9,7 +9,7 @@ orbs:
   docker: circleci/docker@1.5.0
   
 parameters:
-  dev-namespace:
+  namespace:
     type: enum
     default: giraffe
     enum:
@@ -70,7 +70,7 @@ jobs:
           
   update-dev:
     # parameters:
-    #   dev-namespace:
+    #   namespace:
     #     type: enum
     #     default: giraffe
     #     enum:
@@ -88,17 +88,17 @@ jobs:
           aws-access-key-id: CIRCLE_CI_USER_ACCESS_KEY_ID 
           aws-secret-access-key: CIRCLE_CI_USER_SECRET_ACCESS_KEY
       - run: docker build -t dev_i14y .
-      - run: docker tag dev_i14y:latest 213305845712.dkr.ecr.us-west-1.amazonaws.com/dev_i14y:<< pipeline.parameters.dev-namespace >>
+      - run: docker tag dev_i14y:latest 213305845712.dkr.ecr.us-west-1.amazonaws.com/dev_i14y:<< pipeline.parameters.namespace >>
       - run: aws ecr get-login-password --region us-west-1 | docker login --username AWS --password-stdin 213305845712.dkr.ecr.us-west-1.amazonaws.com
-      - run: docker push 213305845712.dkr.ecr.us-west-1.amazonaws.com/dev_i14y:<< pipeline.parameters.dev-namespace >>
+      - run: docker push 213305845712.dkr.ecr.us-west-1.amazonaws.com/dev_i14y:<< pipeline.parameters.namespace >>
       - run: 
           name: update i14y k8s deployment
           command: |
             aws ssm send-command \
             --document-name "searchgov-deployment-ssm-document" \
             --targets "Key=tag:Name,Values=jumphost-dev-search-instance" \
-            --parameters '{"DeploymentName":["search-<< pipeline.parameters.dev-namespace >>-i14y-deploy"], "Namespace":["<< pipeline.parameters.dev-namespace >>"]}' \
-            --comment "restart i14y deployment in << pipeline.parameters.dev-namespace >> namespace"
+            --parameters '{"DeploymentName":["search-<< pipeline.parameters.namespace >>-i14y-deploy"], "Namespace":["<< pipeline.parameters.namespace >>"]}' \
+            --comment "restart i14y deployment in << pipeline.parameters.namespace >> namespace"
             
   update-staging:
     docker:
@@ -186,8 +186,8 @@ workflows:
           context:
             - aws-client-keys
           # parameters:
-          #   dev-namespace: << pipeline.parameters.dev-namespace >>
+          #   namespace: << pipeline.parameters.namespace >>
           filters:
             branches:
               only:
-                - /^SRCH.*/
+                - /.*/
