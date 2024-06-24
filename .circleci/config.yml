@@ -16,9 +16,7 @@ parameters:
       - giraffe
       - platypus
       - porcupine
-  trigger-update-dev:
-    type: boolean
-    default: false
+
   
 jobs:
   build_and_test:
