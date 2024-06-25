@@ -18,14 +18,14 @@ jobs:
 
     docker:
       - image: cimg/ruby:<< parameters.ruby_version >>
-        # Using custom Docker images including required Elasticsearch plugins.
-        # See Dockerfile.elasticsearch* for details
+        environment:
+          RAILS_ENV: test
       - image: docker.elastic.co/elasticsearch/elasticsearch:<< parameters.elasticsearch_version >>
         environment:
-          - bootstrap.memory_lock=true
-          - discovery.type=single-node
-          - xpack.security.enabled=false
-          - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+          bootstrap.memory_lock: true
+          discovery.type: single-node
+          xpack.security.enabled: false
+          ES_JAVA_OPTS: '-Xms512m -Xmx512m'
 
     working_directory: ~/app
 
@@ -52,6 +52,10 @@ jobs:
             docker exec $elasticsearch_container_id elasticsearch-plugin install analysis-kuromoji
             docker exec $elasticsearch_container_id elasticsearch-plugin install analysis-icu
             docker exec $elasticsearch_container_id elasticsearch-plugin install analysis-smartcn
+            # Restart Elasticsearch to apply the plugins
+            docker restart $elasticsearch_container_id
+            # Wait for Elasticsearch to be ready after restart
+            dockerize -wait tcp://localhost:9200 -timeout 1m
       - run:
           name: RSpec
           environment:
