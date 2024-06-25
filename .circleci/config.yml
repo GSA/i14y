@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  ruby: circleci/ruby@1.4.0
+  ruby: circleci/ruby@2.0.0
   docker: circleci/docker@1.5.0
 
 executors:
@@ -40,19 +40,26 @@ jobs:
       elasticsearch_version: << parameters.elasticsearch_version >>
 
     steps:
+      # Step to set up Docker environment
       - setup_remote_docker
+
       - checkout
+
       - run: cp -p config/secrets_example.yml config/secrets.yml
+
       - ruby/install-deps:
           key: gems-ruby-<< parameters.ruby_version >>-v{{ .Environment.CACHE_VERSION }}
+
       - run:
           name: Setup Code Climate test-reporter
           command: |
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
+
       - run:
           name: Wait for Elasticsearch
           command: dockerize -wait tcp://localhost:9200 -timeout 1m
+
       - run:
           name: Install Elasticsearch Plugins
           command: |
@@ -61,6 +68,7 @@ jobs:
             docker exec $elasticsearch_container_id elasticsearch-plugin install analysis-kuromoji
             docker exec $elasticsearch_container_id elasticsearch-plugin install analysis-icu
             docker exec $elasticsearch_container_id elasticsearch-plugin install analysis-smartcn
+
       - run:
           name: RSpec
           environment:
@@ -70,6 +78,7 @@ jobs:
             ./cc-test-reporter before-build
             bundle exec rspec spec
             ./cc-test-reporter after-build --exit-code $?
+
       - store_artifacts:
           path: coverage
           destination: ~/coverage
