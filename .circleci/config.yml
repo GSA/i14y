@@ -35,8 +35,6 @@ jobs:
       - run: cp -p config/secrets_example.yml config/secrets.yml
       # Install gems with Bundler
       - ruby/install-deps:
-          # Need to clear the gem cache? Set or bump the CACHE_VERSION in your
-          # CircleCi project: Project Settings > Environment Variables
           key: gems-ruby-<< parameters.ruby_version >>-v{{ .Environment.CACHE_VERSION }}
       - run:
           name: Setup Code Climate test-reporter
@@ -91,6 +89,7 @@ jobs:
             --targets "Key=tag:Name,Values=jumphost-staging-search-instance" \
             --parameters '{"DeploymentName":["search-staging-i14y-deploy"], "Namespace":["search"]}' \
             --comment "restart i14y staging deployment"
+
   update-prod:
     docker:
       - image: cimg/aws:2023.01
@@ -115,7 +114,6 @@ jobs:
             --targets "Key=tag:Name,Values=jumphost-prod-search-instance" \
             --parameters '{"DeploymentName":["search-prod-i14y-deploy"], "Namespace":["search"]}' \
             --comment "restart i14y prod deployment"
-  
 
 workflows:
   build_and_test:
@@ -130,6 +128,7 @@ workflows:
               elasticsearch_version:
                 - 7.17.7
                 # not yet compatible with Elasticsearch 8
+
   build_image_and_deploy:
     jobs:
       - update-staging:
