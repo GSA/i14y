@@ -199,7 +199,7 @@ GEM
     marcel (1.0.4)
     method_source (1.1.0)
     mini_mime (1.1.5)
-    mini_portile2 (2.8.6)
+    mini_portile2 (2.8.7)
     minitest (5.22.3)
     multi_json (1.15.0)
     multipart-post (2.4.0)
@@ -219,7 +219,7 @@ GEM
       net-protocol
     newrelic_rpm (9.10.2)
     nio4r (2.7.1)
-    nokogiri (1.16.4)
+    nokogiri (1.16.5)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
     parallel (1.24.0)
@@ -238,7 +238,7 @@ GEM
       stringio
     puma (5.6.8)
       nio4r (~> 2.0)
-    racc (1.7.3)
+    racc (1.8.0)
     rack (2.2.9)
     rack-accept (0.4.5)
       rack (>= 0.4)
