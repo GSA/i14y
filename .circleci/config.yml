@@ -31,7 +31,6 @@ jobs:
     steps:
       - setup_remote_docker
       - checkout
-      - run: cp -p config/secrets_example.yml config/secrets.yml
       # Install gems with Bundler
       - ruby/install-deps:
           key: gems-ruby-<< parameters.ruby_version >>-v{{ .Environment.CACHE_VERSION }}
