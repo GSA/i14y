@@ -58,7 +58,6 @@ $ curl localhost:9200
 ## Development
 
 - `bundle install`.
-- Copy `config/secrets_example.yml` to `config/secrets.yml` and fill in your own secrets. To generate a random long secret, use `rake secret`.
 - Run `bundle exec rake i14y:setup` to create the neccessary indexes, index templates, and dynamic field templates.
 
 If you ever want to start from scratch with your indexes/templates, you can clear everything out:

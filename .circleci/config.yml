@@ -31,7 +31,6 @@ jobs:
     steps:
       - setup_remote_docker
       - checkout
-      - run: cp -p config/secrets_example.yml config/secrets.yml
       # Install gems with Bundler
       - ruby/install-deps:
           key: gems-ruby-<< parameters.ruby_version >>-v{{ .Environment.CACHE_VERSION }}
@@ -127,7 +126,7 @@ workflows:
             parameters:
               ruby_version:
                 - 3.1.4
-                - 3.3.0
+                - 3.3.4
               elasticsearch_version:
                 - 7.17.7
                 # not yet compatible with Elasticsearch 8
