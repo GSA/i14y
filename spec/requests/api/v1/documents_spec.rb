@@ -18,7 +18,7 @@ describe Api::V1::Documents do
   let(:document_repository) { DocumentRepository.new(index_name: documents_index_name) }
 
   before(:all) do
-    credentials = ActionController::HttpAuthentication::Basic.encode_credentials 'test', 'testpwd'
+    credentials = ActionController::HttpAuthentication::Basic.encode_credentials ENV['I14Y_ADMIN_USER'], ENV['I14Y_ADMIN_PASSWORD']
     valid_collection_session = { HTTP_AUTHORIZATION: credentials }
     valid_collection_params = { handle: 'test_index', token: 'test_key' }
     post '/api/v1/collections', params: valid_collection_params, headers: valid_collection_session
