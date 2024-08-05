@@ -8,8 +8,8 @@
 server ENV['SERVER_ADDRESS'], user: ENV['SERVER_DEPLOYMENT_USER'], roles: %w{app db web}
 
 set :application, 'search-gov'
-set :repo_url, 'https://github.com/GSA/i14y'
-set :branch, 'main'
+set :repo_url, 'https://github.com/luisgmetzger/i14y'
+set :branch, 'SRCH-5370'
 
 # Configuration
 # =============

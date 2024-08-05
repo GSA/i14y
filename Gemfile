@@ -19,13 +19,20 @@ gem 'rake', '~> 13.0.0'
 
 gem "rails_semantic_logger", "~> 4.14"
 
+gem 'puma', '~> 5.6'
+
+# Deployment
+gem 'capistrano', '~> 3.19', '>= 3.19.1'
+gem 'capistrano-rails', '~> 1.6', '>= 1.6.3'
+gem 'capistrano-rbenv', '~> 2.2'
+gem 'capistrano3-puma', '~> 5.2'
+
 group :development, :test do
   gem 'rspec-rails', '~> 3.7'
   gem 'pry-byebug', '~> 3.4'
   gem 'pry-rails', '~> 0.3'
   gem 'awesome_print', '~> 1.8' #To enable in Pry: https://github.com/awesome-print/awesome_print#pry-integration
   gem 'listen'
-  gem 'puma',  '~> 5.6'
   gem 'debug'
 end
 
