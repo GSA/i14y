@@ -7,7 +7,7 @@
 
 server ENV['SERVER_ADDRESS'], user: ENV['SERVER_DEPLOYMENT_USER'], roles: %w{app db web}
 
-set :application, 'search-gov'
+set :application, 'i14y'
 set :repo_url, 'https://github.com/luisgmetzger/i14y'
 set :branch, 'SRCH-5370'
 
