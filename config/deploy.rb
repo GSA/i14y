@@ -13,9 +13,9 @@ set :rbenv_ruby, '3.1.4'
 #   config/puma.rb
 # }
 
-set :optional_linked_files, %w{
-  config/secrets.yml
-}
+# set :optional_linked_files, %w{
+#   config/secrets.yml
+# }
 
 set :linked_dirs, %w{
   log
