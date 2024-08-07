@@ -8,16 +8,11 @@ set :deploy_to, ENV['DEPLOYMENT_PATH']
 set :rbenv_type, :user
 set :rbenv_ruby, '3.1.4'
 
-# Linked files and directories (these will be shared across releases)
-# set :linked_files, %w{
-#   config/puma.rb
-# }
-
-set :optional_linked_files, %w{
-  config/secrets.yml
-}
-
 set :linked_dirs, %w{
   log
   tmp
+}
+
+set :optional_linked_files, %w{
+  config/secrets.yml
 }

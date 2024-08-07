@@ -21,12 +21,6 @@ gem "rails_semantic_logger", "~> 4.14"
 
 gem 'puma', '~> 5.6'
 
-# Deployment
-gem 'capistrano', '~> 3.19', '>= 3.19.1'
-gem 'capistrano-rails', '~> 1.6', '>= 1.6.3'
-gem 'capistrano-rbenv', '~> 2.2'
-gem 'capistrano3-puma', '~> 5.2'
-
 group :development, :test do
   gem 'rspec-rails', '~> 3.7'
   gem 'pry-byebug', '~> 3.4'
@@ -34,6 +28,13 @@ group :development, :test do
   gem 'awesome_print', '~> 1.8' #To enable in Pry: https://github.com/awesome-print/awesome_print#pry-integration
   gem 'listen'
   gem 'debug'
+
+  # Deployment
+  gem 'capistrano', require: false
+  gem 'capistrano-rails', require: false
+  gem 'capistrano-rbenv', require: false
+  gem 'capistrano3-puma', require: false
+  gem 'capistrano-newrelic', require: false
 end
 
 group :development do
