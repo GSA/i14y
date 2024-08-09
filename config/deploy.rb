@@ -10,9 +10,11 @@ set :rbenv_ruby, '3.1.4'
 
 set :linked_dirs, %w{
   log
-  tmp
+  tmp/pids
+  tmp/sockets
+  tmp/cache
 }
 
-set :optional_linked_files, %w{
+set :linked_files, %w{
   config/secrets.yml
 }
