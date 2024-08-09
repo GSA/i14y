@@ -1,7 +1,7 @@
 module Api
   module V1
     class Collections < Grape::API
-      ADMIN_USER     = ENV['I14Y_ADMIN_USER']     
+      ADMIN_USER     = ENV['I14Y_ADMIN_USER']
       ADMIN_PASSWORD = ENV['I14Y_ADMIN_PASSWORD']
 
       prefix 'api'
