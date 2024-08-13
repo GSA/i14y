@@ -101,6 +101,7 @@ GEM
       thread_safe (~> 0.3, >= 0.3.1)
     diff-lcs (1.5.1)
     docile (1.1.5)
+    dotenv (3.1.2)
     drb (2.2.1)
     dry-core (1.0.1)
       concurrent-ruby (~> 1.0)
@@ -395,6 +396,7 @@ DEPENDENCIES
   awesome_print (~> 1.8)
   codeclimate-test-reporter (~> 1.0.8)
   debug
+  dotenv
   elasticsearch (~> 6.0)
   elasticsearch-dsl (~> 0.1.9)
   elasticsearch-persistence (~> 6.0)
@@ -417,4 +419,4 @@ DEPENDENCIES
   virtus (~> 1.0)
 
 BUNDLED WITH
-   2.4.7
+   2.5.9

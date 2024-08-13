@@ -17,9 +17,6 @@ capybara-*.html
 /spec/tmp
 **.orig
 
-# TODO Comment out these rules if you are OK with secrets being uploaded to the repo
-config/secrets.yml
-
 ## Environment normalisation:
 /.bundle
 /vendor/bundle
