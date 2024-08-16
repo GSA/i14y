@@ -71,10 +71,7 @@ Rails.application.configure do
   end
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  config.hosts = [
-    "i14y.staging.search.usa.gov",   # Allow requests from staging
-    "i14y.search.usa.gov"            # Allow requests from production
-  ]
+  config.hosts << "i14y.staging.search.usa.gov"
   # Skip DNS rebinding protection for the default health check endpoint.
   config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
