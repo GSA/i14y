@@ -21,6 +21,8 @@ gem "rails_semantic_logger", "~> 4.14"
 
 gem 'puma', '~> 5.6'
 
+gem 'dotenv', '~> 3.1'
+
 group :development, :test do
   gem 'rspec-rails', '~> 3.7'
   gem 'pry-byebug', '~> 3.4'
