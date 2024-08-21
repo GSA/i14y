@@ -17,4 +17,5 @@ set :linked_dirs, %w{
 
 set :linked_files, %w{
   config/secrets.yml
+  .env
 }
