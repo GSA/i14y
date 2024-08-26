@@ -433,7 +433,7 @@ DEPENDENCIES
   capistrano3-puma
   codeclimate-test-reporter (~> 1.0.8)
   debug
-  dotenv
+  dotenv (~> 3.1)
   elasticsearch (~> 6.0)
   elasticsearch-dsl (~> 0.1.9)
   elasticsearch-persistence (~> 6.0)
