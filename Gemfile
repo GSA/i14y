@@ -1,5 +1,4 @@
 source 'https://rubygems.org'
-gem 'dotenv', groups: [:development, :test]
 
 gem 'rails', '~> 7.1.0'
 
