@@ -61,3 +61,5 @@ chmod -R 777 /home/search/i14y/
 find /home/search/i14y/ -type d -exec chmod 2777 {} \;
 
 umask 000
+
+sudo rm -rf /home/search/cicd_temp/*
