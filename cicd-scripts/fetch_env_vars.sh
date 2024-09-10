@@ -39,7 +39,7 @@ done
 # Output the result
 echo ".env file created with the following content:"
 cat .env
-cp /home/search/cicd_temp/.env /home/search/i14y/shared
+cp /home/search/cicd_temp/.env /home/search/i14y/shared/
 
 
 # create puma folders and files
