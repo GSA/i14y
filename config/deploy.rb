@@ -6,7 +6,7 @@ set :branch,          ENV.fetch('SEARCH_ENV', 'staging')
 set :deploy_to,       ENV.fetch('DEPLOYMENT_PATH')
 set :format,          :pretty
 set :puma_access_log, "#{release_path}/log/puma.access.log"
-set :puma_bind,       'tcp://0.0.0.0:3300'
+set :puma_bind,       'tcp://0.0.0.0:8081'
 set :puma_error_log,  "#{release_path}/log/puma.error.log"
 set :rails_env,       'production'
 set :rbenv_type,      :user
