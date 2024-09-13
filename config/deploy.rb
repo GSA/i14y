@@ -28,9 +28,3 @@ set :ssh_options, {
   keys:          [ENV['SSH_KEY_PATH']],
   user:          ENV['SERVER_DEPLOYMENT_USER']
 }
-
-set :linked_files, %w{
-  .env
-  config/master.key
-}
-
