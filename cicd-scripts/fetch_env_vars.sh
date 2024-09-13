@@ -53,8 +53,8 @@ cp /home/search/cicd_temp/.env /home/search/i14y/shared/
 [ ! -f /home/search/i14y/shared/log/puma_error.log ] && touch /home/search/i14y/shared/log/puma_error.log
 
 
-chown -R search:search /home/search/i14y/
-chmod -R 777 /home/search/i14y/
+sudo chown -R search:search /home/search/i14y/
+sudo chmod -R 777 /home/search/i14y/
 
 find /home/search/i14y/ -type d -exec chmod 2777 {} \;
 
