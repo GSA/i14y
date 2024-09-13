@@ -42,9 +42,4 @@ Rails.application.configure do
 
   # Annotate rendered view with file names.
   # config.action_view.annotate_rendered_view_with_filenames = true
-
-  # Enable DNS rebinding protection and other `Host` header attacks.
-  config.hosts << "i14y.staging.search.usa.gov"
-  # Skip DNS rebinding protection for the default health check endpoint.
-  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
