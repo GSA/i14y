@@ -55,10 +55,10 @@ cp /home/search/cicd_temp/.env /home/search/i14y/shared/
 
 
 sudo chown -R search:search /home/search/i14y/
-sudo chmod -R 777 /home/search/i14y/
+sudo chmod -R 755 /home/search/i14y/
 
-find /home/search/i14y/ -type d -exec chmod 2777 {} \;
+find /home/search/i14y/ -type d -exec chmod 2755 {} \;
 
-umask 000
+umask 022
 
 sudo rm -rf /home/search/cicd_temp/*
