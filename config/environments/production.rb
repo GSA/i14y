@@ -66,7 +66,7 @@ Rails.application.configure do
   config.rails_semantic_logger.format = :json
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  config.hosts += ENV['I14Y_ALLOWED_HOSTS'] if ENV['I14Y_ALLOWED_HOSTS'].present?
+  config.hosts << ENV['I14Y_ALLOWED_HOSTS'] if ENV['I14Y_ALLOWED_HOSTS'].present?
   
   # Skip DNS rebinding protection for the default health check endpoint.
   config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
