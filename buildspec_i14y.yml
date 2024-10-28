@@ -2,16 +2,19 @@
 version: 0.2
 env:
   parameter-store:
-    # env_used_in_app: "env_in_param_store"
     API_SERVER_ADDRESSES: "DEPLOY_I14Y_SERVER_ADDRESS"
     DEPLOYMENT_PATH: "DEPLOY_I14Y_DEPLOYMENT_PATH"
+    I14Y_THREADS: "SEARCHGOV_THREADS"
+    I14Y_WORKERS: "SEARCHGOV_WORKERS"
     SERVER_DEPLOYMENT_USER: "DEPLOY_SERVER_DEPLOYMENT_USER"
     # SSH_KEY_PATH: "DEPLOY_SSH_KEY_PATH" - defined below
 
     # shared deployment variables with subsequent stages - might not to export as this is the final stage
 exported-variables:
-    - SERVER_ADDRESS
     - DEPLOYMENT_PATH
+    - I14Y_THREADS
+    - I14Y_WORKERS
+    - SERVER_ADDRESS
     - SERVER_DEPLOYMENT_USER
     - SSH_KEY_PATH
 
