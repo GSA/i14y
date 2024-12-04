@@ -12,7 +12,9 @@ module ES
                                                  ssl: {
                                                    verify: false
                                                  }
-                                               } }))
+                                               },
+                                               logger: Rails.logger # Explicitly set Rails logger
+                                               }))
   end
 
   def self.collection_repository
