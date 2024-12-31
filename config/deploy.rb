@@ -14,6 +14,7 @@ set :puma_threads,    [ENV.fetch('I14Y_MIN_THREADS', I14Y_THREADS), I14Y_THREADS
 set :puma_workers,    ENV.fetch('I14Y_WORKERS') { 0 }
 set :rails_env,       'production'
 set :rbenv_type,      :user
+set :rbenv_ruby,      '3.3.4'
 set :repo_url,        'https://github.com/GSA/i14y.git'
 set :user,            ENV.fetch('SERVER_DEPLOYMENT_USER', 'search')
 
