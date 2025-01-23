@@ -42,7 +42,7 @@ Rails.application.configure do
   # Info include generic and useful information about system operation, but avoids logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII). If you
   # want to log everything, set the level to "debug".
-  config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
+  config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "debug")
 
   # Use a different cache store in production.
   # config.cache_store = :mem_cache_store
@@ -60,13 +60,11 @@ Rails.application.configure do
   # Tell Active Support which deprecation messages to disallow.
   config.active_support.disallowed_deprecation_warnings = []
 
-  # Use default logging formatter so that PID and timestamp are not suppressed.
-  config.log_formatter = ::Logger::Formatter.new
-
-  config.rails_semantic_logger.format = :json
-
   # Enable DNS rebinding protection and other `Host` header attacks.
-  config.hosts << "i14y.staging.search.usa.gov"
+  config.hosts << ENV['I14Y_ALLOWED_HOSTS'] if ENV['I14Y_ALLOWED_HOSTS'].present?
+  
   # Skip DNS rebinding protection for the default health check endpoint.
   config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+
+  config.rails_semantic_logger.format = :json
 end

@@ -1,6 +1,8 @@
 # config valid for current version and patch releases of Capistrano
 lock '~> 3.19.1'
 
+I14Y_THREADS = ENV.fetch('I14Y_THREADS') { 5 }
+
 set :application,     'i14y'
 set :branch,          ENV.fetch('SEARCH_ENV', 'staging')
 set :deploy_to,       ENV.fetch('DEPLOYMENT_PATH')
@@ -8,6 +10,8 @@ set :format,          :pretty
 set :puma_access_log, "#{release_path}/log/puma.access.log"
 set :puma_bind,       'tcp://0.0.0.0:8081'
 set :puma_error_log,  "#{release_path}/log/puma.error.log"
+set :puma_threads,    [ENV.fetch('I14Y_MIN_THREADS', I14Y_THREADS), I14Y_THREADS]
+set :puma_workers,    ENV.fetch('I14Y_WORKERS') { 0 }
 set :rails_env,       'production'
 set :rbenv_type,      :user
 set :repo_url,        'https://github.com/GSA/i14y.git'
