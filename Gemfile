@@ -21,7 +21,7 @@ group :development, :test do
   gem 'capistrano-newrelic', require: false
   gem 'capistrano-rails',    require: false
   gem 'capistrano-rbenv',    require: false
-  gem 'capistrano3-puma',    require: false
+  gem 'capistrano3-puma',    '~> 5.2.0', require: false
   gem 'debug'
   gem 'listen'
   gem 'pry-byebug',          '~> 3.4'
