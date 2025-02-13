@@ -18,7 +18,7 @@ jobs:
 
     docker:
       - image: cimg/ruby:<< parameters.ruby_version >>
-        
+
       - image: docker.elastic.co/elasticsearch/elasticsearch:<< parameters.elasticsearch_version >>
         environment:
           bootstrap.memory_lock: true
@@ -75,7 +75,7 @@ jobs:
   #     - setup_remote_docker
   #     - aws-cli/setup:
   #         aws-region: STAGING_AWS_REGION
-  #         aws-access-key-id: CIRCLE_CI_USER_ACCESS_KEY_ID 
+  #         aws-access-key-id: CIRCLE_CI_USER_ACCESS_KEY_ID
   #         aws-secret-access-key: CIRCLE_CI_USER_SECRET_ACCESS_KEY
   #     - run: docker build -t i14y .
   #     - run: docker tag i14y:latest 213305845712.dkr.ecr.us-east-2.amazonaws.com/i14y:latest
@@ -83,7 +83,7 @@ jobs:
   #     - run: aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 213305845712.dkr.ecr.us-east-2.amazonaws.com
   #     - run: docker push 213305845712.dkr.ecr.us-east-2.amazonaws.com/i14y:latest
   #     - run: docker push 213305845712.dkr.ecr.us-east-2.amazonaws.com/i14y:${CIRCLE_BUILD_NUM}
-  #     - run: 
+  #     - run:
   #         name: update i14y k8s deployment
   #         command: |
   #           aws ssm send-command \
@@ -100,7 +100,7 @@ jobs:
   #     - setup_remote_docker
   #     - aws-cli/setup:
   #         aws-region: PROD_AWS_REGION
-  #         aws-access-key-id: CIRCLE_CI_USER_ACCESS_KEY_ID 
+  #         aws-access-key-id: CIRCLE_CI_USER_ACCESS_KEY_ID
   #         aws-secret-access-key: CIRCLE_CI_USER_SECRET_ACCESS_KEY
   #     - run: docker build -t i14y .
   #     - run: docker tag i14y:latest 213305845712.dkr.ecr.us-east-1.amazonaws.com/i14y:latest
@@ -108,7 +108,7 @@ jobs:
   #     - run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 213305845712.dkr.ecr.us-east-1.amazonaws.com
   #     - run: docker push 213305845712.dkr.ecr.us-east-1.amazonaws.com/i14y:latest
   #     - run: docker push 213305845712.dkr.ecr.us-east-1.amazonaws.com/i14y:${CIRCLE_BUILD_NUM}
-  #     - run: 
+  #     - run:
   #         name: update i14y k8s deployment
   #         command: |
   #           aws ssm send-command \
@@ -125,8 +125,7 @@ workflows:
           matrix:
             parameters:
               ruby_version:
-                - 3.1.4
-                - 3.3.4
+                - 3.3.7
               elasticsearch_version:
                 - 7.17.7
                 # not yet compatible with Elasticsearch 8
