@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-TWO_BYTE_CHARACTER = "\u00b5"
+TWO_BYTE_CHARACTER = "\u00b5" # rubocop:todo Discourse/Plugins/NamespaceConstants
 
 describe MaxBytes do
   subject(:validator) { described_class.new(attrs, options, required, scope.new) }
@@ -12,7 +12,7 @@ describe MaxBytes do
   let(:required) { false }
   let(:scope) do
     Struct.new(:opts) do
-      def full_name(name); end
+      def full_name(name); end # rubocop:todo Discourse/Plugins/NamespaceMethods
     end
   end
 

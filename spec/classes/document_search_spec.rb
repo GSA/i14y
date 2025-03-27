@@ -41,7 +41,7 @@ describe DocumentSearch do
     )
   end
 
-  def create_documents(document_hashes)
+  def create_documents(document_hashes) # rubocop:todo Discourse/Plugins/NamespaceMethods
     document_hashes.each { |hash| create_document(hash, document_repository) }
   end
 
