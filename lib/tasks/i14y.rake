@@ -65,12 +65,12 @@ namespace :i14y do
     ES.client.indices.delete(index: [Rails.env, I14y::APP_NAME, '*'].join('-'))
   end
 
-  def next_version(index_name)
+  def next_version(index_name) # rubocop:todo Discourse/Plugins/NamespaceMethods
     matches = index_name.match(/(.*-v)(\d+)/)
     "#{matches[1]}#{matches[2].succ}"
   end
 
-  def stream2es(old_es_index_url, new_es_index_url, timestamp = nil)
+  def stream2es(old_es_index_url, new_es_index_url, timestamp = nil) # rubocop:todo Discourse/Plugins/NamespaceMethods
     options = ["--source #{old_es_index_url}", "--target #{new_es_index_url}"]
     if timestamp.present?
       hash = { query: { filtered: { filter: { range: { updated_at: { gte: timestamp } } } } } }
@@ -80,7 +80,7 @@ namespace :i14y do
     puts "Stream2es completed", result
   end
 
-  def move_alias(alias_name, old_index_name, new_index_name)
+  def move_alias(alias_name, old_index_name, new_index_name) # rubocop:todo Discourse/Plugins/NamespaceMethods
     update_aliases_hash = { body:
                               { actions: [
                                 { remove: { index: old_index_name, alias: alias_name } },
