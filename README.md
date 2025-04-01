@@ -117,36 +117,3 @@ $ docker-compose up elasticsearch7
 $ bundle exec rake i14y:setup
 $ rake
 ```
-
-## Code Quality
-
-We use [Rubocop](https://rubocop.org/) for static code analysis. Settings specific to i14y are configured via [.rubocop.yml](.rubocop.yml).
-
-### Running RuboCop Locally
-
-Basic commands you should frequently use:
-
-- **Generate or update the RuboCop TODO file**. Use this when RuboCop identifies many issues:
-```bash
-bundle exec rubocop --auto-gen-config
-```
-- **Autocorrect easy-to-fix offenses** (safe corrections only):
-```bash
-bundle exec rubocop -a
-```
-- **Autocorrect all possible offenses, including some more complex cases** (use with caution, review changes carefully):
-```bash
-bundle exec rubocop -A
-```
-- **Disable offenses that cannot be automatically corrected** when running autocorrections. Useful if you'd like to quickly apply auto-fixes without manually addressing harder issues immediately:
-```bash
-bundle exec rubocop -a --disable-uncorrectable
-```
-
-or
-
-```bash
-bundle exec rubocop -A --disable-uncorrectable
-```
-
-It is recommended to always review diff changes after running autocorrection commands to ensure code correctness and maintainability.
