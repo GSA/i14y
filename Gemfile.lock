@@ -466,7 +466,7 @@ DEPENDENCIES
   capistrano-newrelic
   capistrano-rails
   capistrano-rbenv
-  capistrano3-puma (~> 5.2.0)
+  capistrano3-puma
   codeclimate-test-reporter (~> 1.0.8)
   debug
   dotenv (~> 3.1)
