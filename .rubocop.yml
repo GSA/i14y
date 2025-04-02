@@ -1,22 +1,14 @@
-# Work around CodeClimate's inability to use Rubocop's inherit_gem directive:
-# https://github.com/codeclimate/codeclimate-rubocop/issues/71#issuecomment-635055223
-inherit_from:
-  - https://raw.githubusercontent.com/GSA/searchgov_style/main/.default.yml
+inherit_from: .rubocop_todo.yml
+
+AllCops:
+  NewCops: enable
+
+require:
+  - rubocop-performance
+  - rubocop-rails
+  - rubocop-rake
+  - rubocop-rspec
 
 inherit_mode:
   merge:
     - Exclude
-
-Metrics/ClassLength:
-  Exclude:
-    # Much of this class is made up of a long #body method which mimics the structure
-    # of a complex Elasticsearch query using the Elasticsearch DSL. (Method/Block ength cops are already
-    # disabled inline for that specific method.)
-    - app/classes/document_query.rb
-
-Style/MethodCallWithArgsParentheses:
-  Exclude:
-    # Methods in this file uses the the Elasticsearch DSL and, as such, they fall under the rule "Always omit
-    # parentheses for methods that are part of an internal DSL":
-    # https://rubystyle.guide/#methods-that-are-part-of-an-internal-dsl
-    - app/classes/document_query.rb
