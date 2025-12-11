@@ -35,11 +35,6 @@ jobs:
       - ruby/install-deps:
           key: gems-ruby-<< parameters.ruby_version >>-v{{ .Environment.CACHE_VERSION }}
       - run:
-          name: Setup Code Climate test-reporter
-          command: |
-            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-            chmod +x ./cc-test-reporter
-      - run:
           name: Wait for Elasticsearch
           command: dockerize -wait tcp://localhost:9200 -timeout 1m
       - run:
@@ -56,13 +51,9 @@ jobs:
             dockerize -wait tcp://localhost:9200 -timeout 1m
       - run:
           name: RSpec
-          environment:
-            CC_TEST_REPORTER_ID: 09d5a7d453407f367679c8f86c4c582ec3583bed3c7a06286d61d16e89290bd1
           command: |
             bundle exec rake i14y:setup
-            ./cc-test-reporter before-build
             bundle exec rspec spec
-            ./cc-test-reporter after-build --exit-code $?
       - store_artifacts:
           path: coverage
           destination: ~/coverage
