@@ -19,7 +19,7 @@ gem 'virtus',                    '~> 1.0' # Virtus is no longer supported. Consi
 
 group :development, :test do
   gem 'awesome_print',       '~> 1.8' #To enable in Pry: https://github.com/awesome-print/awesome_print#pry-integration
-  gem 'capistrano',          require: false
+  gem 'capistrano', '3.19.2', require: false
   gem 'capistrano3-puma',    '~> 5.2', require: false
   gem 'capistrano-newrelic', require: false
   gem 'capistrano-rails',    require: false

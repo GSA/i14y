@@ -12,6 +12,7 @@ SSHKit.config.command_map[:bundle] = 'bin/bundle'
 require "capistrano/rbenv"
 require "capistrano/bundler"
 
+require 'stringio'
 require 'capistrano/puma'
 require 'capistrano/puma/workers'
 
