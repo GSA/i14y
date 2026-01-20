@@ -32,12 +32,13 @@ module Api
 
         def auth?(collection_handle, token)
           ES.collection_repository.find(collection_handle).token == token
-        rescue Elasticsearch::Persistence::Repository::DocumentNotFound, Elasticsearch::Transport::Transport::Errors::BadRequest
+        rescue Elasticsearch::Persistence::Repository::DocumentNotFound,
+               Elasticsearch::Transport::Transport::Errors::BadRequest
           false
         end
 
         def document_repository
-          index_name = DocumentRepository.index_namespace(@collection_handle)
+          index_name = params[:index_name] || DocumentRepository.index_namespace(@collection_handle)
           DocumentRepository.new(index_name: index_name)
         end
       end
@@ -128,15 +129,17 @@ module Api
         post do
           id = params.delete(:document_id)
           document = Document.new(params.merge(id: id))
-          if document.invalid?
-            error!({ developer_message: document.errors.full_messages.join(', '), status: 400 }, 400)
-          end
+          error!({ developer_message: document.errors.full_messages.join(', '), status: 400 }, 400) if document.invalid?
           document_repository.save(document, op_type: :create)
           ok('Your document was successfully created.')
         end
 
         desc 'Update a document'
         params do
+          optional :index_name,
+                   type: String,
+                   allow_blank: false,
+                   desc: 'Elasticsearch index name for the document'
           optional :title,
                    type: String,
                    allow_blank: false,
@@ -247,9 +250,7 @@ module Api
                                                               searchgov_custom3
                                                               tags])
           document.attributes = document.attributes.merge(params)
-          if document.invalid?
-            error!({ developer_message: document.errors.full_messages.join(', '), status: 400 }, 400)
-          end
+          error!({ developer_message: document.errors.full_messages.join(', '), status: 400 }, 400) if document.invalid?
           document_repository.update(document)
           ok('Your document was successfully updated.')
         end
